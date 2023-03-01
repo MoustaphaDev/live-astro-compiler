@@ -1,26 +1,28 @@
 {
-    "name": "astro-live-compiler",
-    "version": "0.0.1",
-    "description": "Live preview of the TS output of Astro components",
-    "scripts": {
-        "start": "vite",
-        "dev": "vite",
-        "build": "vite build",
-        "serve": "vite preview"
-    },
-    "license": "MIT",
-    "devDependencies": {
-        "typescript": "^4.9.5",
-        "vite": "^4.1.1",
-        "vite-plugin-solid": "^2.5.0",
-        "autoprefixer": "^10.4.13",
-        "prettier": "^2.8.4",
-        "prettier-plugin-tailwindcss": "^0.2.3",
-        "solid-devtools": "^0.26.0",
-        "vite-tsconfig-paths": "^4.0.5"
-    },
-    "dependencies": {
-        "solid-js": "^1.6.10",
-        "tailwindcss": "^3.2.7"
-      }
+  "name": "astro-live-compiler",
+  "version": "0.0.1",
+  "description": "Live preview of the TS output of Astro components",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.9.5",
+    "vite": "^4.1.1",
+    "vite-plugin-solid": "^2.5.0",
+    "autoprefixer": "^10.4.13",
+    "prettier": "^2.8.4",
+    "prettier-plugin-tailwindcss": "^0.2.3",
+    "solid-devtools": "^0.26.0",
+    "vite-tsconfig-paths": "^4.0.5"
+  },
+  "dependencies": {
+    "solid-js": "^1.6.10",
+    "tailwindcss": "^3.2.7",
+    "@kobalte/core": "^0.6.1",
+    "solid-icons": "^1.0.4"
+  }
 }

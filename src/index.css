@@ -2,16 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+@layer components {
+  .select__trigger {
+    @apply inline-flex h-10 w-[200px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-base capitalize leading-none text-white outline-none transition-[border-color] duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus-visible:outline-offset-2;
+  }
+  .select__trigger:focus-visible {
+    @apply outline-[2px_solid_hsl(200_98%_39%)];
+  }
+  .select__trigger[data-invalid] {
+    @apply border-[hsl(0_72%_51%)] text-[hsl(0_72%_51%)];
+  }
+  .select__value {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+  .select__value[data-placeholder-shown] {
+    @apply text-zinc-500;
+  }
+  .select__icon {
+    @apply h-5 w-5 flex-[0_0_20px];
+  }
+  .select__description {
+    @apply mt-2 select-none text-xs text-zinc-700;
+  }
+  .select__error-message {
+    animation: fadeOut 300ms ease-in forwards;
+    @apply mt-2 select-none text-xs text-[hsl(0_72%_51%)];
+  }
+  .select__content {
+    @apply animate-fade-in rounded-md border border-solid border-secondary bg-primary/50 shadow-md;
+  }
+  .select__content[data-expanded] {
+    @apply pointer-events-none animate-fade-in;
+  }
+  .select__listbox {
+    @apply max-h-[360px] overflow-y-auto p-2;
+  }
+  .select__item {
+    @apply relative flex h-8 select-none items-center rounded py-0 pl-6 pr-8 text-base leading-none text-white outline-none;
+  }
+  .select__item[data-disabled] {
+    @apply pointer-events-none text-zinc-400 opacity-50;
+  }
+  .select__item[data-highlighted] {
+    @apply bg-accent-2 text-primary outline-none;
+  }
+  .select__group-label {
+    @apply px-6 py-0 text-sm leading-8 text-zinc-500;
+  }
+  .select__separator {
+    @apply m-1.5 h-px border-t border-solid border-t-zinc-200;
+  }
+  .select__item-indicator {
+    @apply absolute left-0 inline-flex h-5 w-5 items-center justify-center;
+  }
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
 }
