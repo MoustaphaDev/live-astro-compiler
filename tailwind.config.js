@@ -9,10 +9,6 @@ module.exports = {
         secondary: "#323232",
         "accent-1": "#FF1E56",
         "accent-2": "#FFAC41",
-        // "accent-2-dim": "hsl(6, 100%, 80%)",
-      },
-      fontFamily: {
-        "fira-code": ["Fira Code", "monospace"],
       },
       animation: {
         "fade-in": "fade-in 300ms ease-out",
