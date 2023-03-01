@@ -4,9 +4,11 @@ import AstroLogo from "~/assets/astro-logo.svg";
 
 import { For } from "solid-js";
 import { Select } from "@kobalte/core";
+import { setShikiTheme, shikiTheme } from "../store";
 
 import { ComponentProps, splitProps } from "solid-js";
 import { AiOutlineCheck } from "solid-icons/ai";
+import { DARK_THEMES } from "~/consts";
 
 export function SelectItem(props: ComponentProps<typeof Select.Item>) {
   const [local, others] = splitProps(props, ["children"]);
@@ -21,8 +23,10 @@ export function SelectItem(props: ComponentProps<typeof Select.Item>) {
 }
 
 function ThemeSwitcher() {
+  // const [pending, startTransition] = useTransition();
+  // const refetchCode = () => startTransition(() => refetch());
   return (
-    <Select.Root value={"Test"} onValueChange={() => {}}>
+    <Select.Root value={shikiTheme()} onValueChange={setShikiTheme}>
       <Select.Trigger class="select__trigger" aria-label="Themes">
         <Select.Value class="select__value" placeholder="Select a theme" />
         <Select.Icon class="select__icon">
@@ -32,8 +36,15 @@ function ThemeSwitcher() {
       <Select.Portal>
         <Select.Content class="select__content">
           <Select.Listbox class="select__listbox">
-            <For each={["Nord", "Vitesse"]}>
-              {(theme) => <SelectItem value={theme}>{theme}</SelectItem>}
+            <For each={DARK_THEMES}>
+              {(theme) => (
+                <SelectItem
+                  value={theme}
+                  onFocus={() => setShikiTheme(shikiTheme())}
+                >
+                  {theme}
+                </SelectItem>
+              )}
             </For>
           </Select.Listbox>
         </Select.Content>
@@ -44,7 +55,7 @@ function ThemeSwitcher() {
 
 export function Header() {
   return (
-    <div class="border-secondary bg-primary flex h-20 items-center justify-between border-b-2 px-8">
+    <div class="flex h-20 items-center justify-between border-b-2 border-secondary bg-primary px-8">
       <h1 class="flex items-center">
         <img src={AstroLogo} class="h-16" />
         <FaSolidGears />
