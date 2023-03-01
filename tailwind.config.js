@@ -10,6 +10,9 @@ module.exports = {
         "accent-1": "#FF1E56",
         "accent-2": "#FFAC41",
       },
+      fontFamily: {
+        "fira-code": ["Fira Code", "monospace"],
+      },
       animation: {
         "fade-in": "fade-in 300ms ease-out",
         "fade-out": "fade-out ease-in forwards",

@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 @layer components {
+  pre {
+    @apply font-fira-code h-full overflow-scroll px-[0.3rem] pt-5;
+  }
   .select__trigger {
     @apply inline-flex h-10 w-[200px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-base capitalize leading-none text-white outline-none transition-[border-color] duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus-visible:outline-offset-2;
   }
@@ -29,10 +32,10 @@
     @apply mt-2 select-none text-xs text-[hsl(0_72%_51%)];
   }
   .select__content {
-    @apply animate-fade-in rounded-md border border-solid border-secondary bg-primary/50 shadow-md;
+    @apply rounded-md border border-solid border-secondary bg-primary/50 shadow-md;
   }
   .select__content[data-expanded] {
-    @apply pointer-events-none animate-fade-in;
+    @apply animate-fade-in;
   }
   .select__listbox {
     @apply max-h-[360px] overflow-y-auto p-2;
@@ -59,5 +62,48 @@
   body {
     height: 100%;
     overflow: hidden;
+  }
+
+  code {
+    counter-reset: step;
+    counter-increment: step 0;
+  }
+
+  code .line::before {
+    content: counter(step);
+    counter-increment: step;
+    width: 1rem;
+    margin-right: 1.5rem;
+    display: inline-block;
+    text-align: right;
+    color: rgba(115, 138, 148, 0.4);
+  }
+
+  ::-webkit-scrollbar {
+    width: 15px;
+    height: 15px;
+    transition: all 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-track {
+    transition: all 0.2s ease;
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  ::-webkit-scrollbar-track:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    transition: all 0.2s ease;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.6);
   }
 }
