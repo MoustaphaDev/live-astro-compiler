@@ -12,6 +12,7 @@ module.exports = {
       },
       fontFamily: {
         "fira-code": ["Fira Code", "monospace"],
+        "rampard-one": ["Rampart One", "cursive"],
       },
       animation: {
         "fade-in": "fade-in 300ms ease-out",

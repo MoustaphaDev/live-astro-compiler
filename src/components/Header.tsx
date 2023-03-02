@@ -6,7 +6,7 @@ import { For } from "solid-js";
 import { Select } from "@kobalte/core";
 import { setShikiTheme, shikiTheme } from "../store";
 
-import { ComponentProps, splitProps } from "solid-js";
+import { type ComponentProps, splitProps } from "solid-js";
 import { AiOutlineCheck } from "solid-icons/ai";
 import { DARK_THEMES } from "~/consts";
 
@@ -23,8 +23,6 @@ export function SelectItem(props: ComponentProps<typeof Select.Item>) {
 }
 
 function ThemeSwitcher() {
-  // const [pending, startTransition] = useTransition();
-  // const refetchCode = () => startTransition(() => refetch());
   return (
     <Select.Root value={shikiTheme()} onValueChange={setShikiTheme}>
       <Select.Trigger class="select__trigger" aria-label="Themes">
