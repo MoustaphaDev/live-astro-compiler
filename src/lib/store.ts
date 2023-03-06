@@ -1,16 +1,8 @@
-import {
-  type Accessor,
-  createResource,
-  createSignal,
-  createEffect,
-  on,
-} from "solid-js";
-import { getParseResult, getTransformResult, highlight } from "~/lib/utils";
-import type { AvailableThemes } from "~/lib/consts";
+import { type Accessor, createResource, createSignal } from "solid-js";
+import { getParseResult, getTransformResult } from "~/lib/utils";
+import type { AvailableThemes, Modes } from "~/lib/consts";
 import { debounce } from "@solid-primitives/scheduled";
 
-export const MODES = ["parse", "transform"] as const;
-type Modes = (typeof MODES)[number];
 export const [code, setCode] = usePersistantSignal("code-input-value", "");
 
 export const [shikiTheme, setShikiTheme] = usePersistantSignal<AvailableThemes>(

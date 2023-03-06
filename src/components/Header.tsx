@@ -4,11 +4,11 @@ import AstroLogo from "~/assets/astro-logo.svg";
 
 import { For, createEffect } from "solid-js";
 import { Select as SelectPrimitive } from "@kobalte/core";
-import { MODES, mode, setMode, setShikiTheme, shikiTheme } from "../lib/store";
+import { mode, setMode, setShikiTheme, shikiTheme } from "../lib/store";
 
 import { type ComponentProps, splitProps } from "solid-js";
 import { AiOutlineCheck } from "solid-icons/ai";
-import { DARK_THEMES } from "~/lib/consts";
+import { DARK_THEMES, MODES } from "~/lib/consts";
 
 export function SelectItem(props: ComponentProps<typeof SelectPrimitive.Item>) {
   const [local, others] = splitProps(props, ["children"]);

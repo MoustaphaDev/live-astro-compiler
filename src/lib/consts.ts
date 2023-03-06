@@ -11,6 +11,8 @@ export const DARK_THEMES = [
   "dark-plus",
 ] satisfies Theme[];
 
-export type AvailableThemes = (typeof DARK_THEMES)[number];
-
+export const MODES = ["parse", "transform"] as const;
 export const DEFAULT_THEME: AvailableThemes = "vitesse-dark";
+
+export type AvailableThemes = (typeof DARK_THEMES)[number];
+export type Modes = (typeof MODES)[number];
