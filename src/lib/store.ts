@@ -61,10 +61,10 @@ export function getPersistantValue<T>(key: string, initialValue: T): T {
   try {
     // Get from local storage by key
     const item = window.localStorage.getItem(key);
-    // Parse stored json or if none return null
-    return item ? JSON.parse(item) : null;
+    // Parse stored json or if none return the initial value
+    value = item ? JSON.parse(item) : initialValue;
   } catch (error) {
-    // If error also return null
+    // If error also return the initial valvue
     console.warn(error);
     value = initialValue;
   }
