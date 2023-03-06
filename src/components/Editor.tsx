@@ -100,7 +100,7 @@ function doSplit() {
   const sizes = getPersistantValue("split-sizes", [50, 50]);
   Split([inpuBoxRef, codeCompilerRef], {
     sizes,
-    gutterSize: 8,
+    gutterSize: 7,
     direction: "horizontal",
     onDragEnd: function (sizes) {
       localStorage.setItem("split-sizes", JSON.stringify(sizes));
