@@ -2,52 +2,94 @@ import { FaSolidGears } from "solid-icons/fa";
 import { HiOutlineSelector } from "solid-icons/hi";
 import AstroLogo from "~/assets/astro-logo.svg";
 
-import { For } from "solid-js";
-import { Select } from "@kobalte/core";
-import { setShikiTheme, shikiTheme } from "../store";
+import { For, createEffect } from "solid-js";
+import { Select as SelectPrimitive } from "@kobalte/core";
+import { MODES, mode, setMode, setShikiTheme, shikiTheme } from "../lib/store";
 
 import { type ComponentProps, splitProps } from "solid-js";
 import { AiOutlineCheck } from "solid-icons/ai";
-import { DARK_THEMES } from "~/consts";
+import { DARK_THEMES } from "~/lib/consts";
 
-export function SelectItem(props: ComponentProps<typeof Select.Item>) {
+export function SelectItem(props: ComponentProps<typeof SelectPrimitive.Item>) {
   const [local, others] = splitProps(props, ["children"]);
   return (
-    <Select.Item class="select__item" {...others}>
-      <Select.ItemLabel>{local.children}</Select.ItemLabel>
-      <Select.ItemIndicator class="select__item-indicator">
+    <SelectPrimitive.Item class="select__item" {...others}>
+      <SelectPrimitive.ItemLabel>{local.children}</SelectPrimitive.ItemLabel>
+      <SelectPrimitive.ItemIndicator class="select__item-indicator">
         <AiOutlineCheck />
-      </Select.ItemIndicator>
-    </Select.Item>
+      </SelectPrimitive.ItemIndicator>
+    </SelectPrimitive.Item>
+  );
+}
+
+function Select(
+  props: ComponentProps<typeof SelectPrimitive.Root> & {
+    "aria-label": string;
+    placeholder: string;
+  }
+) {
+  const [local, others] = splitProps(props, ["children", "placeholder"]);
+  return (
+    <SelectPrimitive.Root value={shikiTheme()} {...others}>
+      <SelectPrimitive.Trigger class="select__trigger" aria-label="Themes">
+        <SelectPrimitive.Value
+          class="select__value"
+          placeholder={local.placeholder}
+        />
+        <SelectPrimitive.Icon class="select__icon">
+          <HiOutlineSelector />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content class="select__content">
+          <SelectPrimitive.Listbox class="select__listbox">
+            {local.children}
+          </SelectPrimitive.Listbox>
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
   );
 }
 
 function ThemeSwitcher() {
   return (
-    <Select.Root value={shikiTheme()} onValueChange={setShikiTheme}>
-      <Select.Trigger class="select__trigger" aria-label="Themes">
-        <Select.Value class="select__value" placeholder="Select a theme" />
-        <Select.Icon class="select__icon">
-          <HiOutlineSelector />
-        </Select.Icon>
-      </Select.Trigger>
-      <Select.Portal>
-        <Select.Content class="select__content">
-          <Select.Listbox class="select__listbox">
-            <For each={DARK_THEMES}>
-              {(theme) => (
-                <SelectItem
-                  value={theme}
-                  onFocus={() => setShikiTheme(shikiTheme())}
-                >
-                  {theme}
-                </SelectItem>
-              )}
-            </For>
-          </Select.Listbox>
-        </Select.Content>
-      </Select.Portal>
-    </Select.Root>
+    <Select
+      aria-label="Themes"
+      value={shikiTheme()}
+      onValueChange={setShikiTheme}
+      placeholder="Select a theme"
+    >
+      <For each={DARK_THEMES}>
+        {(theme) => (
+          <SelectItem value={theme} onClick={() => setShikiTheme(theme)}>
+            {theme}
+          </SelectItem>
+        )}
+      </For>
+    </Select>
+  );
+}
+
+function ModeSwitcher() {
+  createEffect(() => {
+    console.log("mode changed", mode());
+  });
+
+  return (
+    <Select
+      aria-label="Modes"
+      value={mode()}
+      onValueChange={setMode}
+      placeholder="Select a mode"
+    >
+      <For each={MODES}>
+        {(mode) => (
+          <SelectItem value={mode} onClick={() => setMode(mode)}>
+            {mode}
+          </SelectItem>
+        )}
+      </For>
+    </Select>
   );
 }
 
@@ -59,7 +101,10 @@ export function Header() {
         <FaSolidGears />
         <span class="text-3xl font-extrabold text-white">Live Compiler</span>
       </h1>
-      <ThemeSwitcher />
+      <span>
+        <ModeSwitcher />
+        <ThemeSwitcher />
+      </span>
     </div>
   );
 }

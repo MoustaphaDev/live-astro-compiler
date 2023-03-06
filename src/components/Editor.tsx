@@ -1,14 +1,29 @@
 import { debounce } from "@solid-primitives/scheduled";
-import { Suspense, createEffect, createResource, onMount } from "solid-js";
+import {
+  ErrorBoundary,
+  Suspense,
+  createEffect,
+  createResource,
+  onMount,
+} from "solid-js";
 import Split from "split.js";
 import gutterPattern from "~/assets/vertical.png";
+import html from "solid-js/html";
 
-import { setCode, compileResult, shikiTheme, code } from "~/store";
-import { highlight, setHightlighter } from "~/utils";
+import {
+  setCode,
+  shikiTheme,
+  code,
+  getPersistantValue,
+  setPersistentValue,
+  mode,
+  transformResult,
+  parseResult,
+} from "~/lib/store";
+import { highlight, setHightlighter } from "~/lib/utils";
 
 let codeCompilerRef: HTMLDivElement;
 let inpuBoxRef: HTMLTextAreaElement;
-let loadingEditorRef: HTMLDivElement;
 export function Editor() {
   onMount(() => {
     console.log({ inpuBoxRef, codeCompilerRef });
@@ -18,9 +33,11 @@ export function Editor() {
     <div class="flex h-full w-full flex-row items-stretch overflow-hidden">
       <InputBox ref={inpuBoxRef!} />
       <div class="h-full w-[calc(50%-5px)] overflow-auto" ref={codeCompilerRef}>
-        <Suspense fallback={<LoadingEditor ref={loadingEditorRef!} />}>
-          <CodeCompiler />
-        </Suspense>
+        <ErrorBoundary fallback={<LoadingError />}>
+          <Suspense fallback={<LoadingEditor />}>
+            <CodeCompiler />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </div>
   );
@@ -42,41 +59,50 @@ function InputBox(props: { ref: HTMLTextAreaElement }) {
 }
 
 function CodeCompiler() {
-  const [compileResultHighlighted, { refetch: refreshTheme }] = createResource(
-    compileResult,
-    highlight
-  );
+  const [transformResultHighlighted, { refetch: refreshCompileTheme }] =
+    createResource(transformResult, highlight);
+
+  const [parseResultHighlighted, { refetch: refreshParseTheme }] =
+    createResource(parseResult, highlight);
   createEffect(async () => {
     await setHightlighter(shikiTheme());
-    refreshTheme();
+    refreshCompileTheme();
+    refreshParseTheme();
   });
 
-  return (
-    <div innerHTML={compileResultHighlighted()!} class="h-full w-full"></div>
-  );
+  const highlightedResult = () =>
+    mode() === "transform"
+      ? transformResultHighlighted()
+      : parseResultHighlighted();
+
+  return <div innerHTML={highlightedResult()!} class="h-full w-full"></div>;
 }
 
-export function LoadingEditor(props: { ref: HTMLDivElement }) {
+export function LoadingEditor() {
   return (
-    <div
-      class="flex h-full w-full items-center justify-center bg-primary"
-      ref={props.ref}
-    >
+    <div class="flex h-full w-full items-center justify-center bg-primary">
       <div class="h-32 w-32 animate-spin rounded-full border-t-2 border-b-2 border-white"></div>
     </div>
   );
 }
 
+export function LoadingError() {
+  return (
+    <div class="flex h-full w-full items-center justify-center bg-primary">
+      <div class="text-4xl font-bold text-red-600">X</div>
+    </div>
+  );
+}
+
 function doSplit() {
-  const localStorageEntry = localStorage.getItem("split-sizes");
-  let sizes = localStorageEntry ? JSON.parse(localStorageEntry) : [50, 50];
+  const sizes = getPersistantValue("split-sizes", [50, 50]);
   Split([inpuBoxRef, codeCompilerRef], {
     sizes,
     gutterSize: 8,
     direction: "horizontal",
     onDragEnd: function (sizes) {
       localStorage.setItem("split-sizes", JSON.stringify(sizes));
-      console.log({ sizes });
+      setPersistentValue;
     },
     dragInterval: 1,
     gutter: (_, direction) => {
