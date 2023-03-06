@@ -97,7 +97,7 @@ export function Header() {
         <FaSolidGears />
         <span class="text-3xl font-extrabold text-white">Live Compiler</span>
       </h1>
-      <span>
+      <span class="flex items-center gap-5">
         <ModeSwitcher />
         <ThemeSwitcher />
       </span>
