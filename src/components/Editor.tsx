@@ -8,6 +8,8 @@ import {
 } from "solid-js";
 import Split from "split.js";
 import gutterPattern from "~/assets/vertical.png";
+
+// TODO find a way to transform the highlighter's result to JSX nodes (if possible?) to benefit from diffing
 import html from "solid-js/html";
 
 import {
@@ -59,6 +61,7 @@ function InputBox(props: { ref: HTMLTextAreaElement }) {
 }
 
 function CodeCompiler() {
+  // TODO: Prevent compiling both the parse and transform result as only one is needed at a time
   const [transformResultHighlighted, { refetch: refreshCompileTheme }] =
     createResource(transformResult, highlight);
 

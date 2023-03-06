@@ -1,7 +1,7 @@
 // import { setCDN } from "shiki";
 import type { Plugin, ResolvedConfig } from "vite";
 import fs from "node:fs";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import npath from "node:path";
 import { red, blue, green } from "kleur";
 
