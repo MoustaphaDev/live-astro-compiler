@@ -1,7 +1,7 @@
 import { type Accessor, createResource, createSignal } from "solid-js";
 import { getParseResult, getTransformResult } from "~/lib/utils";
-import type { AvailableThemes, Modes } from "~/lib/consts";
 import { debounce } from "@solid-primitives/scheduled";
+import type { AvailableThemes, Modes } from "./types";
 
 export const [code, setCode] = usePersistantSignal("code-input-value", "");
 

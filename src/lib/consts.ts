@@ -1,4 +1,5 @@
-import { Theme } from "shiki";
+import type { Theme } from "shiki";
+import type { AvailableThemes } from "./types";
 
 export const DARK_THEMES = [
   "vitesse-dark",
@@ -13,6 +14,3 @@ export const DARK_THEMES = [
 
 export const MODES = ["parse", "transform"] as const;
 export const DEFAULT_THEME: AvailableThemes = "vitesse-dark";
-
-export type AvailableThemes = (typeof DARK_THEMES)[number];
-export type Modes = (typeof MODES)[number];

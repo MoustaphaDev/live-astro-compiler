@@ -2,8 +2,8 @@ import { getHighlighter, type Highlighter } from "shiki";
 // @ts-ignore
 import { transform, initialize, parse } from "@astrojs/compiler";
 import astroWasm from "@astrojs/compiler/astro.wasm?url";
-import { type AvailableThemes } from "~/lib/consts";
 import { shikiTheme } from "./store";
+import type { AvailableThemes, CompileOptions } from "./types";
 
 const highlighterCacheAsync = new Map<string, Promise<Highlighter>>();
 export let highlighter: Highlighter;
@@ -26,10 +26,6 @@ export async function setHightlighter(theme: AvailableThemes) {
 }
 
 let isCompilerInitialized = false;
-
-type CompileOptions = {
-  action: "parse" | "transform";
-};
 
 async function astroCompiler(code: string, options: CompileOptions) {
   console.log("Astro Compiler Run !!");
