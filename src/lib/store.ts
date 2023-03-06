@@ -33,21 +33,21 @@ function usePersistantSignal<T>(
   saveDelay = 1500
 ): [Accessor<T>, (value: T) => void] {
   const valueToPassToSignal = getPersistantValue(key, initialValue);
-  const [storedValue, _setStoredValue] = createSignal(valueToPassToSignal);
+  const [getter, _setter] = createSignal(valueToPassToSignal);
 
   // Return a wrapped version of createSignal's setter function that ...
   // ... persists the new value to localStorage.
 
-  const debouncedPersistance = debounce((value) => {
+  const savePersistentValue = debounce((key: string, value) => {
     setPersistentValue(key, value);
   }, saveDelay);
 
-  const setStoredValue = (value: T) => {
-    _setStoredValue(() => value);
-    debouncedPersistance(value);
+  const setter = (updatedValue: T) => {
+    _setter(() => updatedValue);
+    savePersistentValue(key, updatedValue);
   };
 
-  return [storedValue, setStoredValue];
+  return [getter, setter];
 }
 
 /*
