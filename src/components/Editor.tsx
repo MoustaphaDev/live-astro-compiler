@@ -28,7 +28,6 @@ let codeCompilerRef: HTMLDivElement;
 let inpuBoxRef: HTMLTextAreaElement;
 export function Editor() {
   onMount(() => {
-    console.log({ inpuBoxRef, codeCompilerRef });
     doSplit();
   });
   return (

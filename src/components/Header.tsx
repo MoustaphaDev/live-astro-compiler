@@ -71,10 +71,6 @@ function ThemeSwitcher() {
 }
 
 function ModeSwitcher() {
-  createEffect(() => {
-    console.log("mode changed", mode());
-  });
-
   return (
     <Select
       aria-label="Modes"

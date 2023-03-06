@@ -55,14 +55,12 @@ export function vitePluginShiki({
       if (id !== entrypointPath) {
         return;
       }
-      console.log({ id, entrypointPath });
       code = `import { setCDN, setWasm } from "shiki";
 setCDN("/shiki/");
 const wasmResponse = await fetch("/shiki/dist/onig.wasm");
 setWasm(wasmResponse);
 
 ${code}`;
-      console.log({ code });
       return {
         code,
       };

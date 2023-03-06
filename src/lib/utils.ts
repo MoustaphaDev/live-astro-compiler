@@ -28,10 +28,8 @@ export async function setHightlighter(theme: AvailableThemes) {
 let isCompilerInitialized = false;
 
 async function astroCompiler(code: string, options: CompileOptions) {
-  console.log("Astro Compiler Run !!");
   if (!isCompilerInitialized) {
     // initialize shiki highlighter
-    console.log("Initializing Shiki");
     await setHightlighter(shikiTheme());
     // initialize astro compiler
     await initialize({ wasmURL: astroWasm });
@@ -56,7 +54,6 @@ export const getTransformResult = async (code: string) => {
     const transformedCode = await astroCompiler(code, {
       action: "transform",
     });
-    console.log({ transformedCode });
     return transformedCode;
   } catch (e) {
     throw e;
@@ -66,7 +63,6 @@ export const getTransformResult = async (code: string) => {
 export const getParseResult = async (code: string) => {
   try {
     const parsedCode = await astroCompiler(code, { action: "parse" });
-    console.log({ parsedCode });
     return parsedCode;
   } catch (e) {
     throw e;
