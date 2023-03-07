@@ -1,5 +1,4 @@
 export type Token = OpenToken | CloseToken | TextToken;
-
 export type OpenToken =
   | OpenCurlyBraceToken
   | OpenSquareBracketToken
@@ -8,7 +7,6 @@ export type CloseToken =
   | CloseCurlyBraceToken
   | CloseSquareBracketToken
   | CloseParenthesisToken;
-
 export type TextToken = {
   type: "text";
   value: string;

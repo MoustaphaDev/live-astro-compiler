@@ -5,7 +5,7 @@ import "./index.css";
 import "@fontsource/rampart-one";
 import "@fontsource/fira-code";
 import { TokenDisplay } from "./lib/mini-ide/printer";
-import { parse } from "./lib/mini-ide/parser";
+import { parse } from "./lib/mini-ide";
 
 const App: Component = () => {
   const [code, setCode] = createSignal("");
