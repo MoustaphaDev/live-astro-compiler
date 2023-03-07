@@ -1,7 +1,7 @@
 import { ParseResult } from "./parser";
-import { For } from "solid-js";
+import { ComponentProps, For, splitProps } from "solid-js";
 
-type Props = {
+type Props = ComponentProps<"div"> & {
   parseResult: ParseResult;
 };
 
@@ -18,9 +18,10 @@ function CaracterToHTML(props: { children: string }) {
 }
 
 export function TokenDisplay(props: Props) {
+  const [local, others] = splitProps(props, ["parseResult"]);
   return (
-    <div class="">
-      <For each={props.parseResult}>
+    <div {...others}>
+      <For each={local.parseResult}>
         {(parsedToken) => {
           switch (parsedToken.type) {
             case "open":
