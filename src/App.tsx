@@ -7,7 +7,7 @@ import "@fontsource/fira-code";
 
 const App: Component = () => {
   return (
-    <div class="grid h-[50vh] w-screen grid-rows-[auto_1fr]">
+    <div class="grid h-screen w-screen grid-rows-[auto_1fr]">
       <Header />
       <Editor />
     </div>
