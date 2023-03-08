@@ -1,9 +1,11 @@
 import { debounce } from "@solid-primitives/scheduled";
 import {
   ErrorBoundary,
+  Show,
   Suspense,
   createEffect,
   createResource,
+  on,
   onMount,
 } from "solid-js";
 import Split from "split.js";
@@ -13,15 +15,13 @@ import * as monaco from "monaco-editor";
 
 import {
   setCode,
-  shikiTheme,
   code,
   getPersistantValue,
-  setPersistentValue,
   mode,
-  transformResult,
-  parseResult,
+  setPersistentValue,
+  compilerOutput,
+  isCompilerLoaded,
 } from "~/lib/store";
-import { highlight, setHightlighter } from "~/lib/utils";
 
 let codeCompilerRef: HTMLDivElement;
 let inpuBoxRef: HTMLDivElement;
@@ -36,18 +36,18 @@ export function Editor() {
   return (
     <div class="flex h-full w-full flex-row items-stretch overflow-hidden">
       <div ref={inpuBoxRef!}>
-        <Suspense fallback={<LoadingEditor />}>
-          <ErrorBoundary fallback={<div>Oh no!</div>}>
-            <InputBox />
-          </ErrorBoundary>
-        </Suspense>
+        {/* <Show when={isMonacoloaded()} fallback={<LoadingEditor />}> */}
+        <ErrorBoundary fallback={<div>Oh no!</div>}>
+          <InputBox />
+        </ErrorBoundary>
+        {/* </Show> */}
       </div>
       <div ref={codeCompilerRef!}>
-        <Suspense fallback={<LoadingEditor />}>
+        <Show when={isCompilerLoaded()} fallback={<LoadingEditor />}>
           <ErrorBoundary fallback={<div>Oh no!</div>}>
             <CodeCompiler />
           </ErrorBoundary>
-        </Suspense>
+        </Show>
       </div>
     </div>
   );
@@ -67,38 +67,34 @@ function InputBox() {
       const text = inputBoxEditorInstance.getValue();
       setCode(text);
       console.log(text);
-      codeCompilerEditorInstance.getModel()?.setValue(transformResult());
     });
   });
 
   return <></>;
 }
 
-function CodeCompiler(props: { ref: HTMLDivElement }) {
-  // TODO: Prevent compiling both the parse and transform result as only one is needed at a time
-  // const [transformResultHighlighted, { refetch: refreshCompileTheme }] =
-  //   createResource(transformResult, highlight);
+createEffect(
+  on(mode, () => {
+    codeCompilerEditorInstance?.getModel()?.setValue(compilerOutput());
+  })
+);
 
-  // const [parseResultHighlighted, { refetch: refreshParseTheme }] =
-  //   createResource(parseResult, highlight);
-  // createEffect(async () => {
-  //   await setHightlighter(shikiTheme());
-  //   refreshCompileTheme();
-  //   refreshParseTheme();
-  // });
+function CodeCompiler() {
+  // TODO: Prevent compiling both the parse and transform result as only one is needed at a time
+
+  createEffect(() => {
+    // codeCompilerEditorInstance.getModel()?.setValue(compilerOutput());
+  });
 
   onMount(() => {
     // do load the monaco editor
     codeCompilerEditorInstance = monaco.editor.create(codeCompilerRef, {
-      value: transformResult(),
+      value: compilerOutput(),
       language: "javascript",
       readOnly: true,
       automaticLayout: true,
     });
-    codeCompilerEditorInstance.getModel()?.setValue(transformResult());
   });
-
-  // return <div ref={props.ref}></div>;
   return <></>;
 }
 

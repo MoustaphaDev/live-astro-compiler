@@ -19,6 +19,16 @@ export const [mode, setMode] = usePersistantSignal<Modes>(
 export const [transformResult] = createResource(code, getTransformResult);
 export const [parseResult] = createResource(code, getParseResult);
 
+export const isCompilerLoaded = () =>
+  !transformResult.loading && !parseResult.loading;
+
+export const compilerOutput = () => {
+  if (mode() === "parse") {
+    return parseResult();
+  }
+  return transformResult();
+};
+
 function usePersistantSignal<T>(
   key: string,
   initialValue: T,

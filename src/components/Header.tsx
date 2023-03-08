@@ -2,7 +2,7 @@ import { FaSolidGears } from "solid-icons/fa";
 import { HiOutlineSelector } from "solid-icons/hi";
 import AstroLogo from "~/assets/astro-logo.svg";
 
-import { For, createEffect } from "solid-js";
+import { For } from "solid-js";
 import { Select as SelectPrimitive } from "@kobalte/core";
 import { mode, setMode, setShikiTheme, shikiTheme } from "../lib/store";
 
@@ -99,7 +99,7 @@ export function Header() {
       </h1>
       <span class="flex items-center gap-5">
         <ModeSwitcher />
-        <ThemeSwitcher />
+        {/* <ThemeSwitcher /> */}
       </span>
     </div>
   );
