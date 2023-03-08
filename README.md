@@ -1,34 +1,26 @@
-## Usage
+<center>
+<h1>Live Astro Compiler</h1>
+</center>
 
-Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
+<center>
+<h2>Preview the TypeScript output of Astro components</h2>
+</center>
 
-This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
 
-```bash
-$ npm install # or pnpm install or yarn install
-```
+## Ideas
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+- [x] Add Monaco Editor
+- [ ] Add Astro language server to editor (if possible?)
+- [ ] Add a way to live preview changes to the compiler's source code
+- [ ] Add possibility to change the compiler's parser and transform options
+- [ ] Consider adding Web Containers to enable developping Astro sites side by side with the compiler output
+- [ ] More...
 
-## Available Scripts
+## Changelog
 
-In the project directory, you can run:
-
-### `npm dev` or `npm start`
-
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br>
-
-### `npm run build`
-
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-## Deployment
-
-You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
+- Make basic editor with a textarea and a shiki block as the compiler's transform output
+- Make persistant storage for the editor
+- Make shiki themes configurable
+- Add option to see the compiler's parser output
+- Make a brackets pair colorizer to make the textarea editor a bit prettier
+- Drop the textarea+shiki combination and instead use the Monaco Editor
