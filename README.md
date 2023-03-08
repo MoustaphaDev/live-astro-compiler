@@ -9,12 +9,7 @@
 
 ## Ideas
 
-- [x] Add Monaco Editor
-- [ ] Add Astro language server to editor (if possible?)
-- [ ] Add a way to live preview changes to the compiler's source code
-- [ ] Add possibility to change the compiler's parser and transform options
-- [ ] Consider adding Web Containers to enable developping Astro sites side by side with the compiler output
-- [ ] More...
+- [ ] Create VSCODE extension
 
 ## Changelog
 
