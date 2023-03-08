@@ -9,8 +9,6 @@ import {
 import Split from "split.js";
 import gutterPattern from "~/assets/vertical.png";
 
-// TODO find a way to transform the highlighter's result to JSX nodes (if possible?) to benefit from diffing
-import html from "solid-js/html";
 import * as monaco from "monaco-editor";
 
 import {
@@ -30,19 +28,33 @@ let inpuBoxRef: HTMLDivElement;
 
 let inputBoxEditorInstance: monaco.editor.IStandaloneCodeEditor;
 let codeCompilerEditorInstance: monaco.editor.IStandaloneCodeEditor;
+
 export function Editor() {
   onMount(() => {
     doSplit();
   });
   return (
     <div class="flex h-full w-full flex-row items-stretch overflow-hidden">
-      <InputBox ref={inpuBoxRef!} />
-      <CodeCompiler ref={codeCompilerRef!} />
+      <div ref={inpuBoxRef!}>
+        <Suspense fallback={<LoadingEditor />}>
+          <ErrorBoundary fallback={<div>Oh no!</div>}>
+            <InputBox />
+          </ErrorBoundary>
+        </Suspense>
+      </div>
+      <div ref={codeCompilerRef!}>
+        <Suspense fallback={<LoadingEditor />}>
+          <ErrorBoundary fallback={<div>Oh no!</div>}>
+            <CodeCompiler />
+          </ErrorBoundary>
+        </Suspense>
+      </div>
     </div>
   );
 }
 
-function InputBox(props: { ref: HTMLDivElement }) {
+function InputBox() {
+  // props: { ref: HTMLDivElement }
   onMount(() => {
     // do load the monaco editor
     inputBoxEditorInstance = monaco.editor.create(inpuBoxRef, {
@@ -59,21 +71,21 @@ function InputBox(props: { ref: HTMLDivElement }) {
     });
   });
 
-  return <div ref={props.ref}></div>;
+  return <></>;
 }
 
 function CodeCompiler(props: { ref: HTMLDivElement }) {
   // TODO: Prevent compiling both the parse and transform result as only one is needed at a time
-  const [transformResultHighlighted, { refetch: refreshCompileTheme }] =
-    createResource(transformResult, highlight);
+  // const [transformResultHighlighted, { refetch: refreshCompileTheme }] =
+  //   createResource(transformResult, highlight);
 
-  const [parseResultHighlighted, { refetch: refreshParseTheme }] =
-    createResource(parseResult, highlight);
-  createEffect(async () => {
-    await setHightlighter(shikiTheme());
-    refreshCompileTheme();
-    refreshParseTheme();
-  });
+  // const [parseResultHighlighted, { refetch: refreshParseTheme }] =
+  //   createResource(parseResult, highlight);
+  // createEffect(async () => {
+  //   await setHightlighter(shikiTheme());
+  //   refreshCompileTheme();
+  //   refreshParseTheme();
+  // });
 
   onMount(() => {
     // do load the monaco editor
@@ -86,7 +98,8 @@ function CodeCompiler(props: { ref: HTMLDivElement }) {
     codeCompilerEditorInstance.getModel()?.setValue(transformResult());
   });
 
-  return <div ref={props.ref}></div>;
+  // return <div ref={props.ref}></div>;
+  return <></>;
 }
 
 export function LoadingEditor() {
