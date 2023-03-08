@@ -29,7 +29,7 @@ let codeCompilerRef: HTMLDivElement;
 let inpuBoxRef: HTMLDivElement;
 
 let inputBoxEditorInstance: monaco.editor.IStandaloneCodeEditor;
-// let codeCompilerEditorInstance: monaco.editor.IStandaloneCodeEditor;
+let codeCompilerEditorInstance: monaco.editor.IStandaloneCodeEditor;
 export function Editor() {
   onMount(() => {
     doSplit();
@@ -37,14 +37,7 @@ export function Editor() {
   return (
     <div class="flex h-full w-full flex-row items-stretch overflow-hidden">
       <InputBox ref={inpuBoxRef!} />
-      {/* <CodeCompiler ref={codeCompilerRef!} /> */}
-      <div ref={codeCompilerRef}>
-        <ErrorBoundary fallback={<LoadingError />}>
-          <Suspense fallback={<LoadingEditor />}>
-            <CodeCompiler />
-          </Suspense>
-        </ErrorBoundary>
-      </div>
+      <CodeCompiler ref={codeCompilerRef!} />
     </div>
   );
 }
@@ -62,13 +55,14 @@ function InputBox(props: { ref: HTMLDivElement }) {
       const text = inputBoxEditorInstance.getValue();
       setCode(text);
       console.log(text);
+      codeCompilerEditorInstance.getModel()?.setValue(transformResult());
     });
   });
 
   return <div ref={props.ref}></div>;
 }
 
-function CodeCompiler() {
+function CodeCompiler(props: { ref: HTMLDivElement }) {
   // TODO: Prevent compiling both the parse and transform result as only one is needed at a time
   const [transformResultHighlighted, { refetch: refreshCompileTheme }] =
     createResource(transformResult, highlight);
@@ -81,24 +75,18 @@ function CodeCompiler() {
     refreshParseTheme();
   });
 
-  const highlightedResult = () =>
-    mode() === "transform"
-      ? transformResultHighlighted()
-      : parseResultHighlighted();
+  onMount(() => {
+    // do load the monaco editor
+    codeCompilerEditorInstance = monaco.editor.create(codeCompilerRef, {
+      value: transformResult(),
+      language: "javascript",
+      readOnly: true,
+      automaticLayout: true,
+    });
+    codeCompilerEditorInstance.getModel()?.setValue(transformResult());
+  });
 
-  // onMount(() => {
-  //   // do load the monaco editor
-  //   codeCompilerEditorInstance = monaco.editor.create(codeCompilerRef, {
-  //     value: "highlightedResult()",
-  //     language: "javascript",
-  //     model: null,
-  //     readOnly: true,
-  //     automaticLayout: true,
-  //   });
-  // });
-
-  return <div innerHTML={highlightedResult()!} class="h-full w-full"></div>;
-  // return <div ref={props.ref}></div>;
+  return <div ref={props.ref}></div>;
 }
 
 export function LoadingEditor() {
