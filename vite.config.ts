@@ -3,6 +3,7 @@ import solidPlugin from "vite-plugin-solid";
 import devtools from "solid-devtools/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { vitePluginShiki } from "./src/lib/vite-plugin-shiki";
+import monacoEditorPlugin from "vite-plugin-monaco-editor";
 
 export default defineConfig({
   plugins: [
@@ -10,6 +11,15 @@ export default defineConfig({
     solidPlugin(),
     tsConfigPaths(),
     vitePluginShiki({ pathToInitializedHighlighter: "/src/lib/utils.ts" }),
+    monacoEditorPlugin({
+      languageWorkers: [
+        "editorWorkerService",
+        "css",
+        "html",
+        "json",
+        "typescript",
+      ],
+    }),
   ],
   server: {
     port: 3000,

@@ -11,6 +11,7 @@ import gutterPattern from "~/assets/vertical.png";
 
 // TODO find a way to transform the highlighter's result to JSX nodes (if possible?) to benefit from diffing
 import html from "solid-js/html";
+import * as monaco from "monaco-editor";
 
 import {
   setCode,
@@ -25,7 +26,10 @@ import {
 import { highlight, setHightlighter } from "~/lib/utils";
 
 let codeCompilerRef: HTMLDivElement;
-let inpuBoxRef: HTMLTextAreaElement;
+let inpuBoxRef: HTMLDivElement;
+
+let inputBoxEditorInstance: monaco.editor.IStandaloneCodeEditor;
+// let codeCompilerEditorInstance: monaco.editor.IStandaloneCodeEditor;
 export function Editor() {
   onMount(() => {
     doSplit();
@@ -33,7 +37,8 @@ export function Editor() {
   return (
     <div class="flex h-full w-full flex-row items-stretch overflow-hidden">
       <InputBox ref={inpuBoxRef!} />
-      <div class="h-full w-[calc(50%-5px)] overflow-auto" ref={codeCompilerRef}>
+      {/* <CodeCompiler ref={codeCompilerRef!} /> */}
+      <div ref={codeCompilerRef}>
         <ErrorBoundary fallback={<LoadingError />}>
           <Suspense fallback={<LoadingEditor />}>
             <CodeCompiler />
@@ -44,19 +49,23 @@ export function Editor() {
   );
 }
 
-function InputBox(props: { ref: HTMLTextAreaElement }) {
-  const onInput = debounce((e: InputEvent) => {
-    setCode((e.target as HTMLInputElement).value);
-  }, 400);
+function InputBox(props: { ref: HTMLDivElement }) {
+  onMount(() => {
+    // do load the monaco editor
+    inputBoxEditorInstance = monaco.editor.create(inpuBoxRef, {
+      value: code(),
+      language: "javascript",
+      automaticLayout: true,
+    });
+    inputBoxEditorInstance.onDidChangeModelContent(function (event) {
+      // get the updated text content of the editor
+      const text = inputBoxEditorInstance.getValue();
+      setCode(text);
+      console.log(text);
+    });
+  });
 
-  return (
-    <textarea
-      class="h-full w-[calc(50%-5px)] resize-none bg-primary pt-5 font-fira-code text-white outline-transparent focus-within:outline-none focus:outline-none"
-      ref={props.ref}
-      onInput={onInput}
-      value={code()}
-    />
-  );
+  return <div ref={props.ref}></div>;
 }
 
 function CodeCompiler() {
@@ -77,7 +86,19 @@ function CodeCompiler() {
       ? transformResultHighlighted()
       : parseResultHighlighted();
 
+  // onMount(() => {
+  //   // do load the monaco editor
+  //   codeCompilerEditorInstance = monaco.editor.create(codeCompilerRef, {
+  //     value: "highlightedResult()",
+  //     language: "javascript",
+  //     model: null,
+  //     readOnly: true,
+  //     automaticLayout: true,
+  //   });
+  // });
+
   return <div innerHTML={highlightedResult()!} class="h-full w-full"></div>;
+  // return <div ref={props.ref}></div>;
 }
 
 export function LoadingEditor() {

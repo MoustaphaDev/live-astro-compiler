@@ -1,4 +1,4 @@
-import { type Component, createSignal, createEffect } from "solid-js";
+import { type Component } from "solid-js";
 import { Header } from "~/components/Header";
 import { Editor } from "~/components/Editor";
 import "./index.css";
