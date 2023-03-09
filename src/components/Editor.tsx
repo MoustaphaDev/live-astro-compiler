@@ -1,4 +1,3 @@
-import { debounce } from "@solid-primitives/scheduled";
 import { ErrorBoundary, Show, createEffect, on, onMount } from "solid-js";
 import Split from "split.js";
 import gutterPattern from "~/assets/vertical.png";
@@ -12,7 +11,7 @@ import {
   mode,
   setPersistentValue,
   compilerOutput,
-  isCompilerLoaded,
+  isAstroCompilerInitialized,
 } from "~/lib/store";
 
 let codeCompilerRef: HTMLDivElement;
@@ -35,7 +34,7 @@ export function Editor() {
         {/* </Show> */}
       </div>
       <div ref={codeCompilerRef!}>
-        <Show when={isCompilerLoaded()} fallback={<LoadingEditor />}>
+        <Show when={isAstroCompilerInitialized()} fallback={<LoadingEditor />}>
           <ErrorBoundary fallback={<div>Oh no!</div>}>
             <CodeCompiler />
           </ErrorBoundary>
@@ -54,32 +53,28 @@ function InputBox() {
       language: "javascript",
       automaticLayout: true,
     });
-    inputBoxEditorInstance.onDidChangeModelContent(function (event) {
+    inputBoxEditorInstance.onDidChangeModelContent(() => {
       // get the updated text content of the editor
       const text = inputBoxEditorInstance.getValue();
       setCode(text);
-      console.log(text);
     });
   });
 
   return <></>;
 }
 
-createEffect(
-  on(mode, () => {
-    codeCompilerEditorInstance?.getModel()?.setValue(compilerOutput());
-  })
-);
-
 function CodeCompiler() {
   // TODO: Prevent compiling both the parse and transform result as only one is needed at a time
 
   createEffect(() => {
-    // codeCompilerEditorInstance.getModel()?.setValue(compilerOutput());
+    // Set the new value
+    console.log({ compilerOutput: compilerOutput() });
+    codeCompilerEditorInstance?.setValue(compilerOutput() ?? "");
   });
 
   onMount(() => {
     // do load the monaco editor
+    console.log({ compilerOutput: compilerOutput() });
     codeCompilerEditorInstance = monaco.editor.create(codeCompilerRef, {
       value: compilerOutput(),
       language: "javascript",
