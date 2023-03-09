@@ -4,11 +4,11 @@ import AstroLogo from "~/assets/astro-logo.svg";
 
 import { For } from "solid-js";
 import { Select as SelectPrimitive } from "@kobalte/core";
-import { mode, setMode, setShikiTheme, shikiTheme } from "../lib/store";
+import { mode, setMode } from "../lib/store";
 
 import { type ComponentProps, splitProps } from "solid-js";
 import { AiOutlineCheck } from "solid-icons/ai";
-import { DARK_THEMES, MODES } from "~/lib/consts";
+import { MODES } from "~/lib/consts";
 
 export function SelectItem(props: ComponentProps<typeof SelectPrimitive.Item>) {
   const [local, others] = splitProps(props, ["children"]);
@@ -30,7 +30,7 @@ function Select(
 ) {
   const [local, others] = splitProps(props, ["children", "placeholder"]);
   return (
-    <SelectPrimitive.Root value={shikiTheme()} {...others}>
+    <SelectPrimitive.Root {...others}>
       <SelectPrimitive.Trigger class="select__trigger" aria-label="Themes">
         <SelectPrimitive.Value
           class="select__value"
@@ -51,24 +51,24 @@ function Select(
   );
 }
 
-function ThemeSwitcher() {
-  return (
-    <Select
-      aria-label="Themes"
-      value={shikiTheme()}
-      onValueChange={setShikiTheme}
-      placeholder="Select a theme"
-    >
-      <For each={DARK_THEMES}>
-        {(theme) => (
-          <SelectItem value={theme} onClick={() => setShikiTheme(theme)}>
-            {theme}
-          </SelectItem>
-        )}
-      </For>
-    </Select>
-  );
-}
+// function ThemeSwitcher() {
+//   return (
+//     <Select
+//       aria-label="Themes"
+//       value={shikiTheme()}
+//       onValueChange={setShikiTheme}
+//       placeholder="Select a theme"
+//     >
+//       <For each={DARK_THEMES}>
+//         {(theme) => (
+//           <SelectItem value={theme} onClick={() => setShikiTheme(theme)}>
+//             {theme}
+//           </SelectItem>
+//         )}
+//       </For>
+//     </Select>
+//   );
+// }
 
 function ModeSwitcher() {
   return (

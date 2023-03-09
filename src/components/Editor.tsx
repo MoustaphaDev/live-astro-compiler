@@ -1,13 +1,5 @@
 import { debounce } from "@solid-primitives/scheduled";
-import {
-  ErrorBoundary,
-  Show,
-  Suspense,
-  createEffect,
-  createResource,
-  on,
-  onMount,
-} from "solid-js";
+import { ErrorBoundary, Show, createEffect, on, onMount } from "solid-js";
 import Split from "split.js";
 import gutterPattern from "~/assets/vertical.png";
 

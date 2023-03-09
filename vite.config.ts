@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import devtools from "solid-devtools/vite";
 import tsConfigPaths from "vite-tsconfig-paths";

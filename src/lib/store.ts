@@ -1,15 +1,15 @@
 import { type Accessor, createResource, createSignal } from "solid-js";
 import { getParseResult, getTransformResult } from "~/lib/utils";
 import { debounce } from "@solid-primitives/scheduled";
-import type { AvailableThemes, Modes } from "./types";
+import type { Modes } from "./types";
 
 export const [code, setCode] = usePersistantSignal("code-input-value", "");
 
-export const [shikiTheme, setShikiTheme] = usePersistantSignal<AvailableThemes>(
-  "playground-theme",
-  "vitesse-dark",
-  0
-);
+// export const [shikiTheme, setShikiTheme] = usePersistantSignal<AvailableThemes>(
+//   "playground-theme",
+//   "vitesse-dark",
+//   0
+// );
 
 export const [mode, setMode] = usePersistantSignal<Modes>(
   "compiler-mode",
