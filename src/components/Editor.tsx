@@ -8,7 +8,6 @@ import {
   setCode,
   code,
   getPersistantValue,
-  mode,
   setPersistentValue,
   compilerOutput,
   isAstroCompilerInitialized,
@@ -66,15 +65,15 @@ function InputBox() {
 function CodeCompiler() {
   // TODO: Prevent compiling both the parse and transform result as only one is needed at a time
 
-  createEffect(() => {
-    // Set the new value
-    console.log({ compilerOutput: compilerOutput() });
-    codeCompilerEditorInstance?.setValue(compilerOutput() ?? "");
-  });
+  createEffect(
+    on(compilerOutput, () => {
+      // Set the new value
+      codeCompilerEditorInstance?.setValue(compilerOutput() ?? "");
+    })
+  );
 
   onMount(() => {
     // do load the monaco editor
-    console.log({ compilerOutput: compilerOutput() });
     codeCompilerEditorInstance = monaco.editor.create(codeCompilerRef, {
       value: compilerOutput(),
       language: "javascript",
