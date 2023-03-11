@@ -85,24 +85,38 @@ export function vitePluginCompilerDistWatch({
         "./lib",
       ].map((p) => npath.join(compilerRepoPath, p));
 
-      function reinstallCompilerPackage() {
+      const installCompilerPackage = () => {
+        console.log(kleur.green("Reinstalling compiler package..."));
         runPnpm({
           args: ["install", compilerPackagePath],
         });
-      }
+        console.log(kleur.green("Done!"));
+      };
 
-      function buildCompilerPackage() {
+      const buildCompilerPackage = noopForDuration(() => {
+        console.log(
+          kleur.green("Compiler package source changed! Rebuilding...")
+        );
         runPnpm({
-          args: ["build:all"],
+          args: ["build:compiler"],
           cwd: compilerRepoPath,
         });
-      }
-
-      const onSourceChange = noopForDuration(() => {
-        console.log(kleur.green("Source changed!"));
-        buildCompilerPackage();
-        reinstallCompilerPackage();
         console.log(kleur.green("Done!"));
+        installCompilerPackage();
+      }, 1000);
+
+      const buildCompilerWasm = noopForDuration(() => {
+        console.log(
+          kleur.green(
+            "Compiler golang source changed! Rebuilding WASM binary..."
+          )
+        );
+        runPnpm({
+          args: ["build"],
+          cwd: compilerRepoPath,
+        });
+        console.log(kleur.green("Done!"));
+        installCompilerPackage();
       }, 1000);
 
       const golangSourceWatcher = chokidar.watch(golangSourcePaths, {
@@ -110,14 +124,17 @@ export function vitePluginCompilerDistWatch({
         ignored: [compilerPackagePath],
       });
 
-      const compilerPackageSourceWatcher = chokidar.watch(compilerPackagePath);
+      const compilerPackageSourceWatcher = chokidar.watch(compilerPackagePath, {
+        // ignore the compiler wasm binary
+        ignored: [npath.join(compilerPackagePath, "./compiler.wasm")],
+      });
 
       golangSourceWatcher.on("all", () => {
-        onSourceChange();
+        buildCompilerWasm();
       });
 
       compilerPackageSourceWatcher.on("all", () => {
-        onSourceChange();
+        buildCompilerPackage();
       });
     },
   };
