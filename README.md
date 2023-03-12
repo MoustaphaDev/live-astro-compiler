@@ -9,7 +9,7 @@
 
 ## Ideas
 
-- [ ] Create VSCODE extension
+- [ ] Deploy a production version that always uses the latest version of the compiler available on npm 
 
 ## Changelog
 
