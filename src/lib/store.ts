@@ -29,11 +29,22 @@ export const compilerOutput = () => {
 export const [isAstroCompilerInitialized, setIsAstroCompilerInitialized] =
   createSignal(false);
 
-function usePersistantSignal<T>(
+// doesn't match all overloads of signals to simplify to code
+type PersistantSetter<T> = (v: T | SetterFunction<T>) => T;
+type PersistantSignal<T> = [Accessor<T>, PersistantSetter<T>];
+type SetterFunction<T> = (prev?: T) => T;
+
+function isVFunction<T>(
+  value: T | SetterFunction<T>
+): value is SetterFunction<T> {
+  return typeof value === "function";
+}
+
+export function usePersistantSignal<T>(
   key: string,
   initialValue: T,
   saveDelay = 1500
-): [Accessor<T>, (value: T) => void] {
+): PersistantSignal<T> {
   const valueToPassToSignal = getPersistantValue(key, initialValue);
   const [getter, _setter] = createSignal(valueToPassToSignal);
 
@@ -44,9 +55,15 @@ function usePersistantSignal<T>(
     setPersistentValue(key, value);
   }, saveDelay);
 
-  const setter = (updatedValue: T) => {
-    _setter(() => updatedValue);
-    savePersistentValue(key, updatedValue);
+  const setter: PersistantSetter<T> = (v) => {
+    const updatedValue = _setter((prev) => {
+      if (isVFunction(v)) {
+        return v(prev);
+      }
+      return v;
+    });
+    savePersistentValue(key, v);
+    return updatedValue;
   };
 
   return [getter, setter];
