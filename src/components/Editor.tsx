@@ -34,24 +34,6 @@ export function Editor() {
       setWordWrap((wasWordWrapped) => !wasWordWrapped);
     }
   }
-  createEffect(() => {
-    if (isWordWrap()) {
-      inputBoxEditorInstance?.updateOptions({
-        wordWrap: "off",
-      });
-      codeCompilerEditorInstance?.updateOptions({
-        wordWrap: "off",
-      });
-      return;
-    }
-    inputBoxEditorInstance?.updateOptions({
-      wordWrap: "on",
-    });
-    codeCompilerEditorInstance?.updateOptions({
-      wordWrap: "on",
-    });
-    return;
-  });
 
   onMount(() => {
     // attach word-wrap event to window when we hold ALT+Z
@@ -96,6 +78,19 @@ function InputBox() {
       const text = inputBoxEditorInstance.getValue();
       setCode(text);
     });
+
+    createEffect(() => {
+      if (isWordWrap()) {
+        inputBoxEditorInstance?.updateOptions({
+          wordWrap: "off",
+        });
+        return;
+      }
+      inputBoxEditorInstance?.updateOptions({
+        wordWrap: "on",
+      });
+      return;
+    });
   });
 
   return <></>;
@@ -118,6 +113,18 @@ function CodeCompiler() {
       language: "javascript",
       readOnly: true,
       automaticLayout: true,
+    });
+    createEffect(() => {
+      if (isWordWrap()) {
+        codeCompilerEditorInstance?.updateOptions({
+          wordWrap: "off",
+        });
+        return;
+      }
+      codeCompilerEditorInstance?.updateOptions({
+        wordWrap: "on",
+      });
+      return;
     });
   });
   return <></>;
