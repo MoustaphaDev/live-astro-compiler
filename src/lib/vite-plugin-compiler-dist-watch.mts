@@ -103,7 +103,7 @@ export function vitePluginCompilerDistWatch({
         });
         console.log(kleur.green("Done!"));
         installCompilerPackage();
-      }, 1000);
+      }, 15000);
 
       const buildCompilerWasm = noopForDuration(() => {
         console.log(
@@ -117,7 +117,7 @@ export function vitePluginCompilerDistWatch({
         });
         console.log(kleur.green("Done!"));
         installCompilerPackage();
-      }, 1000);
+      }, 15000);
 
       const golangSourceWatcher = chokidar.watch(golangSourcePaths, {
         // ignore the compiler package path
