@@ -1,4 +1,11 @@
-import { ErrorBoundary, Show, createEffect, on, onMount } from "solid-js";
+import {
+  ErrorBoundary,
+  Show,
+  createEffect,
+  on,
+  onCleanup,
+  onMount,
+} from "solid-js";
 import Split from "split.js";
 import gutterPattern from "~/assets/vertical.png";
 
@@ -11,6 +18,8 @@ import {
   setPersistentValue,
   compilerOutput,
   isAstroCompilerInitialized,
+  setWordWrap,
+  isWordWrap,
 } from "~/lib/store";
 
 let codeCompilerRef: HTMLDivElement;
@@ -20,9 +29,39 @@ let inputBoxEditorInstance: monaco.editor.IStandaloneCodeEditor;
 let codeCompilerEditorInstance: monaco.editor.IStandaloneCodeEditor;
 
 export function Editor() {
+  function toggleWordWrap(e: KeyboardEvent) {
+    if (e.altKey && (e.key === "z" || e.key === "Z")) {
+      setWordWrap((wasWordWrapped) => !wasWordWrapped);
+    }
+  }
+  createEffect(() => {
+    if (isWordWrap()) {
+      inputBoxEditorInstance?.updateOptions({
+        wordWrap: "off",
+      });
+      codeCompilerEditorInstance?.updateOptions({
+        wordWrap: "off",
+      });
+      return;
+    }
+    inputBoxEditorInstance?.updateOptions({
+      wordWrap: "on",
+    });
+    codeCompilerEditorInstance?.updateOptions({
+      wordWrap: "on",
+    });
+    return;
+  });
+
   onMount(() => {
+    // attach word-wrap event to window when we hold ALT+Z
+    window.addEventListener("keydown", toggleWordWrap);
     doSplit();
   });
+  onCleanup(() => {
+    window.removeEventListener("keydown", toggleWordWrap);
+  });
+
   return (
     <div class="flex h-full w-full flex-row items-stretch overflow-hidden">
       <div ref={inpuBoxRef!}>

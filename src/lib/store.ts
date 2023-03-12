@@ -16,6 +16,11 @@ export const [mode, setMode] = usePersistantSignal<Modes>(
   "transform"
 );
 
+export const [isWordWrap, setWordWrap] = usePersistantSignal(
+  "inputbox-wordwrap",
+  false
+);
+
 export const [transformResult] = createResource(code, getTransformResult);
 export const [parseResult] = createResource(code, getParseResult);
 
@@ -90,12 +95,7 @@ export function getPersistantValue<T>(key: string, initialValue: T): T {
   return value;
 }
 
-export function setPersistentValue<T>(
-  key: string,
-  value: T,
-  onSet?: (key: string, value: T) => void
-): T {
+export function setPersistentValue<T>(key: string, value: T): T {
   window.localStorage.setItem(key, JSON.stringify(value));
-  onSet?.(key, value);
   return value;
 }
