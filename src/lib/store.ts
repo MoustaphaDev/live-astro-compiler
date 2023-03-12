@@ -13,12 +13,14 @@ export const [code, setCode] = usePersistantSignal("code-input-value", "");
 
 export const [mode, setMode] = usePersistantSignal<Modes>(
   "compiler-mode",
-  "transform"
+  "transform",
+  0
 );
 
 export const [isWordWrap, setWordWrap] = usePersistantSignal(
   "inputbox-wordwrap",
-  false
+  false,
+  0
 );
 
 export const [transformResult] = createResource(code, getTransformResult);
