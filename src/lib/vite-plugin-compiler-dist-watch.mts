@@ -129,13 +129,33 @@ export function vitePluginCompilerDistWatch({
         ignored: [npath.join(compilerPackagePath, "./compiler.wasm")],
       });
 
-      golangSourceWatcher.on("all", () => {
-        buildCompilerWasm();
-      });
+      golangSourceWatcher
+        .on("add", (path) => {
+          console.log("add", { path });
+          buildCompilerWasm();
+        })
+        .on("change", (path) => {
+          console.log("change", { path });
+          buildCompilerWasm();
+        })
+        .on("unlink", (path) => {
+          console.log("unlink", { path });
+          buildCompilerWasm();
+        });
 
-      compilerPackageSourceWatcher.on("all", () => {
-        buildCompilerPackage();
-      });
+      compilerPackageSourceWatcher
+        .on("add", (path) => {
+          console.log("add", { path });
+          buildCompilerPackage();
+        })
+        .on("change", (path) => {
+          console.log("change", { path });
+          buildCompilerPackage();
+        })
+        .on("unlink", (path) => {
+          console.log("unlink", { path });
+          buildCompilerPackage();
+        });
     },
   };
 }
