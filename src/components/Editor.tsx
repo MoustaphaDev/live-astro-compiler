@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import Split from "split.js";
 import gutterPattern from "~/assets/vertical.png";
+import dark from "theme-vitesse/themes/vitesse-dark.json";
 
 import * as monaco from "monaco-editor";
 
@@ -27,6 +28,10 @@ let inpuBoxRef: HTMLDivElement;
 
 let inputBoxEditorInstance: monaco.editor.IStandaloneCodeEditor;
 let codeCompilerEditorInstance: monaco.editor.IStandaloneCodeEditor;
+
+// TODO: add theme switcher
+monaco.editor.defineTheme("vitesse-dark", dark);
+monaco.editor.setTheme("vitesse-dark");
 
 export function Editor() {
   function toggleWordWrap(e: KeyboardEvent) {
