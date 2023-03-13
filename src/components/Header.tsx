@@ -115,7 +115,7 @@ function ModeSwitcher() {
 
 export function Header() {
   return (
-    <div class="flex h-20 items-center justify-between border-b-2 border-secondary bg-primary px-8">
+    <div class="flex h-20 items-center justify-between border-b-2 border-secondary px-8">
       <h1 class="flex items-center">
         <img src={AstroLogo} class="h-14" />
         <FaSolidGears />
