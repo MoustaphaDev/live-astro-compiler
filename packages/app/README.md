@@ -3,7 +3,7 @@
 </center>
 
 <center>
-<h2>Preview the TypeScript output of Astro components</h2>
+<h2>Preview the compiled output of Astro components</h2>
 </center>
 
 ## TODO
