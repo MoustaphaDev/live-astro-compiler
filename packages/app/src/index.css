@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TODO:
+  - Remove `@apply usage`
+  - Move keyframes to tailwind config
+ */
+@layer components {
+  pre {
+    @apply h-full overflow-scroll px-[2rem] pt-5 font-fira-code;
+  }
+  .select__icon {
+    @apply h-5 w-5 flex-[0_0_20px];
+  }
+  .select__description {
+    @apply mt-2 select-none text-xs text-zinc-700;
+  }
+  .select__error-message {
+    animation: fadeOut 300ms ease-in forwards;
+    @apply mt-2 select-none text-xs text-[hsl(0_72%_51%)];
+  }
+  .select__content {
+    @apply rounded-md border border-solid border-secondary bg-primary/95 shadow-md;
+  }
+  .select__content[data-expanded] {
+    @apply animate-fade-in;
+  }
+  .select__listbox {
+    @apply max-h-[360px] overflow-y-auto p-2;
+  }
+  .select__item {
+    @apply relative flex h-8 select-none items-center rounded py-0 pl-6 pr-8 text-xs leading-none text-zinc-200 outline-none lg:text-sm;
+  }
+  .select__item[data-disabled] {
+    @apply pointer-events-none text-zinc-400 opacity-50;
+  }
+  .select__item[data-highlighted] {
+    @apply bg-accent-2 text-primary outline-none;
+  }
+  .select__group-label {
+    @apply px-6 py-0 text-sm leading-8 text-zinc-500;
+  }
+  .select__separator {
+    @apply m-1.5 h-px border-t border-solid border-t-zinc-200;
+  }
+  .select__item-indicator {
+    @apply absolute left-0 inline-flex h-5 w-5 items-center justify-center;
+  }
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 15px;
+    transition: all 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-track {
+    transition: all 0.2s ease;
+    background: rgba(0, 0, 0, 0.1);
+  }
+  ::-webkit-scrollbar-track:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    transition: all 0.2s ease;
+
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+@keyframes overlayShow {
+  from {
+    @apply opacity-0;
+  }
+  to {
+    @apply opacity-100;
+  }
+}
+@keyframes overlayHide {
+  from {
+    @apply opacity-100;
+  }
+  to {
+    @apply opacity-0;
+  }
+}
+@keyframes contentShow {
+  from {
+    @apply -left-1/2 opacity-0;
+  }
+  to {
+    @apply left-0 opacity-100;
+  }
+}
+@keyframes contentHide {
+  from {
+    @apply left-0 opacity-100;
+  }
+  to {
+    @apply -left-1/2 opacity-0;
+  }
+}

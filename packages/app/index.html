@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="shortcut icon" type="image/ico" href="/src/assets/favicon.ico" />
+    <!-- HTML Meta Tags -->
+    <title>Live Astro Compiler</title>
+    <meta
+      name="description"
+      content="Preview the compiled output of Astro components live in the browser"
+    />
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="https://live-astro-compiler.vercel.app/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Live Astro Compiler" />
+    <meta
+      property="og:description"
+      content="Preview the compiled output of Astro components live in the browser"
+    />
+    <meta
+      property="og:image"
+      content="https://live-astro-compiler.vercel.app/live-astro-compiler-og-image.png"
+    />
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:domain" content="live-astro-compiler.vercel.app" />
+    <meta
+      property="twitter:url"
+      content="https://live-astro-compiler.vercel.app/"
+    />
+    <meta name="twitter:title" content="Live Astro Compiler" />
+    <meta
+      name="twitter:description"
+      content="Preview the compiled output of Astro components live in the browser"
+    />
+    <meta
+      name="twitter:image"
+      content="https://live-astro-compiler.vercel.app/live-astro-compiler-og-image.png"
+    />
+
+    <!-- Schema.org tags -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Live Astro Compiler",
+        "description": "Preview the compiled output of Astro components live in the browser",
+        "url": "https://live-astro-compiler.vercel.app/",
+        "image": "https://live-astro-compiler.vercel.app/live-astro-compiler-og-image.png",
+        "author": {
+          "@type": "Person",
+          "name": "Moustapha Dev"
+        },
+        "keywords": "compiler, playground, live playground"
+      }
+    </script>
+    <style>
+      html {
+        @apply bg-primary;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+
+    <script src="/src/index.tsx" type="module"></script>
+  </body>
+</html>
