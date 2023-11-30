@@ -3,14 +3,14 @@ import solidPlugin from "vite-plugin-solid";
 import devtools from "solid-devtools/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import monacoEditorPluginModule from "vite-plugin-monaco-editor";
-import { vitePluginCompilerDistWatch } from "./src/vite-plugins/compiler-dist-watch.js";
 import { vitePluginModuleGraph } from "./src/vite-plugins/module-graph-printer.js";
 
 const monacoEditorPlugin =
   // @ts-expect-error
   monacoEditorPluginModule.default as typeof monacoEditorPluginModule;
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode }) =>
+{
   const env = loadEnv(mode, process.cwd(), "");
   return {
     plugins: [
@@ -26,16 +26,11 @@ export default defineConfig(({ mode }) => {
           "typescript",
         ],
       }),
-      env.RELATIVE_PATH_TO_COMPILER_REPO && mode === "development"
-        ? vitePluginCompilerDistWatch({
-            relativePathToCompilerRepo: env.RELATIVE_PATH_TO_COMPILER_REPO,
-          })
-        : null,
       vitePluginReplaceToRemoveBug(),
       !env.CI
         ? vitePluginModuleGraph({
-            exclude: /node_modules/,
-          })
+          exclude: /node_modules/,
+        })
         : null,
     ],
     server: {
@@ -65,11 +60,13 @@ const SNIPPETS_CAUSING_ANNOYING_BUGS = [
   ["#! /usr/bin/env node", ""],
 ] as const;
 
-function vitePluginReplaceToRemoveBug(): Plugin {
+function vitePluginReplaceToRemoveBug(): Plugin
+{
   return {
     name: "vite-plugin-replace-to-remove-bug",
     enforce: "post",
-    transform(code) {
+    transform(code)
+    {
       for (const snippet of SNIPPETS_CAUSING_ANNOYING_BUGS) {
         if (code.includes(snippet[0])) {
           return code.replaceAll(snippet[0], snippet[1]);
