@@ -234,7 +234,7 @@ function DesktopModeSwitcher() {
         </SelectPrimitive.Value>
 
         <SelectPrimitive.Icon class="select__icon">
-          <HiOutlineChevronUpDown />
+            <HiOutlineChevronUpDown />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>

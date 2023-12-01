@@ -9,7 +9,8 @@
     "build": "vite build && pnpm postbuild",
     "postbuild": "node ./scripts/postbuild.cjs",
     "build:ci": "pnpm i @astrojs/compiler@latest && pnpm build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "format": "prettier --write . --ignore-path ../../.gitignore"
   },
   "license": "MIT",
   "devDependencies": {
