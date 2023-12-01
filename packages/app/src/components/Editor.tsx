@@ -146,7 +146,7 @@ function InputBox() {
   });
   createEffect(() => {
     editorsHash?.inputBox?.updateOptions({
-      wordWrap: !wordWrapped() ? "on" : "off",
+      wordWrap: wordWrapped() ? "on" : "off",
     });
   });
 
@@ -171,7 +171,7 @@ function CodeCompiler() {
     });
     createEffect(() => {
       editorsHash?.codeCompiler?.updateOptions({
-        wordWrap: !wordWrapped() ? "on" : "off",
+        wordWrap: wordWrapped() ? "on" : "off",
       });
     });
   });

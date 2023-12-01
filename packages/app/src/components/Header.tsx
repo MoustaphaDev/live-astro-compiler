@@ -1,15 +1,20 @@
 import AstroLogo from "~/assets/astro-logo.svg";
 import { TbTextWrap } from "solid-icons/tb";
-import { BsGearWideConnected } from "solid-icons/bs";
-import { For, createEffect, createSignal, on } from "solid-js";
-import { Button, Dialog } from "@kobalte/core";
-import { IoOpenOutline } from "solid-icons/io";
+import { BsCheckCircleFill, BsGearWideConnected } from "solid-icons/bs";
+import { IoSettingsOutline, IoOpenOutline } from "solid-icons/io";
+import { HiOutlineChevronUpDown } from "solid-icons/hi";
+import {
+  For,
+  createEffect,
+  createSignal,
+  on,
+  createSelector,
+  lazy,
+} from "solid-js";
+import { Button, Dialog, Select as SelectPrimitive } from "@kobalte/core";
 
 import { MODES, MODE_TO_TITLE } from "~/lib/consts";
-import { Select, SelectItem, ToggleButton } from "./ui-kit";
-import { lazy } from "solid-js";
-import { IoSettingsOutline } from "solid-icons/io";
-import { createSelector } from "solid-js";
+import { ToggleButton } from "./ui-kit";
 import {
   wordWrapped,
   setWordWrapped,
@@ -21,8 +26,9 @@ import {
   code,
   setMode,
   setShowMobilePreview,
+  getStatefulURL,
 } from "~/lib/stores";
-import { getStatefulURL } from "~/lib/stores";
+import type { Modes } from "~/lib/types";
 
 export function Header() {
   return (
@@ -68,7 +74,7 @@ function SettingsDialog() {
     createSignal(false);
   let SettingsSection = () => <></>;
   const noopAfterFirstCall = createNoopAfterFirstCall(() =>
-    setLoadedSettingsSection(true)
+    setLoadedSettingsSection(true),
   );
   createEffect(() => {
     if (!isLoadedSettingsSection()) return;
@@ -76,7 +82,7 @@ function SettingsDialog() {
     setLoadedSettingsSection(true);
   });
   return (
-    <Dialog.Root isModal>
+    <Dialog.Root modal>
       <Dialog.Trigger
         onClick={noopAfterFirstCall}
         class="inline-flex h-8 w-8 appearance-none items-center justify-center rounded-md border border-solid border-secondary bg-secondary text-base capitalize leading-none text-white outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary hover:ring-offset-0 focus:ring-2 focus:ring-accent-2  focus-visible:outline-offset-2 focus-visible:outline-accent-2 active:bg-accent-2 lg:h-10 lg:w-10 [&_*]:select-none "
@@ -94,8 +100,8 @@ function SettingsDialog() {
 function WordWrapToggle() {
   return (
     <ToggleButton
-      isPressed={wordWrapped()}
-      onPressedChange={setWordWrapped}
+      pressed={wordWrapped()!}
+      onChange={setWordWrapped}
       title="Toggle word wrap"
       aria-label="Toggle word wrap"
       class="hidden lg:inline"
@@ -149,7 +155,7 @@ function ShareButton() {
   createEffect(
     on([mode, code, wordWrapped], () => {
       setShowCopied(false);
-    })
+    }),
   );
 
   return (
@@ -194,29 +200,56 @@ function ShareButton() {
 
 function DesktopModeSwitcher() {
   return (
-    <Select
-      aria-label="Modes"
+    <SelectPrimitive.Root
+      onChange={(val) => val && setMode(val)}
+      aria-label="Switch mode"
       value={mode()}
-      // @ts-expect-error this setter is wrapper the the og signal setter
-      onValueChange={setMode}
       placeholder="Select a mode"
-      class="hidden lg:inline-flex"
+      selectionBehavior="replace"
+      // @ts-expect-error
+      options={MODES}
+      itemComponent={(props) => {
+        return (
+          <SelectPrimitive.Item
+            class="select__item cursor-pointer"
+            item={props.item}
+            onclick={() => setMode(mode)}
+          >
+            <SelectPrimitive.ItemLabel class="capitalize">
+              {props.item.rawValue}
+            </SelectPrimitive.ItemLabel>
+            <SelectPrimitive.ItemIndicator class="select__item-indicator">
+              <BsCheckCircleFill />
+            </SelectPrimitive.ItemIndicator>
+          </SelectPrimitive.Item>
+        );
+      }}
     >
-      <For each={MODES}>
-        {(mode) => (
-          <SelectItem value={mode} onClick={() => setMode(mode)}>
-            {MODE_TO_TITLE[mode]}
-          </SelectItem>
-        )}
-      </For>
-    </Select>
+      <SelectPrimitive.Trigger
+        class="inline-flex h-8 w-[100px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-sm capitalize leading-none text-zinc-200 outline-none ring-offset-2 ring-offset-primary transition-shadow duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus:ring-2 focus:ring-accent-2 data-[invalid]:border-[hsl(0_72%_51%)]  data-[invalid]:text-[hsl(0_72%_51%)] lg:h-10 lg:w-[200px] lg:text-sm hidden lg:inline-flex"
+        aria-label="Themes"
+      >
+        <SelectPrimitive.Value<Modes> class="overflow-hidden text-ellipsis whitespace-nowrap data-[placeholder-shown]:text-zinc-500">
+          {(state) => MODE_TO_TITLE[state.selectedOption()]}
+        </SelectPrimitive.Value>
+
+        <SelectPrimitive.Icon class="select__icon">
+          <HiOutlineChevronUpDown />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content class="select__content">
+          <SelectPrimitive.Listbox class="select__listbox" />
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
   );
 }
 
 function MobileModeSwitcher() {
   const isSelected = createSelector(mode);
   const reducedModeToTitle = Object.fromEntries(
-    Object.entries(MODE_TO_TITLE).map(([k, v]) => [k, v.split(" ")[0]])
+    Object.entries(MODE_TO_TITLE).map(([k, v]) => [k, v.split(" ")[0]]),
   );
   const [displayNone, setDisplayNone] = createSignal(false);
 

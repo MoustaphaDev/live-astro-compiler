@@ -34,7 +34,7 @@ export default function SettingsSection() {
           dialogHeader!.classList.remove("shadow-custom");
         }
       },
-      { rootMargin: "-50px", root: dialogDescriptionRef! }
+      { rootMargin: "-50px", root: dialogDescriptionRef! },
     );
     observer.observe(parseOptionsRef!);
   });
@@ -69,13 +69,11 @@ export default function SettingsSection() {
               <div>
                 <ToggleField label="position">
                   <ToggleButton
-                    isPressed={parsePosition()}
-                    onPressedChange={setParsePosition}
+                    pressed={parsePosition()}
+                    onChange={setParsePosition}
                     title="Toggle position"
                     aria-label="Toggle positoin"
-                  >
-                    <div></div>
-                  </ToggleButton>
+                  />
                 </ToggleField>
               </div>
             </div>
@@ -89,50 +87,46 @@ export default function SettingsSection() {
                 <TextField
                   placeholder="internalURL"
                   value={transformInternalURL()}
-                  onValueChange={setTransformInternalURL}
+                  onChange={setTransformInternalURL}
                 >
                   internalURL
                 </TextField>
                 <TextField
                   placeholder="filename"
                   value={filename()}
-                  onValueChange={setFilename}
+                  onChange={setFilename}
                 >
                   filename
                 </TextField>
                 <TextField
                   placeholder="normalizedFilename"
                   value={normalizedFilename()}
-                  onValueChange={setNormalizedFilename}
+                  onChange={setNormalizedFilename}
                 >
                   normalizedFilename
                 </TextField>
                 <TextField
                   placeholder="astroGlobalArgs"
                   value={transformAstroGlobalArgs()}
-                  onValueChange={setTransformAstroGlobalArgs}
+                  onChange={setTransformAstroGlobalArgs}
                 >
                   astroGlobalArgs
                 </TextField>
                 <ToggleField label="compact">
                   <ToggleButton
-                    isPressed={transformCompact()!}
-                    onPressedChange={setTranformCompact}
+                    pressed={transformCompact()!}
+                    onChange={setTranformCompact}
                     title="Toggle compact"
                     aria-label="Toggle compact"
-                  >
-                    <div></div>
-                  </ToggleButton>
+                  />
                 </ToggleField>
                 <ToggleField label="resultScopedSlot">
                   <ToggleButton
-                    isPressed={transformResultScopedSlot()}
-                    onPressedChange={setTransformResultScopedSlot}
+                    pressed={transformResultScopedSlot()}
+                    onChange={setTransformResultScopedSlot}
                     title="Toggle position"
                     aria-label="Toggle positoin"
-                  >
-                    <div></div>
-                  </ToggleButton>
+                  />
                 </ToggleField>
               </div>
             </div>
@@ -146,14 +140,14 @@ export default function SettingsSection() {
                 <TextField
                   placeholder="filename"
                   value={filename()}
-                  onValueChange={setFilename}
+                  onChange={setFilename}
                 >
                   convertToTSXFilename
                 </TextField>
                 <TextField
                   placeholder="normalizedFilename"
                   value={normalizedFilename()}
-                  onValueChange={setNormalizedFilename}
+                  onChange={setNormalizedFilename}
                 >
                   normalizedFilename
                 </TextField>
