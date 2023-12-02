@@ -1,11 +1,11 @@
 
 import { getPersistedValue, setPersistentValue } from "../stores/utils";
+import type { CompatibilityMap } from "./in-browser-tests";
 import { getNextDays } from "./utils";
 
-export type CompatibilityStatus = "compatible" | "incompatible" | "partially-compatible"
 export type StoredCompilerDetails = {
     version: string;
-    compatibility: CompatibilityStatus;
+    compatibilityMap: CompatibilityMap
 }
 type LatestCompilerDetailsStored = StoredCompilerDetails & {
     expires: string

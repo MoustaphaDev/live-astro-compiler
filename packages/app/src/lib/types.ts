@@ -1,4 +1,5 @@
-import {
+import
+{
   ConvertToTSXOptions,
   ParseOptions,
   TransformOptions,
@@ -11,6 +12,7 @@ export type Options = {
   action: Modes;
 };
 export type StoredSearchParams = {
+  currentCompilerVersion?: string;
   code?: string;
   wordWrapped?: boolean;
   mode?: Modes;
@@ -18,8 +20,8 @@ export type StoredSearchParams = {
   transformInternalURL?: TransformOptions["internalURL"];
   filename?: TransformOptions["filename"] | ConvertToTSXOptions["filename"];
   normalizedFilename?:
-    | TransformOptions["normalizedFilename"]
-    | ConvertToTSXOptions["normalizedFilename"];
+  | TransformOptions["normalizedFilename"]
+  | ConvertToTSXOptions["normalizedFilename"];
   transformSourcemap?: TransformOptions["sourcemap"];
   transformAstroGlobalArgs?: TransformOptions["astroGlobalArgs"];
   transformCompact?: TransformOptions["compact"];

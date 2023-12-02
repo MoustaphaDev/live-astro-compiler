@@ -1,26 +1,34 @@
 // @ts-ignore
-import
-  {
-    convertToTSX,
-    initialize,
-    parse,
-    transform,
-  } from "@astrojs/compiler";
-import astroWasm from "@astrojs/compiler/astro.wasm?url";
-
 import type { TransformResult } from "@astrojs/compiler/types";
 import type {
   ConsumedConvertToTSXOptions,
   ConsumedParseOptions,
   ConsumedTransformOptions,
 } from "./types";
+import { initializeCompilerModuleAndWASM, remoteCompilerModule } from "./compiler";
+import { compilerModuleAndWasmCache } from "./compiler/cache";
+import { remoteCompilerVersion } from "./compiler/module";
+
+// after the compiler module and wasm are loaded
+// we can assume that the compiler module and
+// wasm are defined
+await initializeCompilerModuleAndWASM();
+
+const
+  {
+    convertToTSX,
+    initialize,
+    parse,
+    transform,
+  } = remoteCompilerModule!
 
 let isCompilerInitialized = false;
 
 async function initializeCompiler()
 {
   if (!isCompilerInitialized) {
-    await initialize({ wasmURL: astroWasm });
+    const { wasmURL } = compilerModuleAndWasmCache.get(remoteCompilerVersion)!
+    await initialize({ wasmURL });
     const { setIsAstroCompilerInitialized } = await import("./stores");
     setIsAstroCompilerInitialized(true);
     isCompilerInitialized = true;

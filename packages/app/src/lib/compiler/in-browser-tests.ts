@@ -1,5 +1,4 @@
 import type { CompilerModule, CompilerModuleAndWasm } from "./cache";
-import type { CompatibilityStatus } from "./storage";
 
 // the tests don't need to be sophisted,
 // just need to make sure the loaded compiler version is working
@@ -38,10 +37,13 @@ const testSuite = {
     }
 }
 
-type TestResults = {
-    [k in keyof typeof testSuite extends `${infer functionality}Test` ? functionality : never]: CompatibilityStatus
-
+type TestedFunctionalitiesName = keyof typeof testSuite extends `${infer functionality}Test` ? functionality : never
+export type CompatibilityStatus = "compatible" | "incompatible" | "partially-compatible"
+export type CompatibilityMap = {
+    [k in TestedFunctionalitiesName]: CompatibilityStatus
 }
+
+type TestResults = CompatibilityMap
 
 export async function runCompilerCompatibilityTestsWithPlayground({ module: compilerModule, wasmURL }: CompilerModuleAndWasm): Promise<TestResults>
 {
@@ -56,5 +58,6 @@ export async function runCompilerCompatibilityTestsWithPlayground({ module: comp
         }
         testResults[functionalityName] = "incompatible"
     }
+    compilerModule.teardown()
     return testResults
 }

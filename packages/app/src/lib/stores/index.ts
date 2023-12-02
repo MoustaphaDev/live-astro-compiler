@@ -26,6 +26,9 @@ import
   getTSXResult,
   getTransformResult,
 } from "~/lib/utils";
+import { remoteCompilerModule, remoteCompilerVersion } from "../compiler/module";
+
+const DEFAULT_COMPILER_VERSION = "2.3.2"
 
 // Here's the state initialization flow:
 // 1. Get the initial value from the URL search params
@@ -45,6 +48,14 @@ export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
   initialValueSetter: (persisted) =>
   {
     return urlSearchParams.code ?? persisted ?? INITIAL_CODE;
+  },
+});
+
+export const [currentCompilerVersion, setCurrentCompilerVersion] = usePersistantSignal<StoredSearchParams["currentCompilerVersion"]>({
+  key: "current-compiler-version",
+  initialValueSetter: (persisted) =>
+  {
+    return urlSearchParams.currentCompilerVersion ?? persisted ?? remoteCompilerVersion;
   },
 });
 
