@@ -9,8 +9,7 @@
     "build": "vite build && pnpm postbuild",
     "postbuild": "node ./scripts/postbuild.cjs",
     "build:ci": "pnpm i @astrojs/compiler@latest && pnpm build",
-    "serve": "vite preview",
-    "format": "prettier --write . --ignore-path ../../.gitignore"
+    "serve": "vite preview"
   },
   "license": "MIT",
   "devDependencies": {
@@ -23,10 +22,10 @@
     "vite": "^4.0.0",
     "vite-plugin-monaco-editor": "^1.1.0",
     "vite-plugin-solid": "^2.7.2",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "@astrojs/compiler": "^2.3.2"
   },
   "dependencies": {
-    "@astrojs/compiler": "^2.3.2",
     "@fontsource/fira-code": "^5.0.15",
     "@fontsource/montserrat": "^5.0.15",
     "@kobalte/core": "^0.11.2",

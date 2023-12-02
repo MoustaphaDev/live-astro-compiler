@@ -1,11 +1,11 @@
 // @ts-ignore
-import {
-  convertToTSX,
-  // @ts-expect-error - types are pulled from the node version of the compiler which doesn't have the `initialize` function
-  initialize,
-  parse,
-  transform,
-} from "@astrojs/compiler";
+import
+  {
+    convertToTSX,
+    initialize,
+    parse,
+    transform,
+  } from "@astrojs/compiler";
 import astroWasm from "@astrojs/compiler/astro.wasm?url";
 
 import type { TransformResult } from "@astrojs/compiler/types";
@@ -17,7 +17,8 @@ import type {
 
 let isCompilerInitialized = false;
 
-async function initializeCompiler() {
+async function initializeCompiler()
+{
   if (!isCompilerInitialized) {
     await initialize({ wasmURL: astroWasm });
     const { setIsAstroCompilerInitialized } = await import("./stores");
@@ -28,7 +29,8 @@ async function initializeCompiler() {
 
 async function transformCode(
   options: ConsumedTransformOptions
-): Promise<TransformResult> {
+): Promise<TransformResult>
+{
   await initializeCompiler();
   const transformResult = await transform(
     options.code ?? "",
@@ -37,7 +39,8 @@ async function transformCode(
   return transformResult;
 }
 
-async function parseCode(options: ConsumedParseOptions): Promise<string> {
+async function parseCode(options: ConsumedParseOptions): Promise<string>
+{
   await initializeCompiler();
   const parseResult = await parse(options.code ?? "", options.parseOptions);
   return JSON.stringify(parseResult, null, 2);
@@ -45,7 +48,8 @@ async function parseCode(options: ConsumedParseOptions): Promise<string> {
 
 async function convertToTSXCode(
   options: ConsumedConvertToTSXOptions
-): Promise<string> {
+): Promise<string>
+{
   await initializeCompiler();
   const convertToTSXResult = await convertToTSX(
     options.code ?? "",
@@ -56,7 +60,8 @@ async function convertToTSXCode(
 
 export const getTransformResult = async (
   transformOptions: ConsumedTransformOptions
-) => {
+) =>
+{
   try {
     return await transformCode(transformOptions);
   } catch (e) {
@@ -70,7 +75,8 @@ export const getTransformResult = async (
 
 export const getTSXResult = async (
   convertToTSXOptions: ConsumedConvertToTSXOptions
-) => {
+) =>
+{
   try {
     return await convertToTSXCode(convertToTSXOptions);
   } catch (e) {
@@ -80,7 +86,8 @@ export const getTSXResult = async (
   }
 };
 
-export const getParseResult = async (parseOptions: ConsumedParseOptions) => {
+export const getParseResult = async (parseOptions: ConsumedParseOptions) =>
+{
   try {
     return await parseCode(parseOptions);
   } catch (e) {
@@ -90,12 +97,14 @@ export const getParseResult = async (parseOptions: ConsumedParseOptions) => {
   }
 };
 
-function utf16ToUTF8(x: string) {
+function utf16ToUTF8(x: string)
+{
   return unescape(encodeURIComponent(x));
 }
 
 // adapted from https://github.com/evanw/source-map-visualization/blob/gh-pages/code.js#L1621
-export async function createHashFromCompiledCode(code: string | undefined) {
+export async function createHashFromCompiledCode(code: string | undefined)
+{
   // Check for both "//" and "/*" comments
   if (!code) {
     console.warn(`No code was pasted`);
@@ -128,9 +137,8 @@ export async function createHashFromCompiledCode(code: string | undefined) {
     map = await fetch(new URL(match[2])).then((r) => r.text());
   } catch (e) {
     console.warn(
-      `Failed to parse the URL in the "/${
-        match[1]
-        // @ts-expect-error
+      `Failed to parse the URL in the "/${match[1]
+      // @ts-expect-error
       }# sourceMappingURL=" comment: ${(e && e.message) || e}`
     );
     return;
