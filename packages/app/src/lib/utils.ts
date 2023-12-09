@@ -1,109 +1,7 @@
-// @ts-ignore
-import type { TransformResult } from "@astrojs/compiler/types";
-import type {
-  ConsumedConvertToTSXOptions,
-  ConsumedParseOptions,
-  ConsumedTransformOptions,
-} from "./types";
-import { initializeCompilerModuleAndWASM, remoteCompilerModule } from "./compiler";
-import { compilerModuleAndWasmCache } from "./compiler/cache";
-import { remoteCompilerVersion } from "./compiler/module";
 
 // after the compiler module and wasm are loaded
 // we can assume that the compiler module and
 // wasm are defined
-await initializeCompilerModuleAndWASM();
-
-const
-  {
-    convertToTSX,
-    initialize,
-    parse,
-    transform,
-  } = remoteCompilerModule!
-
-let isCompilerInitialized = false;
-
-async function initializeCompiler()
-{
-  if (!isCompilerInitialized) {
-    const { wasmURL } = compilerModuleAndWasmCache.get(remoteCompilerVersion)!
-    await initialize({ wasmURL });
-    const { setIsAstroCompilerInitialized } = await import("./stores");
-    setIsAstroCompilerInitialized(true);
-    isCompilerInitialized = true;
-  }
-}
-
-async function transformCode(
-  options: ConsumedTransformOptions
-): Promise<TransformResult>
-{
-  await initializeCompiler();
-  const transformResult = await transform(
-    options.code ?? "",
-    options.transformOptions
-  );
-  return transformResult;
-}
-
-async function parseCode(options: ConsumedParseOptions): Promise<string>
-{
-  await initializeCompiler();
-  const parseResult = await parse(options.code ?? "", options.parseOptions);
-  return JSON.stringify(parseResult, null, 2);
-}
-
-async function convertToTSXCode(
-  options: ConsumedConvertToTSXOptions
-): Promise<string>
-{
-  await initializeCompiler();
-  const convertToTSXResult = await convertToTSX(
-    options.code ?? "",
-    options.convertToTSXOptions
-  );
-  return convertToTSXResult.code;
-}
-
-export const getTransformResult = async (
-  transformOptions: ConsumedTransformOptions
-) =>
-{
-  try {
-    return await transformCode(transformOptions);
-  } catch (e) {
-    // TODO better err handling
-    // idea introduce a signal holding the errors and
-    // nicely display them in the UI
-    // throw e;
-    console.error(e);
-  }
-};
-
-export const getTSXResult = async (
-  convertToTSXOptions: ConsumedConvertToTSXOptions
-) =>
-{
-  try {
-    return await convertToTSXCode(convertToTSXOptions);
-  } catch (e) {
-    // TODO better err handling
-    // throw e;
-    console.error(e);
-  }
-};
-
-export const getParseResult = async (parseOptions: ConsumedParseOptions) =>
-{
-  try {
-    return await parseCode(parseOptions);
-  } catch (e) {
-    // TODO better err handling
-    // throw e;
-    console.error(e);
-  }
-};
 
 function utf16ToUTF8(x: string)
 {
@@ -111,7 +9,7 @@ function utf16ToUTF8(x: string)
 }
 
 // adapted from https://github.com/evanw/source-map-visualization/blob/gh-pages/code.js#L1621
-export async function createHashFromCompiledCode(code: string | undefined)
+async function createSourcemapHash(code: string | undefined)
 {
   // Check for both "//" and "/*" comments
   if (!code) {
@@ -159,4 +57,17 @@ export async function createHashFromCompiledCode(code: string | undefined)
   let mapLength = `${map.length}\0`;
   const hash = btoa(`${codeLength}${code}${mapLength}${map}`);
   return hash;
+}
+
+export async function createSourcemapURL(source: string | undefined)
+{
+  if (source === undefined) return;
+
+  const hash = await createSourcemapHash(source);
+  const hasError = !hash;
+  const url = `https://evanw.github.io/source-map-visualization/#${hash}`;
+  if (!hasError) {
+    return url;
+  }
+  console.error("Failed to create hash from compiled code");
 }

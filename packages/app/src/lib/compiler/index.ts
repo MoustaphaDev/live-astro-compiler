@@ -1,10 +1,10 @@
-import { getDefaultCompilerVersionToLoad, switchCompiler } from "./module";
-export { switchCompiler, remoteCompilerModule } from "./module";
+import { getDefaultCompilerVersionToLoad, setCompiler } from "./module";
+export { setCompiler, remoteCompilerModule } from "./module";
 
-export async function initializeCompilerModuleAndWASM()
-{
-    const defaultCompilerVersionToLoad = await getDefaultCompilerVersionToLoad()
+export async function initializeCompilerWithDefaultVersion() {
+  const { compilerVersionToLoad: defaultCompilerVersionToLoad } =
+    await getDefaultCompilerVersionToLoad();
 
-    // initialize the compiler module with the default compiler version
-    await switchCompiler(defaultCompilerVersionToLoad)
+  // initialize the compiler module with the default compiler version
+  await setCompiler(defaultCompilerVersionToLoad);
 }

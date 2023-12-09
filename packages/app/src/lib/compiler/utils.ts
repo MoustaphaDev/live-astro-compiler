@@ -15,20 +15,20 @@ export function getCompatibilityStatus(storedCompilerDetails: StoredCompilerDeta
     return "unmarked"
 }
 
-type GetCompilerVerionsByTypeOptions = {
-    allCompilerVersions: string[]
-    type: "preview" | "production"
-}
-export function getCompilerVersionsByType({ allCompilerVersions, type }: GetCompilerVerionsByTypeOptions)
+
+export function getCompilerVersionsByType(allCompilerVersions: string[])
 {
     const PREVIEW_VERSION_PREFIX = "0.0.0-";
-    if (type === "preview") {
-        return allCompilerVersions.filter((version) => version.startsWith(PREVIEW_VERSION_PREFIX))
+    const previewVersions = [];
+    const productionVersions = []
+    for (const version of allCompilerVersions) {
+        if (version.startsWith(PREVIEW_VERSION_PREFIX)) {
+            previewVersions.push(version)
+        } else {
+            productionVersions.push(version)
+        }
     }
-    if (type === "production") {
-        return allCompilerVersions.filter((version) => !version.startsWith(PREVIEW_VERSION_PREFIX))
-    }
-    throw new Error(`Invalid compiler type: ${type}`)
+    return { previewVersions, productionVersions }
 }
 
 

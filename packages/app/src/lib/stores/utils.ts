@@ -13,9 +13,8 @@ type PersistantSignalOptions<T> = {
 };
 
 function isVFunction<T>(
-  value: T | SignalSetterFunction<T>
-): value is SignalSetterFunction<T>
-{
+  value: T | SignalSetterFunction<T>,
+): value is SignalSetterFunction<T> {
   return typeof value === "function";
 }
 
@@ -26,8 +25,7 @@ export function usePersistantSignal<T>({
   saveDelay = 1500,
   key,
   initialValueSetter,
-}: PersistantSignalOptions<T>): PersistantSignal<T>
-{
+}: PersistantSignalOptions<T>): PersistantSignal<T> {
   const persistedValue = getPersistedValue(key);
   const valueOnLoad = initialValueSetter(persistedValue);
 
@@ -37,17 +35,14 @@ export function usePersistantSignal<T>({
 
   const [getter, _setter] = createSignal(valueOnLoad);
 
-  const onAfterSet = debounce((key: string, value: T) =>
-  {
+  const onAfterSet = debounce((key: string, value: T) => {
     setPersistentValue(key, value);
   }, saveDelay);
 
   // Return a wrapped version of createSignal's setter function that ...
   // ... persists the new value to localStorage.
-  const setter = ((v) =>
-  {
-    const updatedValue = _setter((prev) =>
-    {
+  const setter = ((v) => {
+    const updatedValue = _setter((prev) => {
       if (isVFunction(v)) {
         return v(prev);
       }
@@ -63,8 +58,7 @@ export function usePersistantSignal<T>({
 /*
  * Only primitive types, objects and arrays are supported
  */
-export function getPersistedValue<U = any>(key: string)
-{
+export function getPersistedValue<U = any>(key: string) {
   if (typeof window === "undefined") {
     return null;
   }
@@ -72,7 +66,9 @@ export function getPersistedValue<U = any>(key: string)
     // Get from local storage by key
     const item = window.localStorage.getItem(key);
     // Parse stored json or if none return the initial value
-    return item ? JSON.parse(item) as U : null;
+    return item && typeof item !== "undefined" && item !== "undefined"
+      ? ((console.log({ item }), JSON.parse(item)) as U)
+      : null;
   } catch (error) {
     // If error also return the initial valvue
     console.warn(error);
@@ -80,8 +76,25 @@ export function getPersistedValue<U = any>(key: string)
   }
 }
 
-export function setPersistentValue<T>(key: string, value: T): T
-{
+export function setPersistentValue<T>(key: string, value: T): T {
   window.localStorage.setItem(key, JSON.stringify(value));
   return value;
+}
+
+type DebouncedFunction<T> = (...args: any) => Promise<T>;
+export function asyncDebounce<T>(
+  fn: DebouncedFunction<T>,
+  ms = 500,
+): DebouncedFunction<T> {
+  let timeoutId: NodeJS.Timeout;
+  return async (...args: any) => {
+    return new Promise((resolve) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(async () => {
+        resolve(await fn(...args));
+      }, ms);
+    });
+  };
 }

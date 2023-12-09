@@ -3,32 +3,9 @@ import * as fflate from "fflate";
 import { usePersistantSignal } from "./utils";
 import { createStore } from "solid-js/store";
 import { INITIAL_CODE, breakpoints } from "../consts";
-import
-{
-  batch,
-  createEffect,
-  createRenderEffect,
-  createResource,
-  createSignal,
-  on,
-} from "solid-js";
-import type {
-  ConsumedConvertToTSXOptions,
-  ConsumedParseOptions,
-  ConsumedTransformOptions,
-  EditorsHash,
-  StoredSearchParams,
-} from "~/lib/types";
-import
-{
-  createHashFromCompiledCode,
-  getParseResult,
-  getTSXResult,
-  getTransformResult,
-} from "~/lib/utils";
-import { remoteCompilerModule, remoteCompilerVersion } from "../compiler/module";
-
-const DEFAULT_COMPILER_VERSION = "2.3.2"
+import { createRenderEffect, createSignal } from "solid-js";
+import type { StoredSearchParams } from "~/lib/types";
+import { remoteCompilerVersion } from "../compiler/module";
 
 // Here's the state initialization flow:
 // 1. Get the initial value from the URL search params
@@ -45,19 +22,22 @@ const urlSearchParams = getSearchParams();
 // TODOL refactor `usePersistantSignal` to not need to be passed a generic type
 export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
   key: "code-input-value",
-  initialValueSetter: (persisted) =>
-  {
+  initialValueSetter: (persisted) => {
     return urlSearchParams.code ?? persisted ?? INITIAL_CODE;
   },
 });
 
-export const [currentCompilerVersion, setCurrentCompilerVersion] = usePersistantSignal<StoredSearchParams["currentCompilerVersion"]>({
-  key: "current-compiler-version",
-  initialValueSetter: (persisted) =>
-  {
-    return urlSearchParams.currentCompilerVersion ?? persisted ?? remoteCompilerVersion;
-  },
-});
+export const [currentCompilerVersion, setCurrentCompilerVersion] =
+  usePersistantSignal<StoredSearchParams["currentCompilerVersion"]>({
+    key: "current-compiler-version",
+    initialValueSetter: (persisted) => {
+      return (
+        urlSearchParams.currentCompilerVersion ??
+        persisted ??
+        remoteCompilerVersion
+      );
+    },
+  });
 
 export const [mode, setMode] = usePersistantSignal<StoredSearchParams["mode"]>({
   key: "compiler-mode",
@@ -73,8 +53,10 @@ export const [wordWrapped, setWordWrapped] = usePersistantSignal<
     urlSearchParams.wordWrapped ?? persisted ?? false,
 });
 
-export const [isAstroCompilerInitialized, setIsAstroCompilerInitialized] =
-  createSignal(false);
+export const [
+  hasCompilerVersionChangeBeenHandled,
+  setHasCompilerVersionChangeBeenHandled,
+] = createSignal(false);
 
 export const [sourceMapVisualizerUrl, setSourceMapVisualizerUrl] = createSignal<
   null | string
@@ -154,99 +136,13 @@ export const [normalizedFilename, setNormalizedFilename] = usePersistantSignal<
     persisted ?? urlSearchParams?.normalizedFilename,
 });
 
-// ################################ DERIVED SIGNALS HERE ################################
-
-const consumedTransformOptions = () =>
-{
-  return {
-    code: code(),
-    transformOptions: {
-      internalURL: transformInternalURL(),
-      filename: filename(),
-      normalizedFilename: normalizedFilename(),
-      sourcemap: transformSourcemap(),
-      astroGlobalArgs: transformAstroGlobalArgs(),
-      compact: transformCompact(),
-      resultScopedSlot: transformResultScopedSlot(),
-    },
-  } satisfies ConsumedTransformOptions;
-};
-
-const consumedParseOptions = () =>
-{
-  return {
-    code: code(),
-    parseOptions: {
-      position: parsePosition(),
-    },
-  } satisfies ConsumedParseOptions;
-};
-
-const consumedTSXOptions = () =>
-{
-  return {
-    code: code(),
-    convertToTSXOptions: {
-      filename: filename(),
-      normalizedFilename: normalizedFilename(),
-    },
-  } satisfies ConsumedConvertToTSXOptions;
-};
-
-const [transformResult] = createResource(
-  consumedTransformOptions,
-  getTransformResult
-);
-const [parseResult] = createResource(consumedParseOptions, getParseResult);
-export const [tsxResult] = createResource(consumedTSXOptions, getTSXResult);
-
-export const compilerOutput = () =>
-{
-  switch (mode()) {
-    case "parse":
-      return parseResult();
-    case "transform":
-      return transformResult();
-    case "TSX":
-      return tsxResult();
-    default:
-      throw new Error("Invalid option");
-  }
-};
-
-
-// ################################ HOOKS AND UTILITY FUNCTIONS HERE ################################
-
-export function useCompilerOutput(editorInstances: EditorsHash)
-{
-  const isString = (value: unknown): value is string =>
-    typeof value === "string";
-  function getResult()
-  {
-    const _output = compilerOutput();
-    const output = isString(_output) ? _output : _output?.code;
-    return output;
-  }
-
-  createEffect(
-    on(compilerOutput, () =>
-    {
-      editorInstances?.codeCompiler?.setValue(getResult() ?? "");
-    })
-  );
-  return {
-    unwrappedCompilerOutput: getResult,
-  };
-}
-
-function useSearchParams()
-{
+// ################################ HOOKS AND EFFECTS HERE ################################
+function useSearchParams() {
   const decoded = _getDecodedURLState();
   const [urlSearchParamsRecord, setUrlSearchParamsRecord] =
     createStore<StoredSearchParams>(decoded);
 
-  function getStatefulURL()
-  {
+  function getStatefulURL() {
     const encoded = _getEncodedURLState();
     const urlParams = encoded
       ? `?${new URLSearchParams(`?editor-state=${encoded}`).toString()}`
@@ -255,14 +151,11 @@ function useSearchParams()
     return statefulUrl;
   }
 
-  function _getSearchParams(): StoredSearchParams
-  {
+  function _getSearchParams(): StoredSearchParams {
     return { ...urlSearchParamsRecord };
   }
 
-
-  function _getEncodedURLState(): string | null
-  {
+  function _getEncodedURLState(): string | null {
     if (Object.keys(urlSearchParamsRecord).length === 0) {
       return null;
     }
@@ -277,8 +170,7 @@ function useSearchParams()
     }
   }
 
-  function _getDecodedURLState(): StoredSearchParams
-  {
+  function _getDecodedURLState(): StoredSearchParams {
     const urlParams = new URLSearchParams(window.location.search);
     const state = urlParams.get("editor-state");
 
@@ -304,42 +196,20 @@ function useSearchParams()
   };
 }
 
-// ################################ EFFECTS HERE ################################ 
-createEffect(
-  on([tsxResult, mode], async () =>
-  {
-    if (mode() !== "TSX") {
-      batch(() =>
-      {
-        setSourceMapVisualizerUrl(null);
-        setShowSourceMapVisualizer(false);
-      });
-      return;
-    }
-    const hash = await createHashFromCompiledCode(tsxResult());
-    const hasError = !hash;
-    const url = `https://evanw.github.io/source-map-visualization/#${hash}`;
-    if (!hasError) {
-      batch(() =>
-      {
-        setSourceMapVisualizerUrl(url);
-        setShowSourceMapVisualizer(true);
-      });
-      return;
-    }
-    console.error("Failed to create hash from compiled code");
-    batch(() =>
-    {
-      setSourceMapVisualizerUrl(null);
-      setShowSourceMapVisualizer(false);
-    });
-  })
-);
+// mark the compiler version change as unhandled when the compiler version changes
+// when handled, we then should mark it as handled (true)
+// createEffect(() =>
+// {
+//   if (currentCompilerVersion() !== remoteCompilerVersion) {
+//     setHasCompilerChangeBeenHandled(false);
+//   }
+// }
+// );
 
-createRenderEffect(() =>
-{
+createRenderEffect(() => {
   // initialize the search params state
   setUrlSearchParamsRecord({
+    currentCompilerVersion: currentCompilerVersion(),
     code: code(),
     wordWrapped: wordWrapped(),
     mode: mode(),

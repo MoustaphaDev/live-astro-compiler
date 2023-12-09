@@ -21,7 +21,7 @@
     @apply mt-2 select-none text-xs text-[hsl(0_72%_51%)];
   }
   .select__content {
-    @apply rounded-md border border-solid border-secondary bg-primary/95 shadow-md;
+    @apply rounded-md border border-solid border-secondary bg-primary/95 shadow-md hidden lg:block;
   }
   .select__content[data-expanded] {
     @apply animate-fade-in;

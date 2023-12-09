@@ -10,25 +10,29 @@ import {
   on,
   createSelector,
   lazy,
+  Show,
+  useContext,
 } from "solid-js";
 import { Button, Dialog, Select as SelectPrimitive } from "@kobalte/core";
 
 import { MODES, MODE_TO_TITLE } from "~/lib/consts";
-import { ToggleButton } from "./ui-kit";
+import { SegmentedButton, ToggleButton } from "./ui-kit";
 import {
   wordWrapped,
   setWordWrapped,
   showMobilePreview,
   breakpointMatches,
-  showSourceMapVisualizer,
-  sourceMapVisualizerUrl,
   mode,
   code,
   setMode,
   setShowMobilePreview,
   getStatefulURL,
+  currentCompilerVersion,
 } from "~/lib/stores";
 import type { Modes } from "~/lib/types";
+import type { SettingsSectionProps } from "./Settings";
+import { createSourcemapURL } from "~/lib/utils";
+import { getCompilerOutput } from "~/lib/stores/compiler";
 
 export function Header() {
   return (
@@ -37,7 +41,7 @@ export function Header() {
         <h1 class="flex items-center">
           <img src={AstroLogo} class="z-10 h-8 sm:h-10 lg:h-14" />
           <span class="xs:text-xl relative ml-3 h-full font-montserrat text-lg font-semibold text-white lg:text-3xl lg:font-medium">
-            Live Compiler
+            Live Compiler v{currentCompilerVersion()}
             <span class="absolute -top-20 left-24 hidden text-zinc-400/30 lg:block">
               <BsGearWideConnected class="inline h-48 w-48 animate-spin-2 motion-reduce:animate-none" />
             </span>
@@ -72,17 +76,20 @@ const loadSettingsSection = () => lazy(() => import("./Settings"));
 function SettingsDialog() {
   const [isLoadedSettingsSection, setLoadedSettingsSection] =
     createSignal(false);
-  let SettingsSection = () => <></>;
   const noopAfterFirstCall = createNoopAfterFirstCall(() =>
     setLoadedSettingsSection(true),
   );
+  const [isOpen, setIsOpen] = createSignal(false);
+  const closeModal = () => setIsOpen(false);
+
+  let SettingsSection = (props: SettingsSectionProps) => <></>;
   createEffect(() => {
     if (!isLoadedSettingsSection()) return;
     SettingsSection = loadSettingsSection();
     setLoadedSettingsSection(true);
   });
   return (
-    <Dialog.Root modal>
+    <Dialog.Root modal open={isOpen()} onOpenChange={setIsOpen}>
       <Dialog.Trigger
         onClick={noopAfterFirstCall}
         class="inline-flex h-8 w-8 appearance-none items-center justify-center rounded-md border border-solid border-secondary bg-secondary text-base capitalize leading-none text-white outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary hover:ring-offset-0 focus:ring-2 focus:ring-accent-2  focus-visible:outline-offset-2 focus-visible:outline-accent-2 active:bg-accent-2 lg:h-10 lg:w-10 [&_*]:select-none "
@@ -91,7 +98,7 @@ function SettingsDialog() {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay class="fixed inset-0 z-50 animate-[overlayHide_250ms_ease_100ms_forwards] bg-[rgba(0,0,0,0.57)] data-[expanded]:animate-[overlayShow_250ms_ease]" />
-        <SettingsSection />
+        <SettingsSection closeModal={closeModal} />
       </Dialog.Portal>
     </Dialog.Root>
   );
@@ -112,28 +119,40 @@ function WordWrapToggle() {
 }
 
 function SectionToSourceMapVisualizer() {
+  // opens the source evanw source map visualizer
+  async function openSourcemapVisualization() {
+    const sourceMapUrl = await createSourcemapURL(
+      getCompilerOutput().tsxResult?.(),
+    );
+
+    if (!sourceMapUrl) {
+      alert("No source map available");
+      return;
+    }
+
+    window.open(sourceMapUrl, "_blank");
+  }
+
+  const showSourceMapVisualizer = () => {
+    return (showMobilePreview() || breakpointMatches.lg) && mode() === "TSX";
+  };
+
   return (
-    <div class="fixed bottom-10 right-0 z-50 flex w-full items-center justify-center lg:justify-end lg:pr-10">
-      <div
-        class={`flex items-center rounded bg-zinc-900 transition-all duration-100 hover:bg-zinc-800 hover:text-zinc-200 focus:bg-zinc-800 focus:text-zinc-200 ${
-          (showMobilePreview() || breakpointMatches.lg) &&
-          showSourceMapVisualizer()
-            ? ""
-            : "opacity-0"
-        }`}
-      >
-        <a
-          href={sourceMapVisualizerUrl()!}
-          class="group rounded px-6 py-3 text-zinc-500 outline-none transition-colors duration-100 hover:text-zinc-200 focus:text-zinc-200 focus:ring focus:ring-accent-2"
-          target="_blank"
-        >
-          <span class="mr-4 w-0 overflow-hidden">Visualize Source map</span>
-          <span class="inline-block -translate-y-[2px] text-zinc-700 duration-100 group-hover:text-zinc-400 group-focus:text-zinc-400">
-            <IoOpenOutline class="inline h-6 w-6" />
+    <Show when={showSourceMapVisualizer()}>
+      <div class="fixed bottom-10 right-0 z-50 flex w-full items-center justify-center lg:justify-end lg:pr-10">
+        <div class="flex items-center rounded bg-zinc-900 transition-all duration-100 hover:bg-zinc-800 hover:text-zinc-200 focus:bg-zinc-800 focus:text-zinc-200">
+          <span
+            onClick={openSourcemapVisualization}
+            class="group rounded px-6 py-3 text-zinc-500 outline-none transition-colors duration-100 hover:text-zinc-200 focus:text-zinc-200 focus:ring focus:ring-accent-2"
+          >
+            <span class="mr-4 w-0 overflow-hidden">Visualize Source map</span>
+            <span class="inline-block -translate-y-[2px] text-zinc-700 duration-100 group-hover:text-zinc-400 group-focus:text-zinc-400">
+              <IoOpenOutline class="inline h-6 w-6" />
+            </span>
           </span>
-        </a>
+        </div>
       </div>
-    </div>
+    </Show>
   );
 }
 
@@ -226,7 +245,7 @@ function DesktopModeSwitcher() {
       }}
     >
       <SelectPrimitive.Trigger
-        class="inline-flex h-8 w-[100px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-sm capitalize leading-none text-zinc-200 outline-none ring-offset-2 ring-offset-primary transition-shadow duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus:ring-2 focus:ring-accent-2 data-[invalid]:border-[hsl(0_72%_51%)]  data-[invalid]:text-[hsl(0_72%_51%)] lg:h-10 lg:w-[200px] lg:text-sm hidden lg:inline-flex"
+        class="hidden h-8 w-[100px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-sm capitalize leading-none text-zinc-200 outline-none ring-offset-2 ring-offset-primary transition-shadow duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus:ring-2 focus:ring-accent-2  data-[invalid]:border-[hsl(0_72%_51%)] data-[invalid]:text-[hsl(0_72%_51%)] lg:inline-flex lg:h-10 lg:w-[200px] lg:text-sm"
         aria-label="Themes"
       >
         <SelectPrimitive.Value<Modes> class="overflow-hidden text-ellipsis whitespace-nowrap data-[placeholder-shown]:text-zinc-500">
@@ -234,7 +253,7 @@ function DesktopModeSwitcher() {
         </SelectPrimitive.Value>
 
         <SelectPrimitive.Icon class="select__icon">
-            <HiOutlineChevronUpDown />
+          <HiOutlineChevronUpDown />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
@@ -260,7 +279,8 @@ function MobileModeSwitcher() {
     }
     setDisplayNone(false);
   });
-
+  // TODO: refactor the span tabs using the accessible `Tabs`
+  // component from kobalte
   return (
     <div class="flex h-min flex-row items-center justify-between px-4">
       <div
@@ -289,25 +309,14 @@ function MobileModeSwitcher() {
           )}
         </For>
       </div>
-      <Button.Root
-        onClick={() => setShowMobilePreview((s) => !s)}
-        class="focus-visible::ring-accent-2 inline-flex appearance-none items-center justify-center divide-x divide-zinc-600 rounded-md border border-solid border-secondary text-base capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all  duration-[250ms,color] hover:ring-offset-0 focus-visible:outline-offset-2 focus-visible:outline-accent-2  focus-visible:ring-2 lg:hidden lg:h-10 lg:w-10 [&_*]:select-none "
-      >
-        <span
-          class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
-            !showMobilePreview() ? "bg-zinc-800" : "bg-zinc-900 opacity-50"
-          }`}
-        >
-          Editor
-        </span>
-        <span
-          class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
-            showMobilePreview() ? "bg-zinc-800" : "bg-zinc-900 opacity-50"
-          }`}
-        >
-          Preview
-        </span>
-      </Button.Root>
+      <SegmentedButton
+        options={["Editor", "Preview"]}
+        isMobile
+        defaultActive={/*@once*/ showMobilePreview() ? "Preview" : "Editor"}
+        handleOptionChange={(option) =>
+          setShowMobilePreview(option === "Preview")
+        }
+      />
     </div>
   );
 }

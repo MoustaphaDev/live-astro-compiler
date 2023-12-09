@@ -17,9 +17,6 @@ importers:
 
   packages/app:
     dependencies:
-      '@astrojs/compiler':
-        specifier: ^2.3.2
-        version: 2.3.2
       '@fontsource/fira-code':
         specifier: ^5.0.15
         version: 5.0.15
@@ -62,6 +59,9 @@ importers:
       solid-js:
         specifier: ^1.8.6
         version: 1.8.6
+      solid-swr:
+        specifier: ^1.0.3
+        version: 1.0.3(solid-js@1.8.6)
       split.js:
         specifier: ^1.6.5
         version: 1.6.5
@@ -72,6 +72,9 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
     devDependencies:
+      '@astrojs/compiler':
+        specifier: ^2.3.2
+        version: 2.3.2
       '@types/node':
         specifier: ^20.10.1
         version: 20.10.1
@@ -120,7 +123,7 @@ packages:
 
   /@astrojs/compiler@2.3.2:
     resolution: {integrity: sha512-jkY7bCVxl27KeZsSxIZ+pqACe+g8VQUdTiSJRj/sXYdIaZlW3ZMq4qF2M17P/oDt3LBq0zLNwQr4Cb7fSpRGxQ==}
-    dev: false
+    dev: true
 
   /@babel/code-frame@7.22.13:
     resolution: {integrity: sha512-XktuhWlJ5g+3TJXc5upd9Ks1HutSArik6jf2eAjYFyIOf4ej3RN+184cZbzDvbPnuTJIUhPKKJE3cIsYTiAT3w==}
@@ -1232,6 +1235,11 @@ packages:
       ms: 2.1.2
     dev: true
 
+  /dequal@2.0.3:
+    resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
+    engines: {node: '>=6'}
+    dev: false
+
   /didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
     dev: false
@@ -1861,6 +1869,15 @@ packages:
       '@babel/types': 7.23.3
       solid-js: 1.8.6
     dev: true
+
+  /solid-swr@1.0.3(solid-js@1.8.6):
+    resolution: {integrity: sha512-NswBCeGxgZIoEL+Mm2xN0twZ5sr+gxvczSd55VhtM3XxqSMJSZzkaY5NcOFFLVm5HBjuKG2CWqufth98Qbp78g==}
+    peerDependencies:
+      solid-js: '>=1 <=2'
+    dependencies:
+      dequal: 2.0.3
+      solid-js: 1.8.6
+    dev: false
 
   /source-map-js@1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}

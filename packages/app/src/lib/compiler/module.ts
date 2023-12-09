@@ -1,96 +1,160 @@
-// export const compilerModule = 
+// export const compilerModule =
 
-import { CompilerModule } from "./cache"
-import { fetchCompilerModuleAndWASM, fetchLatestProductionCompilerVersion } from "./fetch"
-import { runCompilerCompatibilityTestsWithPlayground } from "./in-browser-tests"
-import { getLastUsedCompilerVersion, getStoredCompilerDetails, storeCompilerDetails } from "./storage"
+import type { CompilerModule } from "./cache";
+import {
+  fetchCompilerModuleAndWASM,
+  fetchLatestProductionCompilerVersion,
+} from "./fetch";
+import { runCompilerCompatibilityTestsWithPlayground } from "./in-browser-tests";
+import {
+  getLastUsedCompilerVersion,
+  getStoredCompilerDetails,
+  storeCompilerDetails,
+} from "./storage";
 
-export let remoteCompilerModule: CompilerModule | null = null
-export let remoteCompilerVersion = await getDefaultCompilerVersionToLoad()
+export let remoteCompilerModule: CompilerModule | null = null;
+export let remoteCompilerVersion = (await getDefaultCompilerVersionToLoad())
+  .compilerVersionToLoad;
 
-export async function switchCompiler(version: string)
-{
-    let compilerModuleAndWasm = await fetchCompilerModuleAndWASM(version)
-    let isMarked: boolean;
+/**
+ *
+ * @param version the version of the compiler to load
+ * @returns The status of the operation
+ */
+export async function setCompiler(version: string): Promise<{
+  status: "success" | "failure";
+}> {
+  let compilerModuleAndWasm = await fetchCompilerModuleAndWASM(version);
+  if (!compilerModuleAndWasm) {
+    return {
+      status: "failure",
+    };
+  }
 
-    if (!compilerModuleAndWasm) {
-        console.warn(`Failed to load compiler module for version ${version}`)
-        const { compilerVersionToLoad, isMarked: _isMarked } = await getDefaultCompilerVersionToLoadAndMarkingState()
-        version = compilerVersionToLoad
-        isMarked = _isMarked
-        const maybecompilerModuleAndWasm = await fetchCompilerModuleAndWASM(version)
-        if (!maybecompilerModuleAndWasm) {
-            throw new Error("Failed to load compiler module")
-        }
-        compilerModuleAndWasm = maybecompilerModuleAndWasm
-    }
+  const { module: compilerModule, wasmURL } = compilerModuleAndWasm;
+  const { isMarked } = getCompilerMarkingState(version);
 
-    const { module: compilerModule, wasmURL } = compilerModuleAndWasm
+  if (!isMarked!) {
+    // run compatibility tests
+    // later implement this like described in our detailed design
+    // for now, just run the tests
+    const testResults = await runCompilerCompatibilityTestsWithPlayground({
+      module: compilerModule,
+      wasmURL,
+    });
+    storeCompilerDetails({
+      version,
+      compatibilityMap: testResults,
+    });
+  }
+  // teardown the previous compiler module
+  console.info("Tearing down compiler!!!!");
+  remoteCompilerModule?.teardown();
 
-    if (!isMarked!) {
-        // run compatibility tests
-        // later implement this like described in our detailed design
-        // for now, just run the tests
-        const testResults = await runCompilerCompatibilityTestsWithPlayground({ module: compilerModule, wasmURL })
+  remoteCompilerModule = compilerModule;
+  remoteCompilerVersion = version;
 
-        storeCompilerDetails({
-            version,
-            compatibilityMap: testResults
-        })
-
-    }
-    remoteCompilerModule = compilerModule
-    remoteCompilerVersion = version
+  // initialize the compiler wasm
+  console.log("Initializing compiler!!!!");
+  await remoteCompilerModule.initialize({ wasmURL });
+  console.log("Initialized compiler!!!!");
+  return {
+    status: "success",
+  };
 }
 
 // the marking state is used to determine if we should run the compatibility tests or not
-async function getDefaultCompilerVersionToLoadAndMarkingState(): Promise<{ compilerVersionToLoad: string; isMarked: boolean }>
-{
-    const lastUsedCompilerVersion = getLastUsedCompilerVersion();
-    let isMarked = false;
-    if (lastUsedCompilerVersion) {
-        const maybeStoredCompilerDetails = getStoredCompilerDetails(lastUsedCompilerVersion)
-        if (!maybeStoredCompilerDetails) {
-            console.warn(`Failed to load stored compiler details for version ${lastUsedCompilerVersion}`)
-            return {
-                compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
-                isMarked
-            }
-        }
-        isMarked = true
-        // TODO: later manage this like in our design
-        for (const [functionality, compatibilityStatus] of Object.entries(maybeStoredCompilerDetails.compatibilityMap)) {
-            if (compatibilityStatus === "incompatible") {
-                // if any is incompatible, load the latest production version
-                console.warn(`Compiler version ${lastUsedCompilerVersion} is incompatible`)
-                return {
-                    compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
-                    isMarked
-                }
-            }
-            if (compatibilityStatus === "partially-compatible") {
-                console.warn(`Compiler version ${lastUsedCompilerVersion} is partially compatible`)
-                return {
-                    compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
-                    isMarked
-                }
-            }
-        }
+export async function getDefaultCompilerVersionToLoad(): Promise<{
+  compilerVersionToLoad: string;
+}> {
+  const lastUsedCompilerVersion = getLastUsedCompilerVersion();
+  if (lastUsedCompilerVersion) {
+    const maybeStoredCompilerDetails = getStoredCompilerDetails(
+      lastUsedCompilerVersion,
+    );
+    console.log({ maybeStoredCompilerDetails });
 
-        return {
-            compilerVersionToLoad: lastUsedCompilerVersion,
-            isMarked: isMarked
-        }
-    }
-    return {
+    if (!maybeStoredCompilerDetails) {
+      console.warn(
+        `Failed to load stored compiler details for version ${lastUsedCompilerVersion}`,
+      );
+      return {
         compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
-        isMarked
+      };
     }
+    // TODO: later manage this like in our design
+    for (const [functionality, compatibilityStatus] of Object.entries(
+      maybeStoredCompilerDetails.compatibilityMap,
+    )) {
+      if (compatibilityStatus === "incompatible") {
+        // if any is incompatible, load the latest production version
+        console.warn(
+          `Compiler version ${lastUsedCompilerVersion} is incompatible`,
+        );
+        return {
+          compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
+        };
+      }
+      if (compatibilityStatus === "partially-compatible") {
+        console.warn(
+          `Compiler version ${lastUsedCompilerVersion} is partially compatible`,
+        );
+        return {
+          compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
+        };
+      }
+    }
+
+    return {
+      compilerVersionToLoad: lastUsedCompilerVersion,
+    };
+  }
+  return {
+    compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
+  };
 }
 
+/**
+ *
+ * @param version the version of the compiler to check the marking state for
+ * —
+ * The marking state is used to determine if we should run the compatibility tests or not.
+ * If the compiler version is marked as incompatible, we load the latest production version.
+ * If the compiler version is marked as partially compatible, we load the latest production version
+ * (later we could cherry pick which options work and gray out in the UI the ones that don't).
+ * If the compiler version is marked as compatible, we load the compiler version without running the compatibility tests.
+ */
+function getCompilerMarkingState(version: string): { isMarked: boolean } {
+  let isMarked = false;
+  const maybeStoredCompilerDetails = getStoredCompilerDetails(version);
+  if (!maybeStoredCompilerDetails) {
+    return {
+      isMarked,
+    };
+  }
+  isMarked = true;
+  // TODO: later manage this like in our design
+  // right now, the results of the tests aren't
+  // surfaced in the UI
+  for (const [functionality, compatibilityStatus] of Object.entries(
+    maybeStoredCompilerDetails.compatibilityMap,
+  )) {
+    if (compatibilityStatus === "incompatible") {
+      // if any is incompatible, load the latest production version
+      console.warn(`Compiler version ${version} is incompatible`);
+      return {
+        isMarked,
+      };
+    }
+    if (compatibilityStatus === "partially-compatible") {
+      console.warn(`Compiler version ${version} is partially compatible`);
+      return {
+        isMarked,
+      };
+    }
+  }
 
-export async function getDefaultCompilerVersionToLoad(): Promise<string>
-{
-    const { compilerVersionToLoad } = await getDefaultCompilerVersionToLoadAndMarkingState()
-    return compilerVersionToLoad
+  return {
+    isMarked,
+  };
 }

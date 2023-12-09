@@ -1,8 +1,15 @@
-import { type ComponentProps, type JSX, splitProps } from "solid-js";
+import {
+  type ComponentProps,
+  type JSX,
+  splitProps,
+  For,
+  createSignal,
+} from "solid-js";
 import {
   Separator as SeparatorPrimitive,
   ToggleButton as ToggleButtonPrimitive,
   TextField as TextFieldPrimitive,
+  Button,
 } from "@kobalte/core";
 
 type ToggleFieldProps = ComponentProps<"div"> & {
@@ -81,5 +88,58 @@ export function Separator() {
       data-orientation="horizontal"
       class="h-[3px] border-none data-[orientation=horizontal]:bg-zinc-900"
     />
+  );
+}
+
+type SegmentedButtonProps<
+  T extends string[],
+  U extends T = [...T],
+  K extends string = U[number],
+> = {
+  options: U;
+  activeClass?: string;
+  defaultActive?: K;
+  isMobile?: boolean;
+  handleOptionChange?: (option: K) => void;
+};
+export function SegmentedButton<T extends string[] = string[]>(
+  props: SegmentedButtonProps<T>,
+) {
+  const [activeOption, setActiveOption] = createSignal(
+    props.defaultActive ?? props.options[0],
+  );
+  // this is to rearrange the default active option to be the first option
+  const options = props.options.filter((option) => option !== activeOption());
+  options.unshift(activeOption());
+  return (
+    <div
+      classList={
+        /*@once*/ {
+          "focus-visible::ring-accent-2 overflow-hidden w-min appearance-none items-center justify-center divide-x divide-zinc-600 rounded-md border border-solid border-secondary text-base capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all  duration-[250ms,color] hover:ring-offset-0 focus-visible:outline-offset-2 focus-visible:outline-accent-2  focus-visible:ring-2 [&_*]:select-none ":
+            true,
+          "inline-flex lg:hidden": props.isMobile,
+          "inline-flex": !props.isMobile,
+        }
+      }
+    >
+      <For each={props.options}>
+        {(option) => (
+          <Button.Root
+            onClick={() => {
+              // @ts-expect-error
+              setActiveOption(option);
+              props?.handleOptionChange?.(option);
+            }}
+            class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
+              activeOption() === option
+                ? props.activeClass ?? "bg-zinc-900"
+                : "bg-zinc-900 opacity-50"
+            }`}
+          >
+            {option}
+          </Button.Root>
+        )}
+      </For>
+    </div>
   );
 }

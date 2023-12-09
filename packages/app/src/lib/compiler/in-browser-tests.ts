@@ -1,5 +1,9 @@
 import type { CompilerModule, CompilerModuleAndWasm } from "./cache";
 
+// Right now they don't have any effect, but later, this will
+// allow us to display which compiler functionalities aren't available
+// depending on the chosen compiler version
+
 // the tests don't need to be sophisted,
 // just need to make sure the loaded compiler version is working
 
