@@ -28,6 +28,7 @@ import {
   setShowMobilePreview,
   getStatefulURL,
   currentCompilerVersion,
+  setShowSourceMapVisualizer,
 } from "~/lib/stores";
 import type { Modes } from "~/lib/types";
 import type { SettingsSectionProps } from "./Settings";
@@ -136,6 +137,12 @@ function SectionToSourceMapVisualizer() {
   const showSourceMapVisualizer = () => {
     return (showMobilePreview() || breakpointMatches.lg) && mode() === "TSX";
   };
+
+  createEffect(() => {
+    if (mode() === "TSX") {
+      setShowSourceMapVisualizer(false);
+    }
+  });
 
   return (
     <Show when={showSourceMapVisualizer()}>
@@ -270,15 +277,7 @@ function MobileModeSwitcher() {
   const reducedModeToTitle = Object.fromEntries(
     Object.entries(MODE_TO_TITLE).map(([k, v]) => [k, v.split(" ")[0]]),
   );
-  const [displayNone, setDisplayNone] = createSignal(false);
 
-  createEffect(() => {
-    if (showMobilePreview()) {
-      setTimeout(() => setDisplayNone(true), 400);
-      return;
-    }
-    setDisplayNone(false);
-  });
   // TODO: refactor the span tabs using the accessible `Tabs`
   // component from kobalte
   return (

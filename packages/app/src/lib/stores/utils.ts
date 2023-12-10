@@ -98,3 +98,20 @@ export function asyncDebounce<T>(
     });
   };
 }
+
+/**
+ * This function is used to return a function reference from a hash of functions
+ * This is useful when we expect to pass to `createResource` a fetcher that can change
+ * @param hash The hash containing the functions
+ * @param functionToPick The function to pick from the hash
+ * @returns A function that will call the functionToPick from the hash
+ */
+export function returnFunctionReferenceFromHash<
+  Hash extends Record<string, (...args: any[]) => any>,
+  FnToPick extends keyof Hash,
+  FnToReturn extends Hash[FnToPick],
+>(hash: Hash, functionToPick: FnToPick) {
+  return (...args: Parameters<FnToReturn>): ReturnType<FnToReturn> => {
+    return hash[functionToPick](...args);
+  };
+}

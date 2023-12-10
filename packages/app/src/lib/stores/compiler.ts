@@ -1,11 +1,10 @@
 // ################################ DERIVED SIGNALS HERE ################################
 
-import { createEffect, createResource, createUniqueId, on } from "solid-js";
+import { createEffect, createResource, on } from "solid-js";
 import type {
   ConsumedConvertToTSXOptions,
   ConsumedParseOptions,
   ConsumedTransformOptions,
-  EditorsHash,
 } from "../types";
 import {
   code,
@@ -16,7 +15,6 @@ import {
   normalizedFilename,
   parsePosition,
   setHasCompilerVersionChangeBeenHandled,
-  setShowSourceMapVisualizer,
   transformAstroGlobalArgs,
   transformCompact,
   transformInternalURL,
@@ -29,7 +27,7 @@ import {
 } from "../compiler";
 import type { TransformResult } from "@astrojs/compiler";
 import type { CompilerModule } from "../compiler/cache";
-import { asyncDebounce } from "./utils";
+import { asyncDebounce, returnFunctionReferenceFromHash } from "./utils";
 
 async function transformCode(
   options: ConsumedTransformOptions,
@@ -147,15 +145,15 @@ function createCompilerOutputGetter() {
     } satisfies ConsumedConvertToTSXOptions;
   };
 
-  const [transformResult] = createResource(
+  const [transformResult, { refetch: refetchTransformResult }] = createResource(
     consumedTransformOptions,
     returnFunctionReferenceFromHash(compilerFunctions, "getTransformResult"),
   );
-  const [parseResult] = createResource(
+  const [parseResult, { refetch: refetchParseResult }] = createResource(
     consumedParseOptions,
     returnFunctionReferenceFromHash(compilerFunctions, "getParseResult"),
   );
-  const [tsxResult] = createResource(
+  const [tsxResult, { refetch: refetchTsxResult }] = createResource(
     consumedTSXOptions,
     returnFunctionReferenceFromHash(compilerFunctions, "getTSXResult"),
   );
@@ -182,18 +180,17 @@ function createCompilerOutputGetter() {
   }
 
   // ################################ EFFECTS HERE ################################
-  createEffect(mode, async () => {
-    if (mode() === "TSX") {
-      setShowSourceMapVisualizer(false);
-    }
-  });
-
   createEffect(
     on(
       currentCompilerVersion,
       () => {
         // update the compiler functions
         Object.assign(compilerFunctions, createWrapperCompilerFunctions());
+
+        // refetch the results
+        refetchTransformResult();
+        refetchParseResult();
+        refetchTsxResult();
       },
       { defer: true },
     ),
@@ -202,16 +199,6 @@ function createCompilerOutputGetter() {
   return {
     getCompilerOutput,
     getOutputByMode,
-  };
-}
-
-function returnFunctionReferenceFromHash<
-  Hash extends Record<string, (...args: any[]) => any>,
-  FnToPick extends keyof Hash,
-  FnToReturn extends Hash[FnToPick],
->(hash: Hash, functionToPick: FnToPick) {
-  return (...args: Parameters<FnToReturn>): ReturnType<FnToReturn> => {
-    return hash[functionToPick](...args);
   };
 }
 
