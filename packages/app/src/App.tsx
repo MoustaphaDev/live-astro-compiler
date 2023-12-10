@@ -9,37 +9,27 @@ import "@fontsource/montserrat";
 import { BreakpointVisualizer } from "./components/BreakpointVisualizer";
 // import { CompilerProvider } from "./components/CompilerProvider";
 
-// HACK: patch the defineProperty method to not throw errors
-// HACK: we're patching the defineProperties method
-// not throw errors, but just logs them instead
-// thinking about just silencing the errors
-// when loading multiple compiler versions, we got an error
-// that the `fs` property was already defined
 const originalDefineProperty = Object.defineProperty.bind(Object);
-const patchDefineProperty = function (obj, prop, descriptor) {
-  const propsToIgnore = ["fs", "process"];
-  // @ts-ignore
-  if (propsToIgnore.includes(prop)) {
-    console.log("Ignoring defineProperty for ", prop);
-    return;
+const patchOfDefineProperty = function (obj: any, prop: any, descriptor: any) {
+  // check if the property defined in the object
+  // if it's defined in `obj` then we don't need to define it again
+  if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+    return obj;
   }
-  originalDefineProperty(obj, prop, descriptor);
-} as typeof Object.defineProperty;
-Object.defineProperty = patchDefineProperty;
 
-Object.defineProperties = function (
-  obj: any,
+  // define the property using the original defineProperty
+  return originalDefineProperty(obj, prop, descriptor);
+};
+
+Object.defineProperties = function <T>(
+  obj: T,
   props: Record<string, PropertyDescriptor>,
 ) {
-  const propsToIgnore = ["fs", "process"];
-  Object.entries(props).forEach(([prop, descriptor]) => {
-    if (propsToIgnore.includes(prop)) {
-      console.log("Ignoring defineProperty for ", prop);
-      return;
-    }
-    originalDefineProperty(obj, prop, descriptor);
-  });
-} as typeof Object.defineProperties;
+  for (const prop in props) {
+    patchOfDefineProperty(obj, prop, props[prop]);
+  }
+  return obj;
+};
 
 const App: Component = () => {
   return (
