@@ -1,9 +1,14 @@
 import {
+  type Accessor,
   For,
   createMemo,
   createResource,
   createSignal,
   onMount,
+  useTransition,
+  Show,
+  Suspense,
+  createEffect,
 } from "solid-js";
 
 import { VsChromeClose } from "solid-icons/vs";
@@ -199,14 +204,11 @@ export default function SettingsSection(props: SettingsSectionProps) {
   );
 }
 
-// TODO: let's get it to work now
-// and later refactor for efficiency
-
 function createCompilerChangeHandler(
   afterCompilerChange: () => Promise<void> | void,
 ) {
   return (version: string) => {
-    setHasCompilerVersionChangeBeenHandled(false);
+    // setHasCompilerVersionChangeBeenHandled(false);
     setCompiler(version).then(async ({ status }) => {
       if (status === "failure") {
         const { compilerVersionToLoad: fallbackCompilerVersion } =
@@ -224,50 +226,72 @@ function createCompilerChangeHandler(
         }
       }
       setCurrentCompilerVersion(version);
-      setHasCompilerVersionChangeBeenHandled(true);
+      // setHasCompilerVersionChangeBeenHandled(true);
       await afterCompilerChange();
     });
   };
 }
 
 type VersionSwitcherProps = SettingsSectionProps;
+type FetcherReturnType = Awaited<ReturnType<typeof fetchAllCompilerVersions>>;
+function compilerVersionFetcher(
+  _: boolean,
+  info: {
+    value: FetcherReturnType | undefined;
+    refetching: boolean;
+  },
+) {
+  if (info.refetching) {
+    console.log("Refetching...");
+    return fetchAllCompilerVersions({ noCache: true });
+  }
+  return fetchAllCompilerVersions();
+}
+
 function VersionSwitcher(props: VersionSwitcherProps) {
-  const [versionsType, setVersionsType] = createSignal("Preview");
+  const STEP = 5;
+  const INITIAL_NUMBER_OF_VERSIONS_TO_DISPLAY = 10;
+  const [versionsType, setVersionsType] = createSignal<
+    "Preview" | "Production"
+  >("Production");
   const [
     numberOfProductionVersionsToDisplay,
     setNumberOfProductionVersionsToDisplay,
-  ] = createSignal(10);
+  ] = createSignal(INITIAL_NUMBER_OF_VERSIONS_TO_DISPLAY);
   const [
     numberOfPreviewVersionsToDisplay,
     setNumberOfPreviewVersionsToDisplay,
-  ] = createSignal(10);
+  ] = createSignal(INITIAL_NUMBER_OF_VERSIONS_TO_DISPLAY);
+  const [categorizedCompilerVersions, setCategorizedCompilerVersions] =
+    createSignal<ReturnType<typeof getCompilerVersionsByType>>();
 
-  const [allCompilerVersions] = createResource(fetchAllCompilerVersions);
+  const [pending, startTransition] = useTransition();
 
-  const categorizedCompilerVersions = createMemo(() => {
-    return getCompilerVersionsByType(allCompilerVersions() ?? []);
-  });
+  const updateNumberOfProductionVersionsToDisplay = (number: number) =>
+    startTransition(() => {
+      setNumberOfProductionVersionsToDisplay(number);
+    });
 
-  const versionsToDisplay = createMemo(() =>
-    versionsType() === "Preview"
-      ? categorizedCompilerVersions().previewVersions.slice(
-          0,
-          numberOfPreviewVersionsToDisplay(),
-        )
-      : categorizedCompilerVersions().productionVersions.slice(
-          0,
-          numberOfProductionVersionsToDisplay(),
-        ),
-  );
+  const updateNumberOfPreviewVersionsToDisplay = (number: number) =>
+    startTransition(() => {
+      setNumberOfPreviewVersionsToDisplay(number);
+    });
 
   const handleShowMore = () => {
     if (versionsType() === "Preview") {
+      // don't show more than the total number of preview versions
       setNumberOfPreviewVersionsToDisplay(
-        numberOfPreviewVersionsToDisplay() + 5,
+        Math.min(
+          numberOfPreviewVersionsToDisplay() + STEP,
+          categorizedCompilerVersions()!.previewVersions?.length,
+        ),
       );
     } else {
       setNumberOfProductionVersionsToDisplay(
-        numberOfProductionVersionsToDisplay() + 5,
+        Math.min(
+          numberOfProductionVersionsToDisplay() + STEP,
+          categorizedCompilerVersions()!.productionVersions.length,
+        ),
       );
     }
   };
@@ -275,7 +299,6 @@ function VersionSwitcher(props: VersionSwitcherProps) {
   const handleCompilerVersionChange = createCompilerChangeHandler(
     props.closeModal,
   );
-
   return (
     <div>
       <div class="flex flex-row items-center justify-between">
@@ -283,32 +306,91 @@ function VersionSwitcher(props: VersionSwitcherProps) {
         <SegmentedButton
           activeClass="bg-accent-2 !text-primary !font-semibold"
           options={["Preview", "Production"]}
-          defaultActive="Preview"
+          defaultActive={/*@once*/ versionsType()}
           handleOptionChange={setVersionsType}
         />
       </div>
-      <div class="mb-10 mt-10 flex h-56 flex-wrap gap-x-8 gap-y-8 overflow-y-auto">
-        <For each={versionsToDisplay()}>
-          {(version) => {
-            return (
-              <Button.Root
-                onClick={() => handleCompilerVersionChange(version)}
-                class="bg-[#222] px-3 py-2 text-zinc-100"
-              >
-                {version}
-              </Button.Root>
-            );
-          }}
-        </For>
-      </div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <VersionsList
+          setCategorizedCompilerVersions={setCategorizedCompilerVersions}
+          versionsType={versionsType}
+          numberOfProductionVersionsToDisplay={
+            numberOfProductionVersionsToDisplay
+          }
+          numberOfPreviewVersionsToDisplay={numberOfPreviewVersionsToDisplay}
+          compilerVersionChangeHandler={handleCompilerVersionChange}
+        />
+      </Suspense>
       <div class="flex items-center justify-center">
-        <Button.Root
-          onClick={handleShowMore}
-          class="bg-zinc-700 px-3 py-2 text-zinc-50"
-        >
-          Show more
-        </Button.Root>
+        <Show when={typeof categorizedCompilerVersions() !== "undefined"}>
+          <Button.Root
+            onClick={handleShowMore}
+            class="bg-zinc-700 px-3 py-2 text-zinc-50"
+          >
+            Show more
+          </Button.Root>
+        </Show>
       </div>
+    </div>
+  );
+}
+
+type VersionsListProps = {
+  versionsType: () => "Preview" | "Production";
+  compilerVersionChangeHandler: (version: string) => void;
+  numberOfProductionVersionsToDisplay: Accessor<number>;
+  numberOfPreviewVersionsToDisplay: Accessor<number>;
+  setCategorizedCompilerVersions: (value: any) => void;
+};
+function VersionsList(props: VersionsListProps) {
+  const [allCompilerVersions, { refetch }] = createResource(
+    compilerVersionFetcher,
+  );
+  setTimeout(refetch, 0);
+
+  const categorizedCompilerVersions = createMemo(() => {
+    return getCompilerVersionsByType(allCompilerVersions() ?? []);
+  });
+
+  createEffect(() => {
+    props.setCategorizedCompilerVersions(categorizedCompilerVersions());
+  });
+
+  const productionVersionsToDisplay = createMemo(() => {
+    return categorizedCompilerVersions().productionVersions.slice(
+      0,
+      props.numberOfProductionVersionsToDisplay(),
+    );
+  });
+
+  const previewVersionsToDisplay = createMemo(() => {
+    return categorizedCompilerVersions().previewVersions.slice(
+      0,
+      props.numberOfPreviewVersionsToDisplay(),
+    );
+  });
+
+  const versionsToDisplay = createMemo(() => {
+    if (props.versionsType() === "Preview") {
+      return previewVersionsToDisplay();
+    }
+    return productionVersionsToDisplay();
+  });
+
+  return (
+    <div class="mb-10 mt-10 flex h-56 flex-wrap gap-x-8 gap-y-8 overflow-y-auto">
+      <For each={versionsToDisplay()}>
+        {(version) => {
+          return (
+            <Button.Root
+              onClick={() => props.compilerVersionChangeHandler(version)}
+              class="bg-[#222] px-3 py-2 text-zinc-100"
+            >
+              {version}
+            </Button.Root>
+          );
+        }}
+      </For>
     </div>
   );
 }
