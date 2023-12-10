@@ -1,7 +1,3 @@
-// after the compiler module and wasm are loaded
-// we can assume that the compiler module and
-// wasm are defined
-
 function utf16ToUTF8(x: string) {
   return unescape(encodeURIComponent(x));
 }
@@ -76,7 +72,7 @@ export function patchGlobals() {
 
 /** Silence textmate error until I find how to get rid of them */
 function patchConsole() {
-  const _consoleErrorFn = console.error;
+  const originalConsoleErrorFn = console.error.bind(console);
   console.error = (...args) => {
     const err = args[0];
     const textmateErrorMessages = ["Grammar is in an endless loop"];
@@ -90,7 +86,7 @@ function patchConsole() {
       )
     )
       return;
-    _consoleErrorFn(...args);
+    originalConsoleErrorFn(...args);
   };
 }
 
