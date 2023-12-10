@@ -5,9 +5,9 @@ export type CompilerModuleAndWasm = {
   wasmURL: string;
 };
 
-export function createCompilerCache() {
-  const cache = new Map<string, CompilerModuleAndWasm>();
-  return cache;
-}
+// export function createCompilerCache() {
+//   const cache = new Map<string, CompilerModuleAndWasm>();
+//   return cache;
+// }
 
-export const compilerModuleAndWasmCache = createCompilerCache();
+// export const compilerModuleAndWasmCache = createCompilerCache();

@@ -1,8 +1,4 @@
-import {
-  type CompilerModule,
-  type CompilerModuleAndWasm,
-  compilerModuleAndWasmCache,
-} from "./cache";
+import { type CompilerModule, type CompilerModuleAndWasm } from "./cache";
 import { getCompilerVersionsByType } from "./utils";
 
 const ASTRO_COMPILER_NPM_REGISTRY_URL =
@@ -17,9 +13,31 @@ export function getRemoteCompilerWasmURL(version: string) {
   return `${REMOTE_COMPILER_PREFIX}@${version}/dist/astro.wasm`;
 }
 
-export async function fetchAllCompilerVersions(): Promise<string[] | null> {
+type FetchCompilerModuleOptions = {
+  /**
+   *  If true, the fetch will not use the cache. Defaults to false.
+   * @param noCache
+   */
+  noCache?: boolean;
+};
+
+/**
+ * @param options Object containing options for fetching compiler versions
+ * @returns The list of compiler versions or null if the fetch failed
+ */
+export async function fetchAllCompilerVersions(
+  options: FetchCompilerModuleOptions = {},
+): Promise<string[] | null> {
+  console.log("fetched!");
+  console.log({ options });
+  const noCacheMark = {
+    cache: "no-store",
+  } as const;
   try {
-    const response = await fetch(ASTRO_COMPILER_NPM_REGISTRY_URL);
+    const response = await fetch(
+      ASTRO_COMPILER_NPM_REGISTRY_URL,
+      options?.noCache ? noCacheMark : {},
+    );
     const data = await response.json();
     const versions = Object.keys(data.versions);
     return versions.reverse();
@@ -61,11 +79,6 @@ export async function fetchLatestProductionCompilerVersion(): Promise<string> {
 export async function fetchCompilerModuleAndWASM(
   version: string,
 ): Promise<CompilerModuleAndWasm | null> {
-  let compilerModuleAndWasm = compilerModuleAndWasmCache.get(version);
-  if (compilerModuleAndWasm) {
-    return compilerModuleAndWasm;
-  }
-
   const compilerModuleNamespace = await fetchCompilerModule(version);
   const compilerWasmUrl = getRemoteCompilerWasmURL(version);
   if (!compilerModuleNamespace || !compilerWasmUrl) {
@@ -74,11 +87,10 @@ export async function fetchCompilerModuleAndWASM(
     );
     return null;
   }
-  compilerModuleAndWasm = {
+  const compilerModuleAndWasm = {
     module: compilerModuleNamespace,
     wasmURL: compilerWasmUrl,
   };
-  compilerModuleAndWasmCache.set(version, compilerModuleAndWasm);
 
   return compilerModuleAndWasm;
 }
