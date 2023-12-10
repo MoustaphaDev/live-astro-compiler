@@ -109,8 +109,13 @@ export function SegmentedButton<T extends string[] = string[]>(
     props.defaultActive ?? props.options[0],
   );
   // this is to rearrange the default active option to be the first option
-  const options = props.options.filter((option) => option !== activeOption());
-  options.unshift(activeOption());
+  // it's fine destructuring here because this
+  // prop isn't reactive anyway
+  const { defaultActive } = props;
+  if (defaultActive) {
+    props.options.splice(props.options.indexOf(defaultActive), 1);
+    props.options.unshift(activeOption());
+  }
   return (
     <div
       classList={
