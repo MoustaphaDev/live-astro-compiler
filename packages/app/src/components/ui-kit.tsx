@@ -143,3 +143,19 @@ export function SegmentedButton<T extends string[] = string[]>(
     </div>
   );
 }
+
+export function LoadingEditor() {
+  return (
+    <div class="z-50 flex h-full w-full items-center justify-center bg-primary">
+      <div class="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-white"></div>
+    </div>
+  );
+}
+
+export function LoadingError() {
+  return (
+    <div class="flex h-full w-full items-center justify-center bg-primary">
+      <div class="text-4xl font-bold text-red-600">X</div>
+    </div>
+  );
+}

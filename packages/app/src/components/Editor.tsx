@@ -20,6 +20,7 @@ import { createAstroEditor } from "~/lib/language-tools/monaco-astro";
 import {
   breakpointMatches,
   code,
+  currentCompilerVersion,
   hasCompilerVersionChangeBeenHandled,
   mode,
   setCode,
@@ -31,6 +32,7 @@ import {
 import { getPersistedValue, setPersistentValue } from "~/lib/stores/utils";
 import type { EditorsHash } from "~/lib/types";
 import { getOutputByMode } from "~/lib/stores/compiler";
+import { LoadingEditor, LoadingError } from "./ui-kit";
 
 let codeCompilerRef: HTMLDivElement;
 let inputBoxRef: HTMLDivElement;
@@ -89,7 +91,7 @@ export function Editor() {
     setIsOnigasmLoaded(true);
 
     // initialize the astro compiler
-    setHasCompilerVersionChangeBeenHandled(true);
+    // setHasCompilerVersionChangeBeenHandled(true);
   });
 
   onMount(() => {
@@ -113,7 +115,7 @@ export function Editor() {
         }}
       >
         <Show when={isOnigasmLoaded()} fallback={<LoadingEditor />}>
-          <ErrorBoundary fallback={<div>Oh no!</div>}>
+          <ErrorBoundary fallback={<LoadingError />}>
             <InputBox />
           </ErrorBoundary>
         </Show>
@@ -127,12 +129,14 @@ export function Editor() {
           "!w-full": showMobilePreview() && !breakpointMatches.lg,
         }}
       >
-        <Show
+        {/* <Show
           when={hasCompilerVersionChangeBeenHandled()}
           fallback={<LoadingEditor />}
-        >
+        > */}
+        <ErrorBoundary fallback={<LoadingError />}>
           <CodeCompiler />
-        </Show>
+        </ErrorBoundary>
+        {/* </Show> */}
       </div>
     </div>
   );
@@ -184,27 +188,13 @@ function CodeCompiler() {
       });
     });
 
-    createEffect(() => {
-      editorsHash?.codeCompiler?.setValue(getOutputByMode() ?? "");
-    });
+    createEffect(
+      on([getOutputByMode, currentCompilerVersion], () => {
+        editorsHash?.codeCompiler?.setValue(getOutputByMode() ?? "");
+      }),
+    );
   });
   return <></>;
-}
-
-export function LoadingEditor() {
-  return (
-    <div class="z-50 flex h-full w-full items-center justify-center bg-primary">
-      <div class="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-white"></div>
-    </div>
-  );
-}
-
-export function LoadingError() {
-  return (
-    <div class="flex h-full w-full items-center justify-center bg-primary">
-      <div class="text-4xl font-bold text-red-600">X</div>
-    </div>
-  );
 }
 
 function doSplit() {
