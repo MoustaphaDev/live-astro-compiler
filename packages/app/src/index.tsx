@@ -1,27 +1,11 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
 
-// silence error until I find how to get rid of textmate errors
-const _consoleErrorFn = console.error;
-console.error = (...args) => {
-  const err = args[0];
-  const errorMessagesToSilence = ["Grammar is in an endless loop"];
-  if (
-    errorMessagesToSilence.some(
-      (msg) =>
-        (err?.message?.includes?.(msg) ||
-          err?.includes?.(msg) ||
-          err?.toString?.()?.includes?.(msg)) ??
-        false,
-    )
-  )
-    return;
-  _consoleErrorFn(...args);
-};
-
 import App from "./App";
-
+import { patchGlobals } from "./lib/utils";
 const root = document.getElementById("root");
+
+patchGlobals();
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   throw new Error(

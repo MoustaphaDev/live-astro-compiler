@@ -68,3 +68,66 @@ export async function createSourcemapURL(source: string | undefined) {
   }
   console.error("Failed to create hash from compiled code");
 }
+
+export function patchGlobals() {
+  patchConsole();
+  patchDefineProperties();
+}
+
+/** Silence textmate error until I find how to get rid of them */
+function patchConsole() {
+  const _consoleErrorFn = console.error;
+  console.error = (...args) => {
+    const err = args[0];
+    const textmateErrorMessages = ["Grammar is in an endless loop"];
+    if (
+      textmateErrorMessages.some(
+        (msg) =>
+          (err?.message?.includes?.(msg) ||
+            err?.includes?.(msg) ||
+            err?.toString?.()?.includes?.(msg)) ??
+          false,
+      )
+    )
+      return;
+    _consoleErrorFn(...args);
+  };
+}
+
+/**
+ * HACK: we're patching the defineProperties method
+to avoid defining twice the `fs` and `process` properties.
+When subsequently loading compiler versions, the `wasm_exec.js` module
+from the compiler will try to define the `fs` and `process`
+properties again which will throw an error.
+This is a hack to avoid this error
+*/
+function patchDefineProperties() {
+  const propsToAvoidDefiningTwice = new Set(["fs", "process"]);
+  const patchOfDefineProperty = function (
+    obj: any,
+    prop: any,
+    descriptor: any,
+  ) {
+    // check if the property defined in the object
+    // if it's defined in `obj` then we don't need to define it again
+    if (
+      propsToAvoidDefiningTwice.has(prop) &&
+      Object.prototype.hasOwnProperty.call(obj, prop)
+    ) {
+      return obj;
+    }
+    // define the property using the original defineProperty method
+    return Object.defineProperty(obj, prop, descriptor);
+  };
+
+  Object.defineProperties = function <T>(
+    obj: T,
+    props: Record<string, PropertyDescriptor>,
+  ) {
+    for (const prop in props) {
+      patchOfDefineProperty(obj, prop, props[prop]);
+    }
+    return obj;
+  };
+}
