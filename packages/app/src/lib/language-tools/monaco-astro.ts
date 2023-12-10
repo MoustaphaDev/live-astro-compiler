@@ -2,7 +2,7 @@ import * as monaco from "monaco-editor";
 import { splitProps } from "solid-js";
 
 export const loadGrammars = async (
-  editor: monaco.editor.IStandaloneCodeEditor
+  editor: monaco.editor.IStandaloneCodeEditor,
 ) => {
   const grammars = await import("./grammars");
   return grammars.loadGrammars(editor);
@@ -10,7 +10,7 @@ export const loadGrammars = async (
 
 export async function createAstroEditor(
   domElement: HTMLElement,
-  options: monaco.editor.IStandaloneEditorConstructionOptions
+  options: monaco.editor.IStandaloneEditorConstructionOptions,
 ) {
   const [local, rest] = splitProps(options, ["value"]);
 
@@ -18,7 +18,7 @@ export async function createAstroEditor(
     model: monaco.editor.createModel(
       local.value || "",
       "astro",
-      monaco.Uri.parse("inmemory://model.astro")
+      monaco.Uri.parse("inmemory://model.astro"),
     ),
     ...rest,
   });

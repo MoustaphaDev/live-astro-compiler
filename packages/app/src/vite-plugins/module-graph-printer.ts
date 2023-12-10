@@ -9,16 +9,13 @@ type Module = {
 };
 
 const outputFile = "module-graph.dot";
-function toDot(modules: Module[], rootDirPath: string)
-{
+function toDot(modules: Module[], rootDirPath: string) {
   let result = "";
   result += `digraph G {
 edge [dir=back]`;
 
-  modules.forEach((m) =>
-  {
-    m.deps.forEach((dep) =>
-    {
+  modules.forEach((m) => {
+    m.deps.forEach((dep) => {
       result += `\n"${dep}" -> "${m.id}"`;
     });
   });
@@ -29,8 +26,7 @@ edge [dir=back]`;
   return result.replace(new RegExp(rootDirPath), "");
 }
 
-function prune(modules: Module[])
-{
+function prune(modules: Module[]) {
   let avail = modules.filter((m) => m.deps.length == 0);
   if (!avail.length) {
     return;
@@ -40,20 +36,17 @@ function prune(modules: Module[])
   //    console.log("pruning", id);
   let index = modules.indexOf(avail[0]);
   modules.splice(index, 1);
-  modules.forEach((m) =>
-  {
+  modules.forEach((m) => {
     m.deps = m.deps.filter((dep) => dep != id);
   });
   prune(modules);
 }
 
-function getPrefix(ids: string[])
-{
+function getPrefix(ids: string[]) {
   if (ids.length < 2) {
     return "";
   }
-  return ids.reduce((prefix, val) =>
-  {
+  return ids.reduce((prefix, val) => {
     while (val.indexOf(prefix) != 0) {
       prefix = prefix.substring(0, prefix.length - 1);
     }
@@ -66,18 +59,15 @@ type Options = {
   prune?: boolean;
 };
 
-export function vitePluginModuleGraph(options: Options = {}): Plugin
-{
+export function vitePluginModuleGraph(options: Options = {}): Plugin {
   let exclude = (str: string) => options.exclude && str.match(options.exclude);
   let config: ResolvedConfig | undefined;
   return {
     name: "vite-plugin-module-graph",
-    configResolved(_config)
-    {
+    configResolved(_config) {
       config = _config;
     },
-    generateBundle()
-    {
+    generateBundle() {
       let ids: string[] = [];
       for (const moduleId of this.getModuleIds()) {
         if (!exclude(moduleId)) {
@@ -89,8 +79,7 @@ export function vitePluginModuleGraph(options: Options = {}): Plugin
       let strip = (str: string) => str.substring(prefix.length);
 
       let modules: Module[] = [];
-      ids.forEach((id) =>
-      {
+      ids.forEach((id) => {
         const moduleInfo = this.getModuleInfo(id);
         let m = {
           id: strip(id),
@@ -107,7 +96,6 @@ export function vitePluginModuleGraph(options: Options = {}): Plugin
       if (options.prune) {
         prune(modules);
       }
-      console.log({ root: config!.root });
       toDot(modules, config!.root);
     },
   };

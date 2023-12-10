@@ -1,16 +1,13 @@
-
 // after the compiler module and wasm are loaded
 // we can assume that the compiler module and
 // wasm are defined
 
-function utf16ToUTF8(x: string)
-{
+function utf16ToUTF8(x: string) {
   return unescape(encodeURIComponent(x));
 }
 
 // adapted from https://github.com/evanw/source-map-visualization/blob/gh-pages/code.js#L1621
-async function createSourcemapHash(code: string | undefined)
-{
+async function createSourcemapHash(code: string | undefined) {
   // Check for both "//" and "/*" comments
   if (!code) {
     console.warn(`No code was pasted`);
@@ -20,19 +17,19 @@ async function createSourcemapHash(code: string | undefined)
   if (!match)
     match =
       /\/(\*)[#@] *sourceMappingURL=((?:[^\s*]|\*[^/])+)(?:[^*]|\*[^/])*\*\//.exec(
-        code
+        code,
       );
 
   // Check for a non-empty data URL payload
   if (!match) {
     console.warn(
-      `Failed to find an embedded "//}# sourceMappingURL=" comment in the pasted text'`
+      `Failed to find an embedded "//}# sourceMappingURL=" comment in the pasted text'`,
     );
     return;
   }
   if (!match[2]) {
     console.warn(
-      `Failed to find an embedded "/${match[1]}# sourceMappingURL=" comment in the pasted text'`
+      `Failed to find an embedded "/${match[1]}# sourceMappingURL=" comment in the pasted text'`,
     );
     return;
   }
@@ -43,9 +40,10 @@ async function createSourcemapHash(code: string | undefined)
     map = await fetch(new URL(match[2])).then((r) => r.text());
   } catch (e) {
     console.warn(
-      `Failed to parse the URL in the "/${match[1]
-      // @ts-expect-error
-      }# sourceMappingURL=" comment: ${(e && e.message) || e}`
+      `Failed to parse the URL in the "/${
+        match[1]
+        // @ts-expect-error
+      }# sourceMappingURL=" comment: ${(e && e.message) || e}`,
     );
     return;
   }
@@ -59,8 +57,7 @@ async function createSourcemapHash(code: string | undefined)
   return hash;
 }
 
-export async function createSourcemapURL(source: string | undefined)
-{
+export async function createSourcemapURL(source: string | undefined) {
   if (source === undefined) return;
 
   const hash = await createSourcemapHash(source);

@@ -48,16 +48,17 @@ export async function setCompiler(version: string): Promise<{
     });
   }
   // teardown the previous compiler module
-  console.info("Tearing down compiler!!!!");
+  console.info("Tearing down compiler...");
   remoteCompilerModule?.teardown();
+  console.info("Tore down compiler!");
 
   remoteCompilerModule = compilerModule;
   remoteCompilerVersion = version;
 
   // initialize the compiler wasm
-  console.log("Initializing compiler!!!!");
+  console.info("Initializing compiler...");
   await remoteCompilerModule.initialize({ wasmURL });
-  console.log("Initialized compiler!!!!");
+  console.info("Initialized compiler!");
   return {
     status: "success",
   };
@@ -72,7 +73,6 @@ export async function getDefaultCompilerVersionToLoad(): Promise<{
     const maybeStoredCompilerDetails = getStoredCompilerDetails(
       lastUsedCompilerVersion,
     );
-    console.log({ maybeStoredCompilerDetails });
 
     if (!maybeStoredCompilerDetails) {
       console.warn(

@@ -61,27 +61,11 @@ async function convertToTSXCode(
   return convertToTSXResult.code;
 }
 
-let functionReference: (arg: any) => any = () => {};
-
-const uniqueIds: string[] = [];
-let count = 0;
 function createWrapperCompilerFunctions() {
   const { convertToTSX, parse, transform } = remoteCompilerModule!;
-  console.log("Wrapper compiler functions call");
-  const uniqueId = createUniqueId();
-  uniqueIds.push(uniqueId);
-
-  console.log("Generated unique id: ", uniqueId);
 
   const getTransformResult = asyncDebounce(
     async (transformOptions: ConsumedTransformOptions) => {
-      // test if the function reference has changed
-      const hasReferenceChanged = functionReference !== getTransformResult;
-      console.log("Has reference changed: ", hasReferenceChanged);
-      // check if the reference has changed
-      // @ts-ignore
-      const foundUID = getTransformResult[uniqueIds[0]];
-      console.log("Found UID: ", foundUID);
       try {
         return await transformCode(transformOptions, transform);
       } catch (e) {
@@ -93,10 +77,6 @@ function createWrapperCompilerFunctions() {
       }
     },
   );
-  if (count === 0) {
-    functionReference = getTransformResult;
-    count++;
-  }
 
   const getTSXResult = asyncDebounce(
     async (convertToTSXOptions: ConsumedConvertToTSXOptions) => {
@@ -121,14 +101,6 @@ function createWrapperCompilerFunctions() {
       }
     },
   );
-
-  // mark the functions to check if the reference has changed
-  // @ts-ignore
-  getTransformResult[uniqueId] = true;
-  // @ts-ignore
-  getTSXResult[uniqueId] = true;
-  // @ts-ignore
-  getParseResult[uniqueId] = true;
 
   return {
     getTransformResult,

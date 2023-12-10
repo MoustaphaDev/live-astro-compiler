@@ -67,7 +67,7 @@ export function getPersistedValue<U = any>(key: string) {
     const item = window.localStorage.getItem(key);
     // Parse stored json or if none return the initial value
     return item && typeof item !== "undefined" && item !== "undefined"
-      ? ((console.log({ item }), JSON.parse(item)) as U)
+      ? (JSON.parse(item) as U)
       : null;
   } catch (error) {
     // If error also return the initial valvue

@@ -12,56 +12,63 @@ import type { CompilerModule, CompilerModuleAndWasm } from "./cache";
 // tests should follow this format:
 // <functionality>Test(compilerModule: CompilerModule): Promise<boolean>
 const testSuite = {
-    async transformTest(compilerModule: CompilerModule)
-    {
-        const { code } = await compilerModule.transform(`<div>Hello World</div>`,)
-        if (code.includes("Hello World")) {
-            return true
-        }
-        return false
+  async transformTest(compilerModule: CompilerModule) {
+    const { code } = await compilerModule.transform(`<div>Hello World</div>`);
+    if (code.includes("Hello World")) {
+      return true;
     }
+    return false;
+  },
 
-    ,
-    async convertToTSXTest(compilerModule: CompilerModule)
-    {
-        const { code } = await compilerModule.convertToTSX(`<div>Hello World</div>`,)
-        if (code.includes(`sourceMappingURL=data:application/json;`)) {
-            return true
-        }
-        return false
+  async convertToTSXTest(compilerModule: CompilerModule) {
+    const { code } = await compilerModule.convertToTSX(
+      `<div>Hello World</div>`,
+    );
+    if (code.includes(`sourceMappingURL=data:application/json;`)) {
+      return true;
     }
-    ,
-    async parseTest(compilerModule: CompilerModule)
-    {
-        const { diagnostics } = await compilerModule.parse(`<div>Hello World</div>`,)
-        if (Array.isArray(diagnostics)) {
-            return true
-        }
-        return false
+    return false;
+  },
+  async parseTest(compilerModule: CompilerModule) {
+    const { diagnostics } = await compilerModule.parse(
+      `<div>Hello World</div>`,
+    );
+    if (Array.isArray(diagnostics)) {
+      return true;
     }
-}
+    return false;
+  },
+};
 
-type TestedFunctionalitiesName = keyof typeof testSuite extends `${infer functionality}Test` ? functionality : never
-export type CompatibilityStatus = "compatible" | "incompatible" | "partially-compatible"
+type TestedFunctionalitiesName =
+  keyof typeof testSuite extends `${infer functionality}Test`
+    ? functionality
+    : never;
+export type CompatibilityStatus =
+  | "compatible"
+  | "incompatible"
+  | "partially-compatible";
 export type CompatibilityMap = {
-    [k in TestedFunctionalitiesName]: CompatibilityStatus
-}
+  [k in TestedFunctionalitiesName]: CompatibilityStatus;
+};
 
-type TestResults = CompatibilityMap
+type TestResults = CompatibilityMap;
 
-export async function runCompilerCompatibilityTestsWithPlayground({ module: compilerModule, wasmURL }: CompilerModuleAndWasm): Promise<TestResults>
-{
-    await compilerModule.initialize({ wasmURL })
-    const testResults = {} as TestResults
-    for (const [testName, testFn] of Object.entries(testSuite)) {
-        const functionalityName = testName.replace("Test", "") as keyof TestResults
-        const result = await testFn(compilerModule)
-        if (result) {
-            testResults[functionalityName] = "compatible"
-            continue
-        }
-        testResults[functionalityName] = "incompatible"
+export async function runCompilerCompatibilityTestsWithPlayground({
+  module: compilerModule,
+  wasmURL,
+}: CompilerModuleAndWasm): Promise<TestResults> {
+  await compilerModule.initialize({ wasmURL });
+  const testResults = {} as TestResults;
+  for (const [testName, testFn] of Object.entries(testSuite)) {
+    const functionalityName = testName.replace("Test", "") as keyof TestResults;
+    const result = await testFn(compilerModule);
+    if (result) {
+      testResults[functionalityName] = "compatible";
+      continue;
     }
-    compilerModule.teardown()
-    return testResults
+    testResults[functionalityName] = "incompatible";
+  }
+  compilerModule.teardown();
+  return testResults;
 }
