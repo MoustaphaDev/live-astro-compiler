@@ -6,7 +6,7 @@ import {
 } from "@kobalte/core";
 import { TextField as TextFieldPrimitive } from "@kobalte/core";
 import { BsCheckCircleFill } from "solid-icons/bs";
-import { HiOutlineSelector } from "solid-icons/hi";
+import { HiOutlineChevronUpDown } from "solid-icons/hi";
 
 type ToggleFieldProps = ComponentProps<"div"> & {
   label: string;
@@ -119,7 +119,7 @@ export function Select(
           placeholder={local.placeholder}
         />
         <SelectPrimitive.Icon class="select__icon">
-          <HiOutlineSelector />
+          <HiOutlineChevronUpDown />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
