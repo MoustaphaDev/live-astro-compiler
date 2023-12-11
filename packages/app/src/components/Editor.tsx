@@ -129,7 +129,6 @@ export function Editor() {
 }
 
 function InputBox() {
-  // props: { ref: HTMLDivElement }
   onMount(async () => {
     // do load the monaco editor
     editorsHash!.inputBox = await createAstroEditor(inputBoxRef, {
