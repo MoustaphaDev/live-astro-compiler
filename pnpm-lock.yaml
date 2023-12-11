@@ -18,8 +18,8 @@ importers:
   packages/app:
     dependencies:
       '@astrojs/compiler':
-        specifier: link:/home/coding/Documents/OSS-support/Astro-Development-Workspace/Astro-Compiler/packages/compiler/
-        version: link:../../../Astro-Development-Workspace/Astro-Compiler/packages/compiler
+        specifier: ^2.3.2
+        version: 2.3.2
       '@fontsource/fira-code':
         specifier: ^4.5.13
         version: 4.5.13
@@ -78,15 +78,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.16
         version: 10.4.16(postcss@8.4.31)
-      chokidar:
-        specifier: ^3.5.3
-        version: 3.5.3
       glob:
         specifier: ^10.3.10
         version: 10.3.10
-      kleur:
-        specifier: ^4.1.5
-        version: 4.1.5
       ora:
         specifier: ^6.3.1
         version: 6.3.1
@@ -135,6 +129,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@astrojs/compiler@2.3.2:
+    resolution: {integrity: sha512-jkY7bCVxl27KeZsSxIZ+pqACe+g8VQUdTiSJRj/sXYdIaZlW3ZMq4qF2M17P/oDt3LBq0zLNwQr4Cb7fSpRGxQ==}
+    dev: false
 
   /@babel/code-frame@7.22.13:
     resolution: {integrity: sha512-XktuhWlJ5g+3TJXc5upd9Ks1HutSArik6jf2eAjYFyIOf4ej3RN+184cZbzDvbPnuTJIUhPKKJE3cIsYTiAT3w==}
@@ -3476,11 +3474,6 @@ packages:
       graceful-fs: 4.2.11
     dev: true
     optional: true
-
-  /kleur@4.1.5:
-    resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
-    engines: {node: '>=6'}
-    dev: true
 
   /lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
