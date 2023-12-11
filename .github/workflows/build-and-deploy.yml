@@ -1,1 +1,57 @@
+name: Scheduled Build
 
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+
+# Automatically cancel older in-progress jobs on the same branch
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.ref }}
+    cancel-in-progress: true
+defaults:
+    run:
+        shell: bash
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  working-directory:
+                      packages/app
+                      # This makes action fetch all Git history so that Changesets can generate changelogs with the correct commits
+                  fetch-depth: 0
+
+            - name: Setup PNPM
+              uses: pnpm/action-setup@v2.2.1
+              with:
+                  version: 8.10.2
+
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  cache: 'pnpm'
+            - if: ${{ steps.cache-node.outputs.cache-hit != 'true' }}
+              working-directory: packages/app
+              run: pnpm install
+
+            - name: Install the latest version of the Astro compiler
+              working-directory: packages/app
+              run: pnpm install @astrojs/compiler@latest
+
+            - name: Build app
+              working-directory: packages/app
+              run: pnpm run build
+            - name: Deploy to Vercel
+              uses: amondnet/vercel-action@v20
+              with:
+                  working-directory: packages/app
+                  vercel-token: ${{ secrets.VERCEL_TOKEN }}
+                  github-token: ${{ secrets.GH_TOKEN }}
+                  vercel-org-id: ${{ secrets.ORG_ID}}
+                  vercel-project-id: ${{ secrets.PROJECT_ID}}
+                  vercel-args: '--prod'
