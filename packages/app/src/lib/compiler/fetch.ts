@@ -1,4 +1,4 @@
-import { type CompilerModule, type CompilerModuleAndWasm } from "./cache";
+import TTLCache from "@isaacs/ttlcache";
 import { getCompilerVersionsByType } from "./utils";
 
 const ASTRO_COMPILER_NPM_REGISTRY_URL =
@@ -28,8 +28,6 @@ type FetchCompilerModuleOptions = {
 export async function fetchAllCompilerVersions(
   options: FetchCompilerModuleOptions = {},
 ): Promise<string[] | null> {
-  console.log("fetched!");
-  console.log({ options });
   const noCacheMark = {
     cache: "no-store",
   } as const;
@@ -76,6 +74,11 @@ export async function fetchLatestProductionCompilerVersion(): Promise<string> {
   return latestProductionCompilerVersion;
 }
 
+export type CompilerModule = typeof import("@astrojs/compiler");
+export type CompilerModuleAndWasm = {
+  module: CompilerModule;
+  wasmURL: string;
+};
 export async function fetchCompilerModuleAndWASM(
   version: string,
 ): Promise<CompilerModuleAndWasm | null> {
@@ -93,4 +96,48 @@ export async function fetchCompilerModuleAndWASM(
   };
 
   return compilerModuleAndWasm;
+}
+
+/**
+ * This cache is used to cache the result of the `fetchAllCompilerVersions` function
+ * for 10 seconds to avoid useless requests to the npm registry and for a snappier UI
+ */
+const compilerVersionsCache = new TTLCache<
+  "allCompilerVersions",
+  Awaited<ReturnType<typeof fetchAllCompilerVersions>>
+>({
+  max: 1,
+  ttl: 10000,
+  dispose() {
+    console.log("Cleared compiler versions cache!");
+  },
+});
+
+type FetcherReturnType = Awaited<ReturnType<typeof fetchAllCompilerVersions>>;
+export async function compilerVersionFetcher(
+  _: any,
+  info: {
+    value: FetcherReturnType | undefined;
+    refetching: boolean;
+  },
+) {
+  if (info.refetching) {
+    console.log("Refetching...");
+    const fetchedCompilerVersions = await fetchAllCompilerVersions({
+      noCache: true,
+    });
+    compilerVersionsCache.set("allCompilerVersions", fetchedCompilerVersions);
+    return fetchedCompilerVersions;
+  }
+  const cachedCompilerVersions = compilerVersionsCache.get(
+    "allCompilerVersions",
+  );
+  if (cachedCompilerVersions) {
+    console.log("Returning cached compiler versions");
+    return cachedCompilerVersions;
+  }
+  const fetchedCompilerVersions = await fetchAllCompilerVersions();
+  compilerVersionsCache.set("allCompilerVersions", fetchedCompilerVersions);
+  console.log("Returning fetched compiler versions");
+  return fetchedCompilerVersions;
 }

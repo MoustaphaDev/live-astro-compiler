@@ -1,7 +1,7 @@
 // export const compilerModule =
 
-import type { CompilerModule } from "./cache";
 import {
+  type CompilerModule,
   fetchCompilerModuleAndWASM,
   fetchLatestProductionCompilerVersion,
 } from "./fetch";

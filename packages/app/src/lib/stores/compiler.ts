@@ -26,8 +26,8 @@ import {
   remoteCompilerModule,
 } from "../compiler";
 import type { TransformResult } from "@astrojs/compiler";
-import type { CompilerModule } from "../compiler/cache";
 import { asyncDebounce, returnFunctionReferenceFromHash } from "./utils";
+import type { CompilerModule } from "../compiler/fetch";
 
 async function transformCode(
   options: ConsumedTransformOptions,
