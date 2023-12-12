@@ -10,7 +10,6 @@ import {
   code,
   currentCompilerVersion,
   filename,
-  hasCompilerVersionChangeBeenHandled,
   mode,
   normalizedFilename,
   parsePosition,
@@ -106,9 +105,10 @@ function createWrapperCompilerFunctions() {
     getParseResult,
   };
 }
-
+// TODO: find a better place for this
 await initializeCompilerWithDefaultVersion();
 setHasCompilerVersionChangeBeenHandled(true);
+
 function createCompilerOutputGetter() {
   let compilerFunctions = createWrapperCompilerFunctions();
   const consumedTransformOptions = () => {
@@ -159,7 +159,6 @@ function createCompilerOutputGetter() {
   );
 
   // ################################ HOOKS AND UTILITY FUNCTIONS HERE ################################
-
   function getCompilerOutput() {
     return {
       parseResult,
