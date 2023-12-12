@@ -3,9 +3,11 @@ import * as fflate from "fflate";
 import { usePersistantSignal } from "./utils";
 import { createStore } from "solid-js/store";
 import { INITIAL_CODE, breakpoints } from "../consts";
-import { createRenderEffect, createSignal } from "solid-js";
+import { createRenderEffect, createSignal, on } from "solid-js";
 import type { StoredSearchParams } from "~/lib/types";
 import { getDefaultCompilerVersionToLoad } from "../compiler/module";
+import { createEffect } from "solid-js";
+import { storeLastUsedCompilerVersion } from "../compiler/storage";
 
 // Here's the state initialization flow:
 // 1. Get the initial value from the URL search params
@@ -28,7 +30,6 @@ export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
 });
 const { compilerVersionToLoad: defaultCompilerVersionToLoad } =
   await getDefaultCompilerVersionToLoad();
-console.log({ defaultCompilerVersionToLoad });
 export const [currentCompilerVersion, setCurrentCompilerVersion] =
   usePersistantSignal<StoredSearchParams["currentCompilerVersion"]>({
     key: "current-compiler-version",
@@ -139,6 +140,18 @@ export const [normalizedFilename, setNormalizedFilename] = usePersistantSignal<
 });
 
 // ################################ HOOKS AND EFFECTS HERE ################################
+
+// store the last used compiler version
+createEffect(
+  on(
+    currentCompilerVersion,
+    () => {
+      storeLastUsedCompilerVersion(currentCompilerVersion());
+    },
+    { defer: true },
+  ),
+);
+
 function useSearchParams() {
   const decoded = _getDecodedURLState();
   const [urlSearchParamsRecord, setUrlSearchParamsRecord] =
