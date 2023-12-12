@@ -13,8 +13,14 @@ import {
 } from "./storage";
 
 export let remoteCompilerModule: CompilerModule | null = null;
-export let remoteCompilerVersion = (await getDefaultCompilerVersionToLoad())
-  .compilerVersionToLoad;
+
+export async function initializeCompilerWithDefaultVersion() {
+  const { compilerVersionToLoad: defaultCompilerVersionToLoad } =
+    await getDefaultCompilerVersionToLoad();
+
+  // initialize the compiler module with the default compiler version
+  await setCompiler(defaultCompilerVersionToLoad);
+}
 
 /**
  *
@@ -48,17 +54,13 @@ export async function setCompiler(version: string): Promise<{
     });
   }
   // teardown the previous compiler module
-  console.info("Tearing down compiler...");
   remoteCompilerModule?.teardown();
-  console.info("Tore down compiler!");
 
+  // set the new compiler module
   remoteCompilerModule = compilerModule;
-  remoteCompilerVersion = version;
 
   // initialize the compiler wasm
-  console.info("Initializing compiler...");
   await remoteCompilerModule.initialize({ wasmURL });
-  console.info("Initialized compiler!");
   return {
     status: "success",
   };

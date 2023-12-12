@@ -5,7 +5,7 @@ import { createStore } from "solid-js/store";
 import { INITIAL_CODE, breakpoints } from "../consts";
 import { createRenderEffect, createSignal } from "solid-js";
 import type { StoredSearchParams } from "~/lib/types";
-import { remoteCompilerVersion } from "../compiler/module";
+import { getDefaultCompilerVersionToLoad } from "../compiler/module";
 
 // Here's the state initialization flow:
 // 1. Get the initial value from the URL search params
@@ -26,7 +26,9 @@ export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
     return urlSearchParams.code ?? persisted ?? INITIAL_CODE;
   },
 });
-
+const { compilerVersionToLoad: defaultCompilerVersionToLoad } =
+  await getDefaultCompilerVersionToLoad();
+console.log({ defaultCompilerVersionToLoad });
 export const [currentCompilerVersion, setCurrentCompilerVersion] =
   usePersistantSignal<StoredSearchParams["currentCompilerVersion"]>({
     key: "current-compiler-version",
@@ -34,7 +36,7 @@ export const [currentCompilerVersion, setCurrentCompilerVersion] =
       return (
         urlSearchParams.currentCompilerVersion ??
         persisted ??
-        remoteCompilerVersion
+        defaultCompilerVersionToLoad
       );
     },
   });
@@ -195,16 +197,6 @@ function useSearchParams() {
     getSearchParams: _getSearchParams,
   };
 }
-
-// mark the compiler version change as unhandled when the compiler version changes
-// when handled, we then should mark it as handled (true)
-// createEffect(() =>
-// {
-//   if (currentCompilerVersion() !== remoteCompilerVersion) {
-//     setHasCompilerChangeBeenHandled(false);
-//   }
-// }
-// );
 
 createRenderEffect(() => {
   // initialize the search params state

@@ -5,6 +5,18 @@ const ASTRO_COMPILER_NPM_REGISTRY_URL =
   "https://registry.npmjs.org/@astrojs/compiler";
 const REMOTE_COMPILER_PREFIX = "https://esm.sh/@astrojs/compiler";
 
+/**
+ * This cache is used to cache the result of the `fetchAllCompilerVersions` function
+ * for 10 seconds to avoid useless requests to the npm registry and for a snappier UI
+ */
+const compilerVersionsCache = new TTLCache<
+  "allCompilerVersions",
+  Awaited<ReturnType<typeof fetchAllCompilerVersions>>
+>({
+  max: 1,
+  ttl: 10000,
+});
+
 export function getRemoteCompilerModuleURL(version: string) {
   return `${REMOTE_COMPILER_PREFIX}@${version}`;
 }
@@ -98,21 +110,6 @@ export async function fetchCompilerModuleAndWASM(
   return compilerModuleAndWasm;
 }
 
-/**
- * This cache is used to cache the result of the `fetchAllCompilerVersions` function
- * for 10 seconds to avoid useless requests to the npm registry and for a snappier UI
- */
-const compilerVersionsCache = new TTLCache<
-  "allCompilerVersions",
-  Awaited<ReturnType<typeof fetchAllCompilerVersions>>
->({
-  max: 1,
-  ttl: 10000,
-  dispose() {
-    console.log("Cleared compiler versions cache!");
-  },
-});
-
 type FetcherReturnType = Awaited<ReturnType<typeof fetchAllCompilerVersions>>;
 export async function compilerVersionFetcher(
   _: any,
@@ -122,7 +119,6 @@ export async function compilerVersionFetcher(
   },
 ) {
   if (info.refetching) {
-    console.log("Refetching...");
     const fetchedCompilerVersions = await fetchAllCompilerVersions({
       noCache: true,
     });
@@ -133,11 +129,9 @@ export async function compilerVersionFetcher(
     "allCompilerVersions",
   );
   if (cachedCompilerVersions) {
-    console.log("Returning cached compiler versions");
     return cachedCompilerVersions;
   }
   const fetchedCompilerVersions = await fetchAllCompilerVersions();
   compilerVersionsCache.set("allCompilerVersions", fetchedCompilerVersions);
-  console.log("Returning fetched compiler versions");
   return fetchedCompilerVersions;
 }
