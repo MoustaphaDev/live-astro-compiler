@@ -8,10 +8,14 @@ import { patchGlobals } from "./lib/utils";
 const root = document.getElementById("root");
 
 patchGlobals();
-inject();
-// @ts-expect-error the type definition is wrong
-// an argument shouldn't be mendatory
-injectSpeedInsights();
+
+// don't crash the app if these two fail
+try {
+  inject();
+  injectSpeedInsights({ route: "/" });
+} catch (e) {
+  console.error(e);
+}
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   throw new Error(
