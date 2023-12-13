@@ -148,7 +148,7 @@ function SectionToSourceMapVisualizer() {
     <Show when={showSourceMapVisualizer()}>
       <div class="fixed bottom-10 right-0 z-50 flex w-full items-center justify-center lg:justify-end lg:pr-10">
         <div class="flex items-center rounded bg-zinc-900 transition-all duration-100 hover:bg-zinc-800 hover:text-zinc-200 focus:bg-zinc-800 focus:text-zinc-200">
-          <span
+          <Button.Root
             onClick={openSourcemapVisualization}
             class="group rounded px-6 py-3 text-zinc-500 outline-none transition-colors duration-100 hover:text-zinc-200 focus:text-zinc-200 focus:ring focus:ring-accent-2"
           >
@@ -156,7 +156,7 @@ function SectionToSourceMapVisualizer() {
             <span class="inline-block -translate-y-[2px] text-zinc-700 duration-100 group-hover:text-zinc-400 group-focus:text-zinc-400">
               <IoOpenOutline class="inline h-6 w-6" />
             </span>
-          </span>
+          </Button.Root>
         </div>
       </div>
     </Show>
