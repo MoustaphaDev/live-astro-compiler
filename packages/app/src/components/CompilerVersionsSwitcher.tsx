@@ -1,5 +1,5 @@
 import { Button } from "@kobalte/core";
-import { IoRefreshCircle } from "solid-icons/io";
+import { IoRefreshSharp } from "solid-icons/io";
 import {
   type Accessor,
   For,
@@ -9,6 +9,8 @@ import {
   createMemo,
   createResource,
   createSignal,
+  on,
+  createEffect,
 } from "solid-js";
 import { compilerVersionFetcher } from "~/lib/compiler/fetch";
 import {
@@ -24,29 +26,22 @@ type VersionSwitcherProps = SettingsSectionProps;
 // TODO: consider refactoring this component to use the context api
 export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
   const vs = useVersionsSwitcher(props);
+  const listRefetcher = createMemo(() => vs.listRefetcher());
   return (
     <div>
-      <div
-        classList={{
-          "flex flex-row items-center justify-between": true,
-          // "bg-red-700": pending(),
-        }}
-      >
-        <h3 class="text-md font-semibold leading-none text-white">Versions</h3>
-        <div class="flex items-center justify-around gap-5">
-          <Button.Root onClick={() => vs.listRefetcher()}>
-            <IoRefreshCircle
-              color="red"
-              class="h-10 w-10 text-zinc-900 hover:text-accent-2"
-            />
-          </Button.Root>
-          <SegmentedButton
-            activeClass="bg-accent-2 !text-primary !font-semibold"
-            options={["Preview", "Production"]}
-            defaultActive={/*@once*/ vs.versionsType()}
-            handleOptionChange={vs.setVersionsType}
-          />
+      <div class="flex flex-row items-center justify-between">
+        <div class="flex items-center justify-center gap-5">
+          <h3 class="translate-y-0.5 font-semibold text-white transition-colors">
+            Versions
+          </h3>
+          <RefreshButton listRefetcher={listRefetcher} />
         </div>
+        <SegmentedButton
+          activeClass="bg-accent-2 !text-primary !font-semibold"
+          options={["Preview", "Production"]}
+          defaultActive={/*@once*/ vs.versionsType()}
+          handleOptionChange={vs.setVersionsType}
+        />
       </div>
       <Suspense fallback={<div>Loading...</div>}>
         <VersionsList
@@ -74,6 +69,25 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
   );
 }
 
+type RefreshButtonProps = {
+  listRefetcher: ReturnType<typeof useVersionsSwitcher>["listRefetcher"];
+};
+function RefreshButton(props: RefreshButtonProps) {
+  return (
+    <Button.Root onClick={() => props.listRefetcher()()}>
+      <div class="flex items-center justify-center">
+        <IoRefreshSharp
+          size={30}
+          classList={{
+            "text-secondary hover:text-accent-2": true,
+            "animate-spin": true,
+          }}
+        />
+      </div>
+    </Button.Root>
+  );
+}
+
 type VersionsListProps = {
   versionsType: () => "Preview" | "Production";
   compilerVersionChangeHandler: (version: string) => void;
@@ -84,6 +98,7 @@ type VersionsListProps = {
 };
 function VersionsList(props: VersionsListProps) {
   const { allCompilerVersions, versionsToDisplay } = useVersionsList(props);
+
   return (
     <div
       classList={{
@@ -124,10 +139,7 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
   const [categorizedCompilerVersions, setCategorizedCompilerVersions] =
     createSignal<ReturnType<typeof getCompilerVersionsByType>>();
 
-  let listRefetcher: () => void = () => {};
-  const setListRefetcher = (refetcher: () => void) => {
-    listRefetcher = refetcher;
-  };
+  const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
 
   const handleShowMore = () => {
     if (versionsType() === "Preview") {
@@ -169,14 +181,8 @@ function useVersionsList(props: VersionsListProps) {
   const [allCompilerVersions, { refetch }] = createResource(
     compilerVersionFetcher,
   );
-
   const categorizedCompilerVersions = createMemo(() => {
     return getCompilerVersionsByType(allCompilerVersions.latest ?? []);
-  });
-
-  createComputed(() => {
-    props.setCategorizedCompilerVersions(categorizedCompilerVersions());
-    props.setListRefetcher(refetch);
   });
 
   const productionVersionsToDisplay = createMemo(() => {
@@ -199,6 +205,16 @@ function useVersionsList(props: VersionsListProps) {
     }
     return productionVersionsToDisplay();
   });
+
+  createEffect(() => {
+    props.setCategorizedCompilerVersions(categorizedCompilerVersions());
+  });
+  createComputed(
+    on(refetch, () => {
+      props.setListRefetcher(() => refetch);
+    }),
+  );
+
   return {
     allCompilerVersions,
     versionsToDisplay,
