@@ -1,5 +1,4 @@
 import { onMount } from "solid-js";
-
 import { VsChromeClose } from "solid-icons/vs";
 import { Dialog } from "@kobalte/core";
 import { Separator, TextField, ToggleButton, ToggleField } from "./ui-kit";
@@ -18,7 +17,6 @@ import {
   setTranformCompact,
   transformResultScopedSlot,
   setTransformResultScopedSlot,
-  setHasCompilerVersionChangeBeenHandled,
 } from "~/lib/stores";
 import { CompilerVersionSwitcher } from "./CompilerVersionsSwitcher";
 
@@ -46,7 +44,7 @@ export default function SettingsSection(props: SettingsSectionProps) {
 
   return (
     <div class="fixed top-0 z-50 h-screen [&_*]:select-none [@supports_selector(:has(+_*))]:[&:has([data-closed])]:animate-[contentHide_300ms_cubic-bezier(0.4,_0,_0.2,_1)] [@supports_selector(:has(+_*))]:[&:has([data-expanded])]:animate-[contentShow_300ms_cubic-bezier(0.4,_0,_0.2,_1)]">
-      <Dialog.Content class="z-50  h-full w-screen overflow-hidden rounded-md bg-primary font-montserrat sm:w-[700px] sm:max-w-[min(calc(100vw_-_16px),1000px)]">
+      <Dialog.Content class="z-50 h-full w-screen overflow-hidden rounded-md bg-primary font-montserrat sm:w-[700px] sm:max-w-[min(calc(100vw_-_16px),1000px)]">
         <div
           class="flex h-24 items-center justify-between overflow-y-auto bg-zinc-900 px-5 transition-shadow duration-200 sm:px-10"
           ref={dialogHeader!}

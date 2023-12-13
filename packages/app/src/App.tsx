@@ -8,6 +8,7 @@ import "@fontsource/fira-code";
 import "@fontsource/montserrat";
 import { BreakpointVisualizer } from "./components/BreakpointVisualizer";
 import { LoadingError } from "./components/ui-kit";
+import { Toaster } from "solid-sonner";
 
 const App: Component = () => {
   return (
@@ -17,6 +18,7 @@ const App: Component = () => {
       </ErrorBoundary>
       <Editor />
       {import.meta.env.DEV && <BreakpointVisualizer />}
+      <Toaster invert />
     </div>
   );
 };

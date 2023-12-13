@@ -27,6 +27,7 @@ import {
 import type { TransformResult } from "@astrojs/compiler";
 import { asyncDebounce, returnFunctionReferenceFromHash } from "./utils";
 import type { CompilerModule } from "../compiler/fetch";
+import { toast } from "solid-sonner";
 
 async function transformCode(
   options: ConsumedTransformOptions,
@@ -106,8 +107,16 @@ function createWrapperCompilerFunctions() {
   };
 }
 // TODO: find a better place for this
-await initializeCompilerWithDefaultVersion();
-setHasCompilerVersionChangeBeenHandled(true);
+const compilerInitializingPromise = initializeCompilerWithDefaultVersion();
+toast.promise(compilerInitializingPromise, {
+  loading: "Loading compiler",
+  success: () => {
+    setHasCompilerVersionChangeBeenHandled(true);
+    return "Compiler loaded";
+  },
+  error: "Failed to load compiler",
+});
+await compilerInitializingPromise;
 
 function createCompilerOutputGetter() {
   let compilerFunctions = createWrapperCompilerFunctions();

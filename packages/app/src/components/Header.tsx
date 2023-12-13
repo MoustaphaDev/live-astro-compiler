@@ -34,6 +34,7 @@ import type { Modes } from "~/lib/types";
 import type { SettingsSectionProps } from "./Settings";
 import { createSourcemapURL } from "~/lib/utils";
 import { getCompilerOutput } from "~/lib/stores/compiler";
+import { toast } from "solid-sonner";
 
 export function Header() {
   return (
@@ -127,7 +128,7 @@ function SectionToSourceMapVisualizer() {
     );
 
     if (!sourceMapUrl) {
-      alert("No source map available");
+      toast.error("No source map found");
       return;
     }
 

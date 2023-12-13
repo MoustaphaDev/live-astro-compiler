@@ -1,9 +1,12 @@
 import TTLCache from "@isaacs/ttlcache";
 import { getCompilerVersionsByType } from "./utils";
+import { toast } from "solid-sonner";
 
 const ASTRO_COMPILER_NPM_REGISTRY_URL =
   "https://registry.npmjs.org/@astrojs/compiler";
 const REMOTE_COMPILER_PREFIX = "https://esm.sh/@astrojs/compiler";
+
+type FetcherReturnType = Awaited<ReturnType<typeof fetchAllCompilerVersions>>;
 
 /**
  * This cache is used to cache the result of the `fetchAllCompilerVersions` function
@@ -11,7 +14,7 @@ const REMOTE_COMPILER_PREFIX = "https://esm.sh/@astrojs/compiler";
  */
 const compilerVersionsCache = new TTLCache<
   "allCompilerVersions",
-  Awaited<ReturnType<typeof fetchAllCompilerVersions>>
+  FetcherReturnType
 >({
   max: 1,
   ttl: 10000,
@@ -39,7 +42,7 @@ type FetchCompilerModuleOptions = {
  */
 export async function fetchAllCompilerVersions(
   options: FetchCompilerModuleOptions = {},
-): Promise<string[] | null> {
+): Promise<string[]> {
   const noCacheMark = {
     cache: "no-store",
   } as const;
@@ -52,8 +55,7 @@ export async function fetchAllCompilerVersions(
     const versions = Object.keys(data.versions);
     return versions.reverse();
   } catch (error) {
-    console.error("Error fetching versions:", error);
-    return null;
+    throw error;
   }
 }
 
@@ -72,8 +74,10 @@ async function fetchCompilerModule(version: string): Promise<CompilerModule> {
 }
 
 export async function fetchLatestProductionCompilerVersion(): Promise<string> {
-  const allCompilerVersions = await fetchAllCompilerVersions();
-  if (!allCompilerVersions) {
+  let allCompilerVersions: FetcherReturnType;
+  try {
+    allCompilerVersions = await fetchAllCompilerVersions();
+  } catch (e) {
     throw new Error("Failed to load compiler versions");
   }
   const { productionVersions: productionCompilerVersions } =
@@ -110,7 +114,6 @@ export async function fetchCompilerModuleAndWASM(
   return compilerModuleAndWasm;
 }
 
-type FetcherReturnType = Awaited<ReturnType<typeof fetchAllCompilerVersions>>;
 export async function compilerVersionFetcher(
   _: any,
   info: {
@@ -119,19 +122,48 @@ export async function compilerVersionFetcher(
   },
 ) {
   if (info.refetching) {
-    const fetchedCompilerVersions = await fetchAllCompilerVersions({
+    const fetchedCompilerVersions = await safeGetCompilerVersions({
       noCache: true,
     });
-    compilerVersionsCache.set("allCompilerVersions", fetchedCompilerVersions);
+    maybeUpdateCache(fetchedCompilerVersions);
     return fetchedCompilerVersions;
   }
   const cachedCompilerVersions = compilerVersionsCache.get(
     "allCompilerVersions",
   );
   if (cachedCompilerVersions) {
+    toast.success("Successfully fetched compiler versions (cache hit)");
     return cachedCompilerVersions;
   }
-  const fetchedCompilerVersions = await fetchAllCompilerVersions();
-  compilerVersionsCache.set("allCompilerVersions", fetchedCompilerVersions);
+
+  const fetchedCompilerVersions = await safeGetCompilerVersions();
+  maybeUpdateCache(fetchedCompilerVersions);
+
   return fetchedCompilerVersions;
+}
+
+// TODO: I don't like having the toast, part of the core logic of
+// the compiler module, but for sake of simplicity I'll leave
+// it here for now
+async function safeGetCompilerVersions(
+  options: FetchCompilerModuleOptions = {},
+) {
+  try {
+    const fetchedCompilerVersionsPromise = fetchAllCompilerVersions(options);
+    toast.promise(fetchedCompilerVersionsPromise, {
+      loading: "Fetching compiler versions...",
+      success: "Successfully fetched compiler versions",
+      error: "Failed to fetch compiler versions, please reload the app.",
+    });
+    const fetchedCompilerVersions = await fetchedCompilerVersionsPromise;
+    return fetchedCompilerVersions;
+  } catch (e) {
+    toast.error("Failed to fetch compiler versions, please reload the app.");
+    return [];
+  }
+}
+
+function maybeUpdateCache(fetchedCompilerVersions: FetcherReturnType) {
+  fetchedCompilerVersions.length > 0 &&
+    compilerVersionsCache.set("allCompilerVersions", fetchedCompilerVersions);
 }
