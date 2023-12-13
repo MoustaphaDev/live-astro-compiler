@@ -75,9 +75,12 @@ type RefreshButtonProps = {
   loading: boolean;
 };
 function RefreshButton(props: RefreshButtonProps) {
+  const handleRefresh = () => {
+    props.listRefetcher()();
+  };
   return (
     <Button.Root
-      onClick={() => props.listRefetcher()()}
+      onClick={handleRefresh}
       class="outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] focus-visible:ring-2 focus-visible:ring-accent-2 [&_svg]:focus-visible:text-accent-2"
     >
       <div class="flex items-center justify-center">
@@ -247,7 +250,6 @@ function useVersionsList(props: VersionsListProps) {
   createComputed(() => {
     props.setIsLoading(allCompilerVersions.loading);
   });
-
   createComputed(
     on(refetch, () => {
       props.setListRefetcher(() => refetch);
