@@ -76,13 +76,16 @@ type RefreshButtonProps = {
 };
 function RefreshButton(props: RefreshButtonProps) {
   return (
-    <Button.Root onClick={() => props.listRefetcher()()}>
+    <Button.Root
+      onClick={() => props.listRefetcher()()}
+      class="outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] focus-visible:ring-2 focus-visible:ring-accent-2 [&_svg]:focus-visible:text-accent-2"
+    >
       <div class="flex items-center justify-center">
         <VsRefresh
           size={30}
           title="Refresh the list of compiler versions"
           classList={{
-            "text-secondary hover:text-accent-2 transition-colors origin-center":
+            "text-secondary transition-colors origin-center hover:text-accent-2":
               true,
             "motion-safe:animate-spin": props.loading,
           }}
@@ -110,7 +113,7 @@ function VersionsList(props: VersionsListProps) {
       }}
     >
       <div
-        class="mb-10 mt-10 flex max-h-72 flex-wrap content-start gap-x-4 gap-y-4 overflow-y-auto transition-[height]"
+        class="mb-10 mt-10 flex max-h-72 flex-wrap content-start gap-x-4 gap-y-4 overflow-y-auto px-1 py-2"
         ref={listContainerRef!}
       >
         <For each={versionsToDisplay()}>
@@ -118,7 +121,7 @@ function VersionsList(props: VersionsListProps) {
             return (
               <Button.Root
                 onClick={() => props.compilerVersionChangeHandler(version)}
-                class="h-min w-fit bg-[#222] px-3 py-2 text-zinc-600 transition-colors hover:text-zinc-200"
+                class="h-min w-fit bg-[#222] px-3 py-2 text-zinc-600 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] hover:text-zinc-200 focus:text-zinc-200 focus:ring-2 focus:ring-accent-2"
               >
                 {version}
               </Button.Root>
