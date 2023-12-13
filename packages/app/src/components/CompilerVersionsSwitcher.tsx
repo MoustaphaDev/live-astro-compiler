@@ -60,7 +60,7 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
         <Show when={typeof vs.categorizedCompilerVersions() !== "undefined"}>
           <Button.Root
             onClick={vs.handleShowMore}
-            class="bg-zinc-700 px-3 py-2 text-zinc-50"
+            class="rounded-md bg-zinc-900 px-3 py-2 text-zinc-50 outline-none ring-offset-0 ring-offset-primary transition-colors duration-[250ms,color] hover:bg-zinc-700 focus:ring-2 focus:ring-accent-2"
           >
             Show more
           </Button.Root>
