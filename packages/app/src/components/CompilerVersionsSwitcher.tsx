@@ -1,5 +1,4 @@
 import { Button } from "@kobalte/core";
-import { IoRefreshSharp } from "solid-icons/io";
 import {
   type Accessor,
   For,
@@ -21,29 +20,30 @@ import { getCompilerVersionsByType } from "~/lib/compiler/utils";
 import { setCurrentCompilerVersion } from "~/lib/stores";
 import { SegmentedButton } from "./ui-kit";
 import { SettingsSectionProps } from "./Settings";
+import { VsRefresh } from "solid-icons/vs";
 
 type VersionSwitcherProps = SettingsSectionProps;
 // TODO: consider refactoring this component to use the context api
 export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
   const vs = useVersionsSwitcher(props);
-  const listRefetcher = createMemo(() => vs.listRefetcher());
   return (
     <div>
       <div class="flex flex-row items-center justify-between">
         <div class="flex items-center justify-center gap-5">
-          <h3 class="translate-y-0.5 font-semibold text-white transition-colors">
-            Versions
-          </h3>
-          <RefreshButton listRefetcher={listRefetcher} />
+          <h3 class="font-semibold text-white transition-colors">Versions</h3>
+          <RefreshButton
+            listRefetcher={vs.listRefetcher}
+            loading={vs.loading()}
+          />
         </div>
         <SegmentedButton
           activeClass="bg-accent-2 !text-primary !font-semibold"
           options={["Preview", "Production"]}
           defaultActive={/*@once*/ vs.versionsType()}
-          handleOptionChange={vs.setVersionsType}
+          handleOptionChange={vs.handleVersionTypeChange}
         />
       </div>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<VersionListSqueleton />}>
         <VersionsList
           setCategorizedCompilerVersions={vs.setCategorizedCompilerVersions}
           versionsType={vs.versionsType}
@@ -53,6 +53,7 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
           numberOfPreviewVersionsToDisplay={vs.numberOfPreviewVersionsToDisplay}
           compilerVersionChangeHandler={vs.handleCompilerVersionChange}
           setListRefetcher={vs.setListRefetcher}
+          setIsLoading={vs.setIsLoading}
         />
       </Suspense>
       <div class="flex items-center justify-center">
@@ -71,16 +72,19 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
 
 type RefreshButtonProps = {
   listRefetcher: ReturnType<typeof useVersionsSwitcher>["listRefetcher"];
+  loading: boolean;
 };
 function RefreshButton(props: RefreshButtonProps) {
   return (
     <Button.Root onClick={() => props.listRefetcher()()}>
       <div class="flex items-center justify-center">
-        <IoRefreshSharp
+        <VsRefresh
           size={30}
+          title="Refresh the list of compiler versions"
           classList={{
-            "text-secondary hover:text-accent-2": true,
-            "animate-spin": true,
+            "text-secondary hover:text-accent-2 transition-colors origin-center":
+              true,
+            "motion-safe:animate-spin": props.loading,
           }}
         />
       </div>
@@ -95,30 +99,44 @@ type VersionsListProps = {
   numberOfPreviewVersionsToDisplay: Accessor<number>;
   setCategorizedCompilerVersions: (value: any) => void;
   setListRefetcher: (refetcher: () => void) => void;
+  setIsLoading: (value: boolean) => void;
 };
 function VersionsList(props: VersionsListProps) {
   const { allCompilerVersions, versionsToDisplay } = useVersionsList(props);
-
   return (
     <div
       classList={{
-        "mb-10 mt-10 flex h-56 flex-wrap gap-x-8 gap-y-8 overflow-y-auto": true,
-        "bg-red-600": allCompilerVersions.loading,
+        "blur-[2px] pointer-events-none": allCompilerVersions.loading,
       }}
     >
-      <For each={versionsToDisplay()}>
-        {(version) => {
-          return (
-            <Button.Root
-              onClick={() => props.compilerVersionChangeHandler(version)}
-              class="bg-[#222] px-3 py-2 text-zinc-100"
-            >
-              {version}
-            </Button.Root>
-          );
-        }}
-      </For>
+      <div
+        class="mb-10 mt-10 flex max-h-72 flex-wrap content-start gap-x-4 gap-y-4 overflow-y-auto transition-[height]"
+        ref={listContainerRef!}
+      >
+        <For each={versionsToDisplay()}>
+          {(version) => {
+            return (
+              <Button.Root
+                onClick={() => props.compilerVersionChangeHandler(version)}
+                class="h-min w-fit bg-[#222] px-3 py-2 text-zinc-600 transition-colors hover:text-zinc-200"
+              >
+                {version}
+              </Button.Root>
+            );
+          }}
+        </For>
+      </div>
     </div>
+  );
+}
+
+function VersionListSqueleton() {
+  return (
+    <div
+      class="mb-10 mt-10 h-24 w-full animate-pulse rounded-2xl bg-secondary"
+      title="Loading the list of compiler versions..."
+      aria-label="Loading the list of compiler versions..."
+    ></div>
   );
 }
 
@@ -140,6 +158,7 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
     createSignal<ReturnType<typeof getCompilerVersionsByType>>();
 
   const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
+  const [isLoading, setIsLoading] = createSignal(false);
 
   const handleShowMore = () => {
     if (versionsType() === "Preview") {
@@ -158,6 +177,13 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
         ),
       );
     }
+
+    scrollToBottom();
+  };
+
+  const handleVersionTypeChange = (type: "Preview" | "Production") => {
+    setVersionsType(type);
+    scrollToTop();
   };
 
   const handleCompilerVersionChange = createCompilerChangeHandler(
@@ -165,15 +191,18 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
   );
   return {
     categorizedCompilerVersions,
-    setListRefetcher,
+    setCategorizedCompilerVersions,
     handleShowMore,
     handleCompilerVersionChange,
-    versionsType,
+    handleVersionTypeChange,
     setVersionsType,
+    versionsType,
     numberOfProductionVersionsToDisplay,
     numberOfPreviewVersionsToDisplay,
-    setCategorizedCompilerVersions,
+    setListRefetcher,
     listRefetcher,
+    setIsLoading,
+    loading: isLoading,
   };
 }
 
@@ -199,6 +228,9 @@ function useVersionsList(props: VersionsListProps) {
     );
   });
 
+  // TODO: hiding and showing the corresponding versions when switching from one
+  // type to another instead of unmounting them and remounting them should be
+  // more performant. Refactor this later
   const versionsToDisplay = createMemo(() => {
     if (props.versionsType() === "Preview") {
       return previewVersionsToDisplay();
@@ -209,6 +241,10 @@ function useVersionsList(props: VersionsListProps) {
   createEffect(() => {
     props.setCategorizedCompilerVersions(categorizedCompilerVersions());
   });
+  createComputed(() => {
+    props.setIsLoading(allCompilerVersions.loading);
+  });
+
   createComputed(
     on(refetch, () => {
       props.setListRefetcher(() => refetch);
@@ -247,4 +283,28 @@ function createCompilerChangeHandler(
       await afterCompilerChange();
     });
   };
+}
+
+let listContainerRef: HTMLDivElement | null = null;
+let prevVersionListScrollDifference: number = 0;
+function scrollToBottom() {
+  if (listContainerRef) {
+    const scrollDifference =
+      -listContainerRef.clientHeight + listContainerRef.scrollHeight;
+    if (prevVersionListScrollDifference === scrollDifference) return;
+    listContainerRef.scrollTo({
+      top: listContainerRef.scrollHeight,
+      behavior: "smooth",
+    });
+    prevVersionListScrollDifference = scrollDifference;
+  }
+}
+
+function scrollToTop() {
+  if (listContainerRef && listContainerRef.scrollTop !== 0) {
+    listContainerRef.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
 }
