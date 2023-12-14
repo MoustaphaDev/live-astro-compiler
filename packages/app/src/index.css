@@ -120,7 +120,7 @@
 
 /* TODO: move this to tailwind config  */
 .versions-list-shadow {
-  --shadow-opacity: .5;
+  --shadow-opacity: 0;
   --blur-radius: 21px;
   --spread-radius: -29px;
   --vertical-offset: calc(var(--weight)*44px);
@@ -129,6 +129,6 @@
   box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
 }
 
-.shadow-hide{
-  --shadow-opacity: 0;
+.shadow-show{
+  --shadow-opacity: 0.5;
 }

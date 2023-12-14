@@ -243,10 +243,10 @@ export function useVersionsList(props: VersionsListProps) {
     const topObserver = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          shadowRelatedRefs.shadowTopRef!.classList.remove("shadow-hide");
+          shadowRelatedRefs.shadowTopRef!.classList.add("shadow-show");
           console.log("intersecting");
         } else {
-          shadowRelatedRefs.shadowTopRef!.classList.add("shadow-hide");
+          shadowRelatedRefs.shadowTopRef!.classList.remove("shadow-show");
           console.log("not intersecting");
         }
       },
@@ -257,9 +257,9 @@ export function useVersionsList(props: VersionsListProps) {
     const bottomObserver = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          shadowRelatedRefs.shadowBottomRef!.classList.remove("shadow-hide");
+          shadowRelatedRefs.shadowBottomRef!.classList.add("shadow-show");
         } else {
-          shadowRelatedRefs.shadowBottomRef!.classList.add("shadow-hide");
+          shadowRelatedRefs.shadowBottomRef!.classList.remove("shadow-show");
         }
       },
       { root: listContainerRefPointer.current! },
