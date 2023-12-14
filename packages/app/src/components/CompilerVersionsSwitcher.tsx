@@ -12,6 +12,7 @@ import {
   createEffect,
   onMount,
   createSelector,
+  untrack,
 } from "solid-js";
 import { compilerVersionFetcher } from "~/lib/compiler/fetch";
 import {
@@ -127,7 +128,8 @@ type VersionsListProps = {
 function VersionsList(props: VersionsListProps) {
   const vl = useVersionsList(props);
   const isSelected = createSelector(currentCompilerVersion);
-
+  const title = (version: string) =>
+    isSelected(version) ? `Compiler v${version}` : `Load compiler v${version}`;
   return (
     <div
       classList={{
@@ -149,8 +151,9 @@ function VersionsList(props: VersionsListProps) {
             {(version) => {
               return (
                 <Button.Root
-                  title={`Load compiler v${version}`}
-                  aria-label={`Load compiler v${version}`}
+                  title={title(version)}
+                  aria-label={title(version)}
+                  data-selected-compiler-button={isSelected(version) || void 0}
                   onClick={() => props.compilerVersionChangeHandler(version)}
                   class="h-min max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-3 py-2 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] focus:ring-2 focus:ring-accent-2"
                   classList={{
@@ -234,56 +237,57 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
   const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
   const [isLoading, setIsLoading] = createSignal(false);
 
-  createEffect(
-    on([], () => {
-      console.log("Ran effect!");
-      // TODO: refactor this later, code looks sooooo ugly xD
-      if (
-        typeof categorizedCompilerVersions() === "undefined" ||
-        typeof currentCompilerVersion() === "undefined"
-      )
-        return;
-      const isPreview = isPreviewVersion(currentCompilerVersion()!);
-      const versionToAcess = isPreview
-        ? "previewVersions"
-        : "productionVersions";
-      const usedCompilerVersions =
-        categorizedCompilerVersions()![versionToAcess];
-      const indexOfCurrentCompilerVersion = usedCompilerVersions.indexOf(
-        currentCompilerVersion()!,
-      );
-      let _numberOfProductionVersionsToDisplay =
-        numberOfProductionVersionsToDisplay();
-      let _numberOfPreviewVersionsToDisplay =
-        numberOfPreviewVersionsToDisplay();
-      const numberOfVersionsOfUsedType = isPreview
-        ? _numberOfPreviewVersionsToDisplay
-        : _numberOfProductionVersionsToDisplay;
+  createEffect(() => {
+    // TODO: refactor this later, code looks sooooo ugly xD
+    if (
+      typeof categorizedCompilerVersions() === "undefined" ||
+      typeof currentCompilerVersion() === "undefined"
+    )
+      return;
+    const isPreview = isPreviewVersion(currentCompilerVersion()!);
+    const versionToAcess = isPreview ? "previewVersions" : "productionVersions";
+    const usedCompilerVersions = categorizedCompilerVersions()![versionToAcess];
+    const indexOfCurrentCompilerVersion = usedCompilerVersions.indexOf(
+      currentCompilerVersion()!,
+    );
+    let _numberOfProductionVersionsToDisplay =
+      numberOfProductionVersionsToDisplay();
+    let _numberOfPreviewVersionsToDisplay = numberOfPreviewVersionsToDisplay();
+    const numberOfVersionsOfUsedType = isPreview
+      ? _numberOfPreviewVersionsToDisplay
+      : _numberOfProductionVersionsToDisplay;
 
-      if (
-        indexOfCurrentCompilerVersion === -1 ||
-        indexOfCurrentCompilerVersion >= numberOfVersionsOfUsedType
-      )
-        return;
+    console.log({
+      indexOfCurrentCompilerVersion,
+      numberOfVersionsOfUsedType,
+    });
+    if (
+      indexOfCurrentCompilerVersion === -1 ||
+      indexOfCurrentCompilerVersion <= numberOfVersionsOfUsedType
+    )
+      return;
 
-      for (
-        let i = indexOfCurrentCompilerVersion;
-        i < numberOfVersionsOfUsedType;
-        i += STEP
-      ) {
-        if (isPreview) {
-          _numberOfPreviewVersionsToDisplay += STEP;
-          continue;
-        }
-        _numberOfProductionVersionsToDisplay += STEP;
+    // increase the number of versions to display by STEP
+    // up until the point we reach or exceed the index of
+    // the current compiler version
+    for (
+      let i = numberOfVersionsOfUsedType;
+      i < indexOfCurrentCompilerVersion;
+      i += STEP
+    ) {
+      if (isPreview) {
+        _numberOfPreviewVersionsToDisplay += STEP;
+        continue;
       }
-      setNumberOfPreviewVersionsToDisplay(_numberOfPreviewVersionsToDisplay);
-      setNumberOfProductionVersionsToDisplay(
-        _numberOfProductionVersionsToDisplay,
-      );
-      setVersionsType(isPreview ? "Preview" : "Production");
-    }),
-  );
+      _numberOfProductionVersionsToDisplay += STEP;
+    }
+    setNumberOfPreviewVersionsToDisplay(_numberOfPreviewVersionsToDisplay);
+    setNumberOfProductionVersionsToDisplay(
+      _numberOfProductionVersionsToDisplay,
+    );
+    setVersionsType(isPreview ? "Preview" : "Production");
+    untrack(categorizedCompilerVersions);
+  });
 
   const handleShowMore = () => {
     if (versionsType() === "Preview") {
@@ -332,6 +336,8 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
 }
 
 function useVersionsList(props: VersionsListProps) {
+  // TODO: move the observer logic to
+  // shadow component
   let pixelToObserveTop: HTMLDivElement | null = null;
   let pixelToObserveBottom: HTMLDivElement | null = null;
 
@@ -391,6 +397,21 @@ function useVersionsList(props: VersionsListProps) {
   createComputed(
     on(refetch, () => {
       props.setListRefetcher(() => refetch);
+    }),
+  );
+
+  createEffect(
+    on(allCompilerVersions, () => {
+      queueMicrotask(() => {
+        console.log("Scrolled into view!");
+        const selectedCompilerVersionButtonEl =
+          document.querySelector<HTMLButtonElement>(
+            "[data-selected-compiler-button]",
+          );
+        if (selectedCompilerVersionButtonEl) {
+          selectedCompilerVersionButtonEl.scrollIntoView(false);
+        }
+      });
     }),
   );
 
