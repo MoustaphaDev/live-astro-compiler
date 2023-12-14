@@ -11,6 +11,7 @@ import {
   TextField as TextFieldPrimitive,
   Button,
 } from "@kobalte/core";
+import { toast } from "solid-sonner";
 
 type ToggleFieldProps = ComponentProps<"div"> & {
   label: string;
@@ -158,6 +159,7 @@ export function LoadingEditor() {
 }
 
 export function LoadingError() {
+  toast.error("An error occured, please refresh the page.");
   return (
     <div class="flex h-full w-full items-center justify-center bg-primary">
       <div class="text-4xl font-bold text-red-600">X</div>
