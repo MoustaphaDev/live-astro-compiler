@@ -10,6 +10,7 @@ import {
   createSignal,
   on,
   createEffect,
+  onMount,
 } from "solid-js";
 import { compilerVersionFetcher } from "~/lib/compiler/fetch";
 import {
@@ -30,7 +31,12 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
     <div>
       <div class="flex flex-row items-center justify-between">
         <div class="flex items-center justify-center gap-5">
-          <h3 class="font-semibold text-white transition-colors">Versions</h3>
+          <h3
+            class="font-semibold text-white transition-colors"
+            data-top-most-element-in-modal-content
+          >
+            Versions
+          </h3>
           <RefreshButton
             listRefetcher={vs.listRefetcher}
             loading={vs.loading()}
@@ -60,7 +66,11 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
         <Show when={typeof vs.categorizedCompilerVersions() !== "undefined"}>
           <Button.Root
             onClick={vs.handleShowMore}
+            disabled={vs.loading()}
             class="rounded-md bg-zinc-900 px-3 py-2 text-zinc-50 outline-none ring-offset-0 ring-offset-primary transition-colors duration-[250ms,color] hover:bg-zinc-700 focus:ring-2 focus:ring-accent-2"
+            classList={{
+              "cursor-not-allowed": vs.loading(),
+            }}
           >
             Show more
           </Button.Root>
@@ -109,37 +119,99 @@ type VersionsListProps = {
 };
 function VersionsList(props: VersionsListProps) {
   const { allCompilerVersions, versionsToDisplay } = useVersionsList(props);
+  let pixelToObserveTop: HTMLDivElement | null = null;
+  let pixelToObserveBottom: HTMLDivElement | null = null;
+
+  let shadowTopRef: HTMLDivElement | null = null;
+  let shadowBottomRef: HTMLDivElement | null = null;
+  onMount(() => {
+    const topObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) {
+          shadowTopRef!.classList.remove("opacity-0");
+          console.log("intersecting");
+        } else {
+          shadowTopRef!.classList.add("opacity-0");
+          console.log("not intersecting");
+        }
+      },
+      { root: listContainerRef! },
+    );
+    topObserver.observe(pixelToObserveTop!);
+
+    const bottomObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) {
+          shadowBottomRef!.classList.remove("opacity-0");
+        } else {
+          shadowBottomRef!.classList.add("opacity-0");
+        }
+      },
+      { root: listContainerRef! },
+    );
+    bottomObserver.observe(pixelToObserveBottom!);
+  });
+
   return (
     <div
       classList={{
         "blur-[2px] pointer-events-none": allCompilerVersions.loading,
       }}
     >
+      <ScrollShadow ref={shadowTopRef!} position="top" />
       <div
-        class="mb-10 mt-10 flex max-h-72 flex-wrap content-start gap-x-4 gap-y-4 overflow-y-auto px-1 py-2"
+        class="relative h-80 overflow-y-auto px-1 py-4"
         ref={listContainerRef!}
       >
-        <For each={versionsToDisplay()}>
-          {(version) => {
-            return (
-              <Button.Root
-                onClick={() => props.compilerVersionChangeHandler(version)}
-                class="h-min w-fit bg-[#222] px-3 py-2 text-zinc-600 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] hover:text-zinc-200 focus:text-zinc-200 focus:ring-2 focus:ring-accent-2"
-              >
-                {version}
-              </Button.Root>
-            );
-          }}
-        </For>
+        <div class="absolute" ref={pixelToObserveTop!}></div>
+        <div class="flex flex-wrap content-start gap-x-4 gap-y-4">
+          <For each={versionsToDisplay()}>
+            {(version) => {
+              return (
+                <Button.Root
+                  onClick={() => props.compilerVersionChangeHandler(version)}
+                  class="h-min w-fit bg-[#222] px-3 py-2 text-zinc-600 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] hover:text-zinc-200 focus:text-zinc-200 focus:ring-2 focus:ring-accent-2"
+                >
+                  {version}
+                </Button.Root>
+              );
+            }}
+          </For>
+        </div>
+        <div class="absolute" ref={pixelToObserveBottom!}></div>S
       </div>
+      <ScrollShadow ref={shadowBottomRef!} position="bottom" />
     </div>
+  );
+}
+
+type ScrollShadowProps = {
+  ref: HTMLDivElement;
+  position: "top" | "bottom";
+};
+function ScrollShadow(props: ScrollShadowProps) {
+  const translate =
+    props.position === "top" ? "translate-y-10" : "-translate-y-10";
+  const resolvedPosition = props.position === "top" ? "top-0" : "bottom-0";
+  const weightDefinition =
+    props.position === "top" ? "[--weight:1]" : "[--weight:-1]";
+  return (
+    <div
+      class="versions-list-shadow pointer-events-none sticky left-0 z-10 h-10 w-full"
+      classList={{
+        [translate]: true,
+        [resolvedPosition]: true,
+        [weightDefinition]: true,
+      }}
+      ref={props.ref}
+    ></div>
   );
 }
 
 function VersionListSqueleton() {
   return (
     <div
-      class="mb-10 mt-10 h-24 w-full animate-pulse rounded-2xl bg-secondary"
+      class="mb-10 mt-10 h-80 w-full animate-pulse rounded-2xl bg-secondary"
       title="Loading the list of compiler versions..."
       aria-label="Loading the list of compiler versions..."
     ></div>
@@ -148,18 +220,19 @@ function VersionListSqueleton() {
 
 function useVersionsSwitcher(props: VersionSwitcherProps) {
   const STEP = 5;
-  const INITIAL_NUMBER_OF_VERSIONS_TO_DISPLAY = 10;
+  const INITIAL_NUMBER_OF_PRODUCTION_VERSIONS_TO_DISPLAY = 30;
+  const INITIAL_NUMBER_OF_PREVIEW_VERSIONS_TO_DISPLAY = 10;
   const [versionsType, setVersionsType] = createSignal<
     "Preview" | "Production"
   >("Production");
   const [
     numberOfProductionVersionsToDisplay,
     setNumberOfProductionVersionsToDisplay,
-  ] = createSignal(INITIAL_NUMBER_OF_VERSIONS_TO_DISPLAY);
+  ] = createSignal(INITIAL_NUMBER_OF_PRODUCTION_VERSIONS_TO_DISPLAY);
   const [
     numberOfPreviewVersionsToDisplay,
     setNumberOfPreviewVersionsToDisplay,
-  ] = createSignal(INITIAL_NUMBER_OF_VERSIONS_TO_DISPLAY);
+  ] = createSignal(INITIAL_NUMBER_OF_PREVIEW_VERSIONS_TO_DISPLAY);
   const [categorizedCompilerVersions, setCategorizedCompilerVersions] =
     createSignal<ReturnType<typeof getCompilerVersionsByType>>();
 

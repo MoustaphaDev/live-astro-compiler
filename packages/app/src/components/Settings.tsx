@@ -26,20 +26,22 @@ export type SettingsSectionProps = {
 export default function SettingsSection(props: SettingsSectionProps) {
   let dialogHeader: HTMLDivElement | null = null;
   let dialogDescriptionRef: HTMLDivElement | null = null;
-  let parseOptionsRef: HTMLHeadingElement | null = null;
   onMount(() => {
+    const topMostElementInModalContent = document.querySelector(
+      "[data-top-most-element-in-modal-content]",
+    );
     // take the `parseOptions` heading as a reference to observe the scrolled navbar
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          dialogHeader!.classList.add("shadow-custom");
+          dialogHeader!.classList.add("shadow-settings-header");
         } else {
-          dialogHeader!.classList.remove("shadow-custom");
+          dialogHeader!.classList.remove("shadow-settings-header");
         }
       },
       { rootMargin: "-50px", root: dialogDescriptionRef! },
     );
-    observer.observe(parseOptionsRef!);
+    observer.observe(topMostElementInModalContent!);
   });
 
   return (
@@ -66,12 +68,7 @@ export default function SettingsSection(props: SettingsSectionProps) {
             <Separator />
             {/* display all the `Parse` options */}
             <div>
-              <h3
-                class="text-md mb-2 font-bold text-white"
-                ref={parseOptionsRef!}
-              >
-                Parse Options
-              </h3>
+              <h3 class="text-md mb-2 font-bold text-white">Parse Options</h3>
               <div>
                 <ToggleField label="position">
                   <ToggleButton
