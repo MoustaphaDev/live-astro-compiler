@@ -118,54 +118,21 @@ type VersionsListProps = {
   setIsLoading: (value: boolean) => void;
 };
 function VersionsList(props: VersionsListProps) {
-  const { allCompilerVersions, versionsToDisplay } = useVersionsList(props);
-  let pixelToObserveTop: HTMLDivElement | null = null;
-  let pixelToObserveBottom: HTMLDivElement | null = null;
-
-  let shadowTopRef: HTMLDivElement | null = null;
-  let shadowBottomRef: HTMLDivElement | null = null;
-  onMount(() => {
-    const topObserver = new IntersectionObserver(
-      (entries) => {
-        if (!entries[0].isIntersecting) {
-          shadowTopRef!.classList.remove("opacity-0");
-          console.log("intersecting");
-        } else {
-          shadowTopRef!.classList.add("opacity-0");
-          console.log("not intersecting");
-        }
-      },
-      { root: listContainerRef! },
-    );
-    topObserver.observe(pixelToObserveTop!);
-
-    const bottomObserver = new IntersectionObserver(
-      (entries) => {
-        if (!entries[0].isIntersecting) {
-          shadowBottomRef!.classList.remove("opacity-0");
-        } else {
-          shadowBottomRef!.classList.add("opacity-0");
-        }
-      },
-      { root: listContainerRef! },
-    );
-    bottomObserver.observe(pixelToObserveBottom!);
-  });
-
+  const vl = useVersionsList(props);
   return (
     <div
       classList={{
-        "blur-[2px] pointer-events-none": allCompilerVersions.loading,
+        "blur-[2px] pointer-events-none": vl.allCompilerVersions.loading,
       }}
     >
-      <ScrollShadow ref={shadowTopRef!} position="top" />
+      <ScrollShadow ref={vl.shadowTopRef!} position="top" />
       <div
         class="relative h-80 overflow-y-auto px-1 py-4"
         ref={listContainerRef!}
       >
-        <div class="absolute" ref={pixelToObserveTop!}></div>
+        <div class="absolute" ref={vl.pixelToObserveTop!}></div>
         <div class="flex flex-wrap content-start gap-x-4 gap-y-4">
-          <For each={versionsToDisplay()}>
+          <For each={vl.versionsToDisplay()}>
             {(version) => {
               return (
                 <Button.Root
@@ -180,9 +147,9 @@ function VersionsList(props: VersionsListProps) {
             }}
           </For>
         </div>
-        <div class="absolute" ref={pixelToObserveBottom!}></div>
+        <div class="absolute" ref={vl.pixelToObserveBottom!}></div>
       </div>
-      <ScrollShadow ref={shadowBottomRef!} position="bottom" />
+      <ScrollShadow ref={vl.shadowBottomRef!} position="bottom" />
     </div>
   );
 }
@@ -288,6 +255,12 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
 }
 
 function useVersionsList(props: VersionsListProps) {
+  let pixelToObserveTop: HTMLDivElement | null = null;
+  let pixelToObserveBottom: HTMLDivElement | null = null;
+
+  let shadowTopRef: HTMLDivElement | null = null;
+  let shadowBottomRef: HTMLDivElement | null = null;
+
   const [allCompilerVersions, { refetch }] = createResource(
     compilerVersionFetcher,
   );
@@ -301,14 +274,12 @@ function useVersionsList(props: VersionsListProps) {
       props.numberOfProductionVersionsToDisplay(),
     );
   });
-
   const previewVersionsToDisplay = createMemo(() => {
     return categorizedCompilerVersions().previewVersions.slice(
       0,
       props.numberOfPreviewVersionsToDisplay(),
     );
   });
-
   // TODO: hiding and showing the corresponding versions when switching from one
   // type to another instead of unmounting them and remounting them should be
   // more performant. Refactor this later
@@ -331,9 +302,41 @@ function useVersionsList(props: VersionsListProps) {
     }),
   );
 
+  onMount(() => {
+    const topObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) {
+          shadowTopRef!.classList.remove("opacity-0");
+          console.log("intersecting");
+        } else {
+          shadowTopRef!.classList.add("opacity-0");
+          console.log("not intersecting");
+        }
+      },
+      { root: listContainerRef! },
+    );
+    topObserver.observe(pixelToObserveTop!);
+
+    const bottomObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) {
+          shadowBottomRef!.classList.remove("opacity-0");
+        } else {
+          shadowBottomRef!.classList.add("opacity-0");
+        }
+      },
+      { root: listContainerRef! },
+    );
+    bottomObserver.observe(pixelToObserveBottom!);
+  });
+
   return {
     allCompilerVersions,
     versionsToDisplay,
+    shadowTopRef,
+    shadowBottomRef,
+    pixelToObserveTop,
+    pixelToObserveBottom,
   };
 }
 
