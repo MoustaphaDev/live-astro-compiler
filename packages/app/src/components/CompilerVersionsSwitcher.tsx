@@ -11,14 +11,21 @@ import {
   on,
   createEffect,
   onMount,
+  createSelector,
 } from "solid-js";
 import { compilerVersionFetcher } from "~/lib/compiler/fetch";
 import {
   getDefaultCompilerVersionToLoad,
   setCompiler,
 } from "~/lib/compiler/module";
-import { getCompilerVersionsByType } from "~/lib/compiler/utils";
-import { setCurrentCompilerVersion } from "~/lib/stores";
+import {
+  getCompilerVersionsByType,
+  isPreviewVersion,
+} from "~/lib/compiler/utils";
+import {
+  currentCompilerVersion,
+  setCurrentCompilerVersion,
+} from "~/lib/stores";
 import { SegmentedButton } from "./ui-kit";
 import { SettingsSectionProps } from "./Settings";
 import { VsRefresh } from "solid-icons/vs";
@@ -119,6 +126,8 @@ type VersionsListProps = {
 };
 function VersionsList(props: VersionsListProps) {
   const vl = useVersionsList(props);
+  const isSelected = createSelector(currentCompilerVersion);
+
   return (
     <div
       classList={{
@@ -143,7 +152,14 @@ function VersionsList(props: VersionsListProps) {
                   title={`Load compiler v${version}`}
                   aria-label={`Load compiler v${version}`}
                   onClick={() => props.compilerVersionChangeHandler(version)}
-                  class="h-min max-w-full overflow-hidden text-ellipsis whitespace-nowrap bg-[#222] px-3 py-2 text-zinc-600 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] hover:text-zinc-200 focus:text-zinc-200 focus:ring-2 focus:ring-accent-2"
+                  class="h-min max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-3 py-2 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] focus:ring-2 focus:ring-accent-2"
+                  classList={{
+                    [isSelected(version)
+                      ? "text-primary bg-zinc-300 font-semibold cursor-default"
+                      : "bg-[#222] text-zinc-600 hover:text-zinc-200 focus:text-zinc-200"]:
+                      true,
+                  }}
+                  disabled={isSelected(version)}
                 >
                   {version}
                 </Button.Root>
@@ -217,6 +233,57 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
 
   const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
   const [isLoading, setIsLoading] = createSignal(false);
+
+  createEffect(
+    on([], () => {
+      console.log("Ran effect!");
+      // TODO: refactor this later, code looks sooooo ugly xD
+      if (
+        typeof categorizedCompilerVersions() === "undefined" ||
+        typeof currentCompilerVersion() === "undefined"
+      )
+        return;
+      const isPreview = isPreviewVersion(currentCompilerVersion()!);
+      const versionToAcess = isPreview
+        ? "previewVersions"
+        : "productionVersions";
+      const usedCompilerVersions =
+        categorizedCompilerVersions()![versionToAcess];
+      const indexOfCurrentCompilerVersion = usedCompilerVersions.indexOf(
+        currentCompilerVersion()!,
+      );
+      let _numberOfProductionVersionsToDisplay =
+        numberOfProductionVersionsToDisplay();
+      let _numberOfPreviewVersionsToDisplay =
+        numberOfPreviewVersionsToDisplay();
+      const numberOfVersionsOfUsedType = isPreview
+        ? _numberOfPreviewVersionsToDisplay
+        : _numberOfProductionVersionsToDisplay;
+
+      if (
+        indexOfCurrentCompilerVersion === -1 ||
+        indexOfCurrentCompilerVersion >= numberOfVersionsOfUsedType
+      )
+        return;
+
+      for (
+        let i = indexOfCurrentCompilerVersion;
+        i < numberOfVersionsOfUsedType;
+        i += STEP
+      ) {
+        if (isPreview) {
+          _numberOfPreviewVersionsToDisplay += STEP;
+          continue;
+        }
+        _numberOfProductionVersionsToDisplay += STEP;
+      }
+      setNumberOfPreviewVersionsToDisplay(_numberOfPreviewVersionsToDisplay);
+      setNumberOfProductionVersionsToDisplay(
+        _numberOfProductionVersionsToDisplay,
+      );
+      setVersionsType(isPreview ? "Preview" : "Production");
+    }),
+  );
 
   const handleShowMore = () => {
     if (versionsType() === "Preview") {

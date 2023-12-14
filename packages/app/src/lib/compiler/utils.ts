@@ -20,11 +20,16 @@ export function getCompilerVersionsByType(allCompilerVersions: string[]) {
   const previewVersions = [];
   const productionVersions = [];
   for (const version of allCompilerVersions) {
-    if (version.startsWith(PREVIEW_VERSION_PREFIX)) {
+    if (isPreviewVersion(version)) {
       previewVersions.push(version);
     } else {
       productionVersions.push(version);
     }
   }
   return { previewVersions, productionVersions };
+}
+
+export function isPreviewVersion(version: string): boolean {
+  const PREVIEW_VERSION_PREFIX = "0.0.0-";
+  return version.startsWith(PREVIEW_VERSION_PREFIX);
 }
