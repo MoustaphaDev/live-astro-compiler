@@ -122,7 +122,8 @@ function VersionsList(props: VersionsListProps) {
   return (
     <div
       classList={{
-        "blur-[2px] pointer-events-none": vl.allCompilerVersions.loading,
+        "blur-[2px] pointer-events-none relative":
+          vl.allCompilerVersions.loading,
       }}
     >
       <ScrollShadow ref={vl.shadowRelatedRefs.shadowTopRef!} position="top" />
@@ -175,7 +176,7 @@ function ScrollShadow(props: ScrollShadowProps) {
     props.position === "top" ? "[--weight:1]" : "[--weight:-1]";
   return (
     <div
-      class="versions-list-shadow pointer-events-none sticky left-0 z-10 h-10 w-full"
+      class="versions-list-shadow pointer-events-none relative left-0 z-10 h-10 w-full"
       classList={{
         [translate]: true,
         [resolvedPosition]: true,
