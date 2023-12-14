@@ -60,7 +60,10 @@ async function convertToTSXCode(
 }
 
 function createWrapperCompilerFunctions() {
-  const { convertToTSX, parse, transform } = remoteCompilerModule!;
+  if (!remoteCompilerModule) {
+    throw new Error("Compiler not initialized");
+  }
+  const { convertToTSX, parse, transform } = remoteCompilerModule;
 
   const getTransformResult = asyncDebounce(
     async (transformOptions: ConsumedTransformOptions) => {

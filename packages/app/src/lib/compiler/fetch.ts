@@ -25,7 +25,12 @@ export function getRemoteCompilerModuleURL(version: string) {
 }
 
 export function getRemoteCompilerWasmURL(version: string) {
-  return `${REMOTE_COMPILER_PREFIX}@${version}/dist/astro.wasm`;
+  const base = `${REMOTE_COMPILER_PREFIX}@${version}`;
+  const urls = {
+    url: `${base}/dist/astro.wasm`,
+    fallback: `${base}/astro.wasm`,
+  };
+  return urls;
 }
 
 type FetchCompilerModuleOptions = {
@@ -93,14 +98,17 @@ export async function fetchLatestProductionCompilerVersion(): Promise<string> {
 export type CompilerModule = typeof import("@astrojs/compiler");
 export type CompilerModuleAndWasm = {
   module: CompilerModule;
-  wasmURL: string;
+  wasmURL: {
+    url: string;
+    fallback: string;
+  };
 };
 export async function fetchCompilerModuleAndWASM(
   version: string,
 ): Promise<CompilerModuleAndWasm | null> {
   const compilerModuleNamespace = await fetchCompilerModule(version);
   const compilerWasmUrl = getRemoteCompilerWasmURL(version);
-  if (!compilerModuleNamespace || !compilerWasmUrl) {
+  if (!compilerModuleNamespace) {
     console.warn(
       `Failed to fetch compiler module or wasm for version ${version}`,
     );

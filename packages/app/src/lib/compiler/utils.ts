@@ -6,6 +6,7 @@ export const getNextDays = (currentDate = new Date(), daysToAdd = 1) => {
   return nextDate;
 };
 
+// unused, but keeping it as we might need it later
 export function getCompatibilityStatus(
   storedCompilerDetails: StoredCompilerDetails,
 ): StoredCompilerDetails["compatibilityMap"] | "unmarked" {
@@ -16,7 +17,6 @@ export function getCompatibilityStatus(
 }
 
 export function getCompilerVersionsByType(allCompilerVersions: string[]) {
-  const PREVIEW_VERSION_PREFIX = "0.0.0-";
   const previewVersions = [];
   const productionVersions = [];
   for (const version of allCompilerVersions) {
@@ -32,4 +32,15 @@ export function getCompilerVersionsByType(allCompilerVersions: string[]) {
 export function isPreviewVersion(version: string): boolean {
   const PREVIEW_VERSION_PREFIX = "0.0.0-";
   return version.startsWith(PREVIEW_VERSION_PREFIX);
+}
+
+export function createPromiseAndActions() {
+  let resolver: (value?: any) => void;
+  let rejecter: (value?: any) => void;
+  const promise = new Promise((resolve, reject) => {
+    resolver = resolve;
+    rejecter = reject;
+  });
+  // @ts-expect-error
+  return { promise, resolver, rejecter };
 }

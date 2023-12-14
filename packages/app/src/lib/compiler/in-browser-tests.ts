@@ -1,4 +1,4 @@
-import type { CompilerModule, CompilerModuleAndWasm } from "./cache";
+import type { CompilerModule, CompilerModuleAndWasm } from "./fetch";
 
 // Right now they don't have any effect, but later, this will
 // allow us to display which compiler functionalities aren't available
@@ -58,17 +58,32 @@ export async function runCompilerCompatibilityTestsWithPlayground({
   module: compilerModule,
   wasmURL,
 }: CompilerModuleAndWasm): Promise<TestResults> {
-  await compilerModule.initialize({ wasmURL });
+  try {
+    await compilerModule.initialize({ wasmURL: wasmURL.url });
+  } catch (e) {
+    try {
+      await compilerModule.initialize({ wasmURL: wasmURL.fallback });
+    } catch {
+      return {
+        transform: "incompatible",
+        convertToTSX: "incompatible",
+        parse: "incompatible",
+      };
+    }
+  }
   const testResults = {} as TestResults;
   for (const [testName, testFn] of Object.entries(testSuite)) {
     const functionalityName = testName.replace("Test", "") as keyof TestResults;
-    const result = await testFn(compilerModule);
-    if (result) {
-      testResults[functionalityName] = "compatible";
-      continue;
-    }
+    let result: Awaited<ReturnType<typeof testFn>>;
+    try {
+      result = await testFn(compilerModule);
+      if (result) {
+        testResults[functionalityName] = "compatible";
+        continue;
+      }
+    } catch (e) {}
     testResults[functionalityName] = "incompatible";
   }
-  compilerModule.teardown();
+  compilerModule.teardown?.();
   return testResults;
 }

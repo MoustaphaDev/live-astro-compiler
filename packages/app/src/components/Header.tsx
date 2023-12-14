@@ -312,7 +312,7 @@ function MobileModeSwitcher() {
       <SegmentedButton
         options={["Editor", "Preview"]}
         isMobile
-        defaultActive={/*@once*/ showMobilePreview() ? "Preview" : "Editor"}
+        activeOption={showMobilePreview() ? "Preview" : "Editor"}
         handleOptionChange={(option) =>
           setShowMobilePreview(option === "Preview")
         }

@@ -1,10 +1,4 @@
-import {
-  type ComponentProps,
-  type JSX,
-  splitProps,
-  For,
-  createSignal,
-} from "solid-js";
+import { type ComponentProps, type JSX, splitProps, For } from "solid-js";
 import {
   Separator as SeparatorPrimitive,
   ToggleButton as ToggleButtonPrimitive,
@@ -99,24 +93,13 @@ type SegmentedButtonProps<
 > = {
   options: U;
   activeClass?: string;
-  defaultActive?: K;
+  activeOption?: K;
   isMobile?: boolean;
   handleOptionChange?: (option: K) => void;
 };
 export function SegmentedButton<T extends string[] = string[]>(
   props: SegmentedButtonProps<T>,
 ) {
-  const [activeOption, setActiveOption] = createSignal(
-    props.defaultActive ?? props.options[0],
-  );
-  // this is to rearrange the default active option to be the first option
-  // it's fine destructuring here because this
-  // prop isn't reactive anyway
-  const { defaultActive } = props;
-  if (defaultActive) {
-    props.options.splice(props.options.indexOf(defaultActive), 1);
-    props.options.unshift(activeOption());
-  }
   return (
     <div
       classList={
@@ -132,12 +115,10 @@ export function SegmentedButton<T extends string[] = string[]>(
         {(option) => (
           <Button.Root
             onClick={() => {
-              // @ts-expect-error
-              setActiveOption(option);
               props?.handleOptionChange?.(option);
             }}
             class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
-              activeOption() === option
+              props.activeOption === option
                 ? props.activeClass ?? "bg-zinc-900"
                 : "bg-zinc-900 opacity-50"
             }`}

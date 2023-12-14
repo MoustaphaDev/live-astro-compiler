@@ -15,10 +15,7 @@ import {
   untrack,
 } from "solid-js";
 import { compilerVersionFetcher } from "~/lib/compiler/fetch";
-import {
-  getDefaultCompilerVersionToLoad,
-  setCompiler,
-} from "~/lib/compiler/module";
+import { setCompilerWithFallbackHandling } from "~/lib/compiler/module";
 import {
   getCompilerVersionsByType,
   isPreviewVersion,
@@ -30,6 +27,7 @@ import {
 import { SegmentedButton } from "./ui-kit";
 import { SettingsSectionProps } from "./Settings";
 import { VsRefresh } from "solid-icons/vs";
+import { createRenderEffect } from "solid-js";
 
 type VersionSwitcherProps = SettingsSectionProps;
 // TODO: consider refactoring this component to use the context api
@@ -52,8 +50,8 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
         </div>
         <SegmentedButton
           activeClass="bg-accent-2 !text-primary !font-semibold"
-          options={["Preview", "Production"]}
-          defaultActive={/*@once*/ vs.versionsType()}
+          options={["Production", "Preview"]}
+          activeOption={vs.versionsType()}
           handleOptionChange={vs.handleVersionTypeChange}
         />
       </div>
@@ -302,8 +300,6 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
     setNumberOfProductionVersionsToDisplay(
       _numberOfProductionVersionsToDisplay,
     );
-    setVersionsType(isPreview ? "Preview" : "Production");
-    untrack(categorizedCompilerVersions);
   });
 
   const handleShowMore = () => {
@@ -323,18 +319,23 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
         ),
       );
     }
-
     scrollToBottom();
   };
 
   const handleVersionTypeChange = (type: "Preview" | "Production") => {
     setVersionsType(type);
+    // TODO: later handle the case when the we switch to a mode which has the
+    // same type as the current compiler version
+    // in that case we should scroll to the current compiler version button,
+    // instead of scrolling to the top
     scrollToTop();
   };
 
-  const handleCompilerVersionChange = createCompilerChangeHandler(
-    props.closeModal,
-  );
+  const handleCompilerVersionChange = createCompilerChangeHandler((version) => {
+    setCurrentCompilerVersion(version);
+    // setHasCompilerVersionChangeBeenHandled(true);
+    props.closeModal();
+  });
   return {
     categorizedCompilerVersions,
     setCategorizedCompilerVersions,
@@ -420,14 +421,7 @@ function useVersionsList(props: VersionsListProps) {
   createEffect(
     on(allCompilerVersions, () => {
       queueMicrotask(() => {
-        console.log("Scrolled into view!");
-        const selectedCompilerVersionButtonEl =
-          document.querySelector<HTMLButtonElement>(
-            "[data-selected-compiler-button]",
-          );
-        if (selectedCompilerVersionButtonEl) {
-          selectedCompilerVersionButtonEl.scrollIntoView(false);
-        }
+        scrollToSelectedVersion();
       });
     }),
   );
@@ -468,31 +462,12 @@ function useVersionsList(props: VersionsListProps) {
 }
 
 function createCompilerChangeHandler(
-  afterCompilerChange: () => Promise<void> | void,
+  afterCompilerChange: (version: string) => Promise<void> | void,
 ) {
-  return (version: string) => {
-    // setHasCompilerVersionChangeBeenHandled(false);
-    setCompiler(version).then(async ({ status }) => {
-      if (status === "failure") {
-        const { compilerVersionToLoad: fallbackCompilerVersion } =
-          await getDefaultCompilerVersionToLoad();
-        // TODO: display a toast to the user
-        alert(
-          `An error occured while loading the compiler, falling back to v${fallbackCompilerVersion}`,
-        );
-        // TODO: handle failure here too
-        await setCompiler(fallbackCompilerVersion);
-        version = fallbackCompilerVersion;
-
-        if (!version) {
-          throw new Error("No fallback compiler version was found");
-        }
-      }
-      setCurrentCompilerVersion(version);
-      // setHasCompilerVersionChangeBeenHandled(true);
-      await afterCompilerChange();
-    });
-  };
+  return (version: string) =>
+    setCompilerWithFallbackHandling(version, () =>
+      afterCompilerChange(version),
+    );
 }
 
 let listContainerRef: HTMLDivElement | null = null;
@@ -516,5 +491,15 @@ function scrollToTop() {
       top: 0,
       behavior: "smooth",
     });
+  }
+}
+
+function scrollToSelectedVersion() {
+  const selectedCompilerVersionButtonEl =
+    document.querySelector<HTMLButtonElement>(
+      "[data-selected-compiler-button]",
+    );
+  if (selectedCompilerVersionButtonEl) {
+    selectedCompilerVersionButtonEl.scrollIntoView(false);
   }
 }
