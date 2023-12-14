@@ -128,3 +128,7 @@
   -moz-box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
   box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
 }
+
+.shadow-hide{
+  --shadow-opacity: 0;
+}

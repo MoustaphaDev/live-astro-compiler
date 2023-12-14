@@ -195,7 +195,7 @@ function ScrollShadow(props: ScrollShadowProps) {
     props.position === "top" ? "[--weight:1]" : "[--weight:-1]";
   return (
     <div
-      class="versions-list-shadow pointer-events-none relative left-0 z-10 h-10 w-full"
+      class="versions-list-shadow pointer-events-none relative left-0 z-10 h-10 w-full transition-shadow"
       classList={{
         [translate]: true,
         [resolvedPosition]: true,
@@ -419,10 +419,10 @@ function useVersionsList(props: VersionsListProps) {
     const topObserver = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          shadowRelatedRefs.shadowTopRef!.classList.remove("opacity-0");
+          shadowRelatedRefs.shadowTopRef!.classList.remove("shadow-hide");
           console.log("intersecting");
         } else {
-          shadowRelatedRefs.shadowTopRef!.classList.add("opacity-0");
+          shadowRelatedRefs.shadowTopRef!.classList.add("shadow-hide");
           console.log("not intersecting");
         }
       },
@@ -433,9 +433,9 @@ function useVersionsList(props: VersionsListProps) {
     const bottomObserver = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          shadowRelatedRefs.shadowBottomRef!.classList.remove("opacity-0");
+          shadowRelatedRefs.shadowBottomRef!.classList.remove("shadow-hide");
         } else {
-          shadowRelatedRefs.shadowBottomRef!.classList.add("opacity-0");
+          shadowRelatedRefs.shadowBottomRef!.classList.add("shadow-hide");
         }
       },
       { root: listContainerRef! },
