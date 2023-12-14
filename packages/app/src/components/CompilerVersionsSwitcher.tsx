@@ -237,30 +237,47 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
   const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
   const [isLoading, setIsLoading] = createSignal(false);
 
-  createEffect(() => {
-    // TODO: refactor this later, code looks sooooo ugly xD
+  // this effect is responsible for increasing the number of versions to display
+  // so that the current compiler version will be visible in the list
+  // TODO: refactor this later, code looks sooooo ugly xD
+  createRenderEffect(() => {
+    const untrackedCurrentCompilerVersion = untrack(currentCompilerVersion);
+    const untrackedNumberOfProductionVersionsToDisplay = untrack(
+      numberOfProductionVersionsToDisplay,
+    );
+    const untrackedNumberOfPreviewVersionsToDisplay = untrack(
+      numberOfPreviewVersionsToDisplay,
+    );
+    const untrackedVersionsType = untrack(versionsType);
+
     if (
       typeof categorizedCompilerVersions() === "undefined" ||
-      typeof currentCompilerVersion() === "undefined"
+      typeof untrackedCurrentCompilerVersion === "undefined"
     )
       return;
-    const isPreview = isPreviewVersion(currentCompilerVersion()!);
-    const versionToAcess = isPreview ? "previewVersions" : "productionVersions";
+    const isPreviewModeSelected = untrackedVersionsType === "Preview";
+
+    const isPreviewCompilerSelected = isPreviewVersion(
+      untrackedCurrentCompilerVersion!,
+    );
+
+    setVersionsType(isPreviewCompilerSelected ? "Preview" : "Production");
+
+    const versionToAcess = isPreviewCompilerSelected
+      ? "previewVersions"
+      : "productionVersions";
     const usedCompilerVersions = categorizedCompilerVersions()![versionToAcess];
     const indexOfCurrentCompilerVersion = usedCompilerVersions.indexOf(
-      currentCompilerVersion()!,
+      untrackedCurrentCompilerVersion!,
     );
     let _numberOfProductionVersionsToDisplay =
-      numberOfProductionVersionsToDisplay();
-    let _numberOfPreviewVersionsToDisplay = numberOfPreviewVersionsToDisplay();
-    const numberOfVersionsOfUsedType = isPreview
+      untrackedNumberOfProductionVersionsToDisplay;
+    let _numberOfPreviewVersionsToDisplay =
+      untrackedNumberOfPreviewVersionsToDisplay;
+    const numberOfVersionsOfUsedType = isPreviewModeSelected
       ? _numberOfPreviewVersionsToDisplay
       : _numberOfProductionVersionsToDisplay;
 
-    console.log({
-      indexOfCurrentCompilerVersion,
-      numberOfVersionsOfUsedType,
-    });
     if (
       indexOfCurrentCompilerVersion === -1 ||
       indexOfCurrentCompilerVersion <= numberOfVersionsOfUsedType
@@ -275,7 +292,7 @@ function useVersionsSwitcher(props: VersionSwitcherProps) {
       i < indexOfCurrentCompilerVersion;
       i += STEP
     ) {
-      if (isPreview) {
+      if (isPreviewModeSelected) {
         _numberOfPreviewVersionsToDisplay += STEP;
         continue;
       }
