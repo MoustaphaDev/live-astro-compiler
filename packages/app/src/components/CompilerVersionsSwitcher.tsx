@@ -169,8 +169,10 @@ function VersionsList(props: VersionsListProps) {
             {(version) => {
               return (
                 <Button.Root
+                  title={`Load compiler v${version}`}
+                  aria-label={`Load compiler v${version}`}
                   onClick={() => props.compilerVersionChangeHandler(version)}
-                  class="h-min w-fit bg-[#222] px-3 py-2 text-zinc-600 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] hover:text-zinc-200 focus:text-zinc-200 focus:ring-2 focus:ring-accent-2"
+                  class="h-min max-w-full overflow-hidden text-ellipsis whitespace-nowrap bg-[#222] px-3 py-2 text-zinc-600 outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] hover:text-zinc-200 focus:text-zinc-200 focus:ring-2 focus:ring-accent-2"
                 >
                   {version}
                 </Button.Root>
@@ -178,7 +180,7 @@ function VersionsList(props: VersionsListProps) {
             }}
           </For>
         </div>
-        <div class="absolute" ref={pixelToObserveBottom!}></div>S
+        <div class="absolute" ref={pixelToObserveBottom!}></div>
       </div>
       <ScrollShadow ref={shadowBottomRef!} position="bottom" />
     </div>
