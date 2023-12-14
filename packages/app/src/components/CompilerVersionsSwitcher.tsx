@@ -125,12 +125,15 @@ function VersionsList(props: VersionsListProps) {
         "blur-[2px] pointer-events-none": vl.allCompilerVersions.loading,
       }}
     >
-      <ScrollShadow ref={vl.shadowTopRef!} position="top" />
+      <ScrollShadow ref={vl.shadowRelatedRefs.shadowTopRef!} position="top" />
       <div
         class="relative h-80 overflow-y-auto px-1 py-4"
         ref={listContainerRef!}
       >
-        <div class="absolute" ref={vl.pixelToObserveTop!}></div>
+        <div
+          class="absolute"
+          ref={vl.shadowRelatedRefs.pixelToObserveTop!}
+        ></div>
         <div class="flex flex-wrap content-start gap-x-4 gap-y-4">
           <For each={vl.versionsToDisplay()}>
             {(version) => {
@@ -147,9 +150,15 @@ function VersionsList(props: VersionsListProps) {
             }}
           </For>
         </div>
-        <div class="absolute" ref={vl.pixelToObserveBottom!}></div>
+        <div
+          class="absolute"
+          ref={vl.shadowRelatedRefs.pixelToObserveBottom!}
+        ></div>
       </div>
-      <ScrollShadow ref={vl.shadowBottomRef!} position="bottom" />
+      <ScrollShadow
+        ref={vl.shadowRelatedRefs.shadowBottomRef!}
+        position="bottom"
+      />
     </div>
   );
 }
@@ -261,6 +270,21 @@ function useVersionsList(props: VersionsListProps) {
   let shadowTopRef: HTMLDivElement | null = null;
   let shadowBottomRef: HTMLDivElement | null = null;
 
+  type ShadowRelatedRefs = {
+    shadowTopRef: HTMLDivElement | null;
+    shadowBottomRef: HTMLDivElement | null;
+    pixelToObserveTop: HTMLDivElement | null;
+    pixelToObserveBottom: HTMLDivElement | null;
+  };
+  // We need to have the references of the refs,
+  // otherwise, they can't be initialized
+  const shadowRelatedRefs = {
+    shadowTopRef,
+    shadowBottomRef,
+    pixelToObserveTop,
+    pixelToObserveBottom,
+  } as unknown as ShadowRelatedRefs;
+
   const [allCompilerVersions, { refetch }] = createResource(
     compilerVersionFetcher,
   );
@@ -306,37 +330,34 @@ function useVersionsList(props: VersionsListProps) {
     const topObserver = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          shadowTopRef!.classList.remove("opacity-0");
+          shadowRelatedRefs.shadowTopRef!.classList.remove("opacity-0");
           console.log("intersecting");
         } else {
-          shadowTopRef!.classList.add("opacity-0");
+          shadowRelatedRefs.shadowTopRef!.classList.add("opacity-0");
           console.log("not intersecting");
         }
       },
       { root: listContainerRef! },
     );
-    topObserver.observe(pixelToObserveTop!);
+    topObserver.observe(shadowRelatedRefs.pixelToObserveTop!);
 
     const bottomObserver = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          shadowBottomRef!.classList.remove("opacity-0");
+          shadowRelatedRefs.shadowBottomRef!.classList.remove("opacity-0");
         } else {
-          shadowBottomRef!.classList.add("opacity-0");
+          shadowRelatedRefs.shadowBottomRef!.classList.add("opacity-0");
         }
       },
       { root: listContainerRef! },
     );
-    bottomObserver.observe(pixelToObserveBottom!);
+    bottomObserver.observe(shadowRelatedRefs.pixelToObserveBottom!);
   });
 
   return {
     allCompilerVersions,
     versionsToDisplay,
-    shadowTopRef,
-    shadowBottomRef,
-    pixelToObserveTop,
-    pixelToObserveBottom,
+    shadowRelatedRefs,
   };
 }
 
