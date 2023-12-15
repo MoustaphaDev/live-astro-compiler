@@ -43,7 +43,10 @@ export function Header() {
         <h1 class="flex items-center">
           <img src={AstroLogo} class="z-10 h-8 sm:h-10 lg:h-14" />
           <span class="xs:text-xl relative ml-3 h-full font-montserrat text-lg font-semibold text-white lg:text-3xl lg:font-medium">
-            Live Compiler v{currentCompilerVersion()}
+            Live Compiler{" "}
+            <span class="xs:text-lg text-base font-medium text-zinc-400 lg:text-2xl">
+              v{currentCompilerVersion()}
+            </span>
             <span class="absolute -top-20 left-24 hidden text-zinc-400/30 lg:block">
               <BsGearWideConnected class="inline h-48 w-48 animate-spin-2 motion-reduce:animate-none" />
             </span>
