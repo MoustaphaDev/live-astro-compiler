@@ -275,7 +275,7 @@ export function useVersionsList(props: VersionsListProps) {
           shadowRelatedRefs.shadowBottomRef!.classList.remove("shadow-show");
         }
       },
-      { root: listContainerRefPointer.current! },
+      { root: listContainerRefPointer.current!, rootMargin: "10px" },
     );
     bottomObserver.observe(shadowRelatedRefs.pixelToObserveBottom!);
   });
