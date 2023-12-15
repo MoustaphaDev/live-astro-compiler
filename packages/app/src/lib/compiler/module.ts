@@ -42,8 +42,8 @@ async function setCompiler(version: string): Promise<{
   const { module: compilerModule, wasmURL } = compilerModuleAndWasm;
   const { isMarked } = getCompilerMarkingState(version);
 
-  console.log({ isMarked });
   if (!isMarked!) {
+    console.info("Running compiler tests...");
     // run compatibility tests
     // later implement this like described in our detailed design
     // for now, just run the tests
@@ -51,6 +51,7 @@ async function setCompiler(version: string): Promise<{
       module: compilerModule,
       wasmURL,
     });
+    console.info("Compiler tests finished:\n%s", JSON.stringify(testResults, null, 2));
     storeCompilerDetails({
       version,
       compatibilityMap: testResults,
@@ -214,7 +215,6 @@ async function checkCompatibitly(version: string) {
   for (const [functionality, compatibilityStatus] of Object.entries(
     maybeStoredCompilerDetails.compatibilityMap,
   )) {
-    console.log({ functionality, compatibilityStatus });
     if (compatibilityStatus === "incompatible") {
       // if any is incompatible, load the latest production version
       console.warn(`Compiler version ${version} is incompatible`);

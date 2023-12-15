@@ -259,10 +259,8 @@ export function useVersionsList(props: VersionsListProps) {
       (entries) => {
         if (!entries[0].isIntersecting) {
           shadowRelatedRefs.shadowTopRef!.classList.add("shadow-show");
-          console.log("intersecting");
         } else {
           shadowRelatedRefs.shadowTopRef!.classList.remove("shadow-show");
-          console.log("not intersecting");
         }
       },
       { root: listContainerRefPointer.current! },
