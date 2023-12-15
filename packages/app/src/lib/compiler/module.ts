@@ -87,9 +87,13 @@ async function setCompiler(version: string): Promise<{
   };
 }
 
+type Action = {
+  onSuccess?: () => Promise<void> | void;
+  onFailure?: () => Promise<void> | void;
+};
 export async function setCompilerWithFallbackHandling(
   version: string,
-  afterCompilerChange: () => Promise<void> | void = () => {},
+  action?: Action,
 ) {
   const {
     promise: loadingCompilerPromise,
@@ -129,9 +133,10 @@ export async function setCompilerWithFallbackHandling(
       toast.dismiss(compilerLoadingToast);
       return;
     }
-    await afterCompilerChange();
+    await action?.onSuccess?.();
     triggerSuccess();
   } catch {
+    await action?.onFailure?.();
     triggerFailure();
   }
 }

@@ -27,6 +27,8 @@ import {
 } from "./utils";
 import { VersionSwitcherProps, VersionsListProps } from ".";
 
+// TODO: refactor this later, code looks sooooo ugly
+// and all over the place xD
 export function useVersionsSwitcher(props: VersionSwitcherProps) {
   const STEP = 5;
   const INITIAL_NUMBER_OF_PRODUCTION_VERSIONS_TO_DISPLAY = 30;
@@ -46,11 +48,11 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
     createSignal<ReturnType<typeof getCompilerVersionsByType>>();
 
   const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
-  const [isLoading, setIsLoading] = createSignal(false);
+  const [isLoadingCompilerVersions, setIsLoadingCompilerVersions] =
+    createSignal(false);
 
   // this effect is responsible for increasing the number of versions to display
   // so that the current compiler version will be visible in the list
-  // TODO: refactor this later, code looks sooooo ugly xD
   createRenderEffect(() => {
     const untrackedCurrentCompilerVersion = untrack(currentCompilerVersion);
     const untrackedNumberOfProductionVersionsToDisplay = untrack(
@@ -144,11 +146,28 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
     scrollToTop();
   };
 
-  const handleCompilerVersionChange = createCompilerChangeHandler((version) => {
-    setCurrentCompilerVersion(version);
-    // setHasCompilerVersionChangeBeenHandled(true);
-    props.closeModal();
-  });
+  let isHandlingCompilerVersionChange = false;
+  const handleCompilerVersionChange = async (version: string) => {
+    // don't handle the change if it's already being handled
+    // this prevents the user from trying to change the compiler version
+    // multiple times while a change is pending
+    if (isHandlingCompilerVersionChange) return;
+    const handler = createCompilerChangeHandler({
+      onSuccessfulChange(version) {
+        setCurrentCompilerVersion(version);
+        // setHasCompilerVersionChangeBeenHandled(true);
+        props.closeModal();
+      },
+      onFailedChange() {
+        // setHasCompilerVersionChangeBeenHandled(true);
+        props.closeModal();
+      },
+    });
+    isHandlingCompilerVersionChange = true;
+    await handler(version);
+    isHandlingCompilerVersionChange = false;
+  };
+
   return {
     categorizedCompilerVersions,
     setCategorizedCompilerVersions,
@@ -161,8 +180,8 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
     numberOfPreviewVersionsToDisplay,
     setListRefetcher,
     listRefetcher,
-    setIsLoading,
-    loading: isLoading,
+    setIsLoadingCompilerVersions,
+    isLoadingCompilerVersions,
   };
 }
 

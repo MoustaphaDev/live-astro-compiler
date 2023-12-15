@@ -23,7 +23,7 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
           </h3>
           <RefreshButton
             listRefetcher={vs.listRefetcher}
-            loading={vs.loading()}
+            loading={vs.isLoadingCompilerVersions()}
           />
         </div>
         <SegmentedButton
@@ -43,17 +43,17 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
           numberOfPreviewVersionsToDisplay={vs.numberOfPreviewVersionsToDisplay}
           compilerVersionChangeHandler={vs.handleCompilerVersionChange}
           setListRefetcher={vs.setListRefetcher}
-          setIsLoading={vs.setIsLoading}
+          setIsLoading={vs.setIsLoadingCompilerVersions}
         />
       </Suspense>
       <div class="flex items-center justify-center">
         <Show when={typeof vs.categorizedCompilerVersions() !== "undefined"}>
           <Button.Root
             onClick={vs.handleShowMore}
-            disabled={vs.loading()}
+            disabled={vs.isLoadingCompilerVersions()}
             class="rounded-md bg-zinc-900 px-3 py-2 text-zinc-50 outline-none ring-offset-0 ring-offset-primary transition-colors duration-[250ms,color] hover:bg-zinc-700 focus:ring-2 focus:ring-accent-2"
             classList={{
-              "cursor-not-allowed": vs.loading(),
+              "cursor-not-allowed": vs.isLoadingCompilerVersions(),
             }}
           >
             Show more

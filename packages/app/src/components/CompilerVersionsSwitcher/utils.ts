@@ -1,12 +1,17 @@
 import { setCompilerWithFallbackHandling } from "~/lib/compiler/module";
 
+type CreateCompilerChangeHandleProps = {
+  onSuccessfulChange?: (version: string) => Promise<void> | void;
+  onFailedChange?: (version: string) => Promise<void> | void;
+};
 export function createCompilerChangeHandler(
-  afterCompilerChange: (version: string) => Promise<void> | void,
+  props: CreateCompilerChangeHandleProps,
 ) {
   return (version: string) =>
-    setCompilerWithFallbackHandling(version, () =>
-      afterCompilerChange(version),
-    );
+    setCompilerWithFallbackHandling(version, {
+      onSuccess: () => props.onSuccessfulChange?.(version),
+      onFailure: () => props.onFailedChange?.(version),
+    });
 }
 
 let prevVersionListScrollDifference: number = 0;
