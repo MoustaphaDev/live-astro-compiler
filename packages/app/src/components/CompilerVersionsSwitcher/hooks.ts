@@ -156,15 +156,11 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
       onSuccessfulChange(version) {
         setCurrentCompilerVersion(version);
         // setHasCompilerVersionChangeBeenHandled(true);
-        props.closeModal();
-      },
-      onFailedChange() {
-        // setHasCompilerVersionChangeBeenHandled(true);
-        props.closeModal();
       },
     });
     isHandlingCompilerVersionChange = true;
     await handler(version);
+    props.closeModal();
     isHandlingCompilerVersionChange = false;
   };
 
