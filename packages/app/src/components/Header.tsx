@@ -274,49 +274,56 @@ function DesktopModeSwitcher() {
 }
 
 function MobileModeSwitcher() {
+  // TODO: refactor the span tabs using the accessible `Tabs`
+  // component from kobalte
+  return (
+    <div class="flex flex-row items-center px-4">
+      <ModeSwitcherButton />
+      <div>
+        <SegmentedButton
+          options={["Editor", "Preview"]}
+          isMobile
+          activeOption={showMobilePreview() ? "Preview" : "Editor"}
+          handleOptionChange={(option) =>
+            setShowMobilePreview(option === "Preview")
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function ModeSwitcherButton() {
   const isSelected = createSelector(mode);
   const reducedModeToTitle = Object.fromEntries(
     Object.entries(MODE_TO_TITLE).map(([k, v]) => [k, v.split(" ")[0]]),
   );
-
-  // TODO: refactor the span tabs using the accessible `Tabs`
-  // component from kobalte
   return (
-    <div class="flex h-min flex-row items-center justify-between px-4">
-      <div
-        class={`cubic-bezier-0.4,0,0.2,1 shrink-1 flex w-full grow-0 flex-nowrap bg-primary font-montserrat transition-all duration-300 lg:hidden ${
-          !showMobilePreview()
-            ? "-translate-x-full opacity-0 motion-reduce:hidden"
-            : ""
-        }`}
-      >
-        <For each={MODES}>
-          {(mode) => (
-            <button
-              onClick={() => setMode(mode)}
-              classList={{
-                "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus:after:content-[''] focus:after:h-1 focus:bg-zinc-900 focus:after:bottom-0 focus:after:absolute focus:after:w-full focus:after:left-0 hover:bg-zinc-900/50":
-                  true,
-                [!isSelected(mode)
-                  ? "text-zinc-200 focus:after:bg-zinc-700"
-                  : "text-accent-2"]: true,
-                "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 font-semibold rounded-t":
-                  isSelected(mode),
-              }}
-            >
-              {reducedModeToTitle[mode]}
-            </button>
-          )}
-        </For>
-      </div>
-      <SegmentedButton
-        options={["Editor", "Preview"]}
-        isMobile
-        activeOption={showMobilePreview() ? "Preview" : "Editor"}
-        handleOptionChange={(option) =>
-          setShowMobilePreview(option === "Preview")
-        }
-      />
+    <div
+      class={`shrink-1 flex w-full grow-0 flex-nowrap bg-primary font-montserrat transition-all duration-300 lg:hidden ${
+        !showMobilePreview()
+          ? "-translate-x-full opacity-0 motion-reduce:hidden"
+          : ""
+      }`}
+    >
+      <For each={MODES}>
+        {(mode) => (
+          <button
+            onClick={() => setMode(mode)}
+            classList={{
+              "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus:after:content-[''] focus:after:h-1 focus:bg-zinc-900 focus:after:bottom-0 focus:after:absolute focus:after:w-full focus:after:left-0 hover:bg-zinc-900/50":
+                true,
+              [!isSelected(mode)
+                ? "text-zinc-200 focus:after:bg-zinc-700"
+                : "text-accent-2"]: true,
+              "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 font-semibold rounded-t":
+                isSelected(mode),
+            }}
+          >
+            {reducedModeToTitle[mode]}
+          </button>
+        )}
+      </For>
     </div>
   );
 }

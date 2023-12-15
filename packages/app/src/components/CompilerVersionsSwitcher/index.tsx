@@ -27,7 +27,7 @@ export function CompilerVersionSwitcher(props: VersionSwitcherProps) {
           />
         </div>
         <SegmentedButton
-          activeClass="bg-accent-2 !text-primary !font-semibold"
+          activeClass="[&[data-checked]]:bg-accent-2 !text-primary !font-semibold"
           options={["Production", "Preview"]}
           activeOption={vs.versionsType()}
           handleOptionChange={vs.handleVersionTypeChange}

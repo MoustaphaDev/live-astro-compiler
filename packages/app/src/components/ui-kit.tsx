@@ -3,7 +3,7 @@ import {
   Separator as SeparatorPrimitive,
   ToggleButton as ToggleButtonPrimitive,
   TextField as TextFieldPrimitive,
-  Button,
+  RadioGroup,
 } from "@kobalte/core";
 import { toast } from "solid-sonner";
 
@@ -101,33 +101,63 @@ export function SegmentedButton<T extends string[] = string[]>(
   props: SegmentedButtonProps<T>,
 ) {
   return (
-    <div
-      classList={
-        /*@once*/ {
-          "focus-visible::ring-accent-2 overflow-hidden w-min appearance-none items-center justify-center divide-x divide-zinc-600 rounded-md border border-solid border-secondary text-base capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all  duration-[250ms,color] hover:ring-offset-0 focus-visible:outline-offset-2 focus-visible:outline-accent-2  focus-visible:ring-2 [&_*]:select-none ":
-            true,
-          "inline-flex lg:hidden": props.isMobile,
-          "inline-flex": !props.isMobile,
-        }
-      }
+    <RadioGroup.Root
+      value={props.activeOption}
+      onChange={props.handleOptionChange}
+      class="inline-flex divide-x divide-zinc-600 overflow-hidden rounded-md border border-solid border-secondary text-base capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] focus-within:outline-offset-2 focus-within:outline-accent-2 focus-within:ring-2 focus-within:ring-accent-2 [&_*]:select-none"
+      classList={{
+        "lg:hidden": props.isMobile,
+        "[&[data-checked]]:bg-accent-2": true,
+      }}
     >
       <For each={props.options}>
         {(option) => (
-          <Button.Root
-            onClick={() => {
-              props?.handleOptionChange?.(option);
-            }}
-            class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
-              props.activeOption === option
-                ? props.activeClass ?? "bg-zinc-900"
-                : "bg-zinc-900 opacity-50"
-            }`}
-          >
-            {option}
-          </Button.Root>
+          <RadioGroup.Item value={option} class="cursor-pointer">
+            <RadioGroup.ItemInput />
+            <RadioGroup.ItemControl
+              class="bg-zinc-900/50 px-6 py-3 text-zinc-200 transition-colors"
+              classList={{
+                [props.activeOption === option
+                  ? props.activeClass ?? "bg-zinc-800/100"
+                  : "bg-zinc-900/50"]: true,
+              }}
+            >
+              <RadioGroup.ItemLabel class="block h-full w-full cursor-pointer">
+                {option}
+              </RadioGroup.ItemLabel>
+            </RadioGroup.ItemControl>
+          </RadioGroup.Item>
         )}
       </For>
-    </div>
+    </RadioGroup.Root>
+    // just keeping this here if I wanna go back to it fast
+    // <div
+    //   classList={
+    //     /*@once*/ {
+    //       "overflow-hidden w-min appearance-none items-center justify-center divide-x divide-zinc-600 rounded-md border border-solid border-secondary text-base capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all  duration-[250ms,color] hover:ring-offset-0 focus-visible:outline-offset-2 focus-visible:outline-accent-2  focus-visible:ring-2 [&_*]:select-none ":
+    //         true,
+    //       "inline-flex lg:hidden": props.isMobile,
+    //       "inline-flex": !props.isMobile,
+    //     }
+    //   }
+    // >
+    //   <For each={props.options}>
+    //     {(option) => (
+    //       <Button.Root
+    //         onClick={() => {
+    //           props?.handleOptionChange?.(option);
+    //         }}
+    //         class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
+    //           props.activeOption === option
+    //             ? props.activeClass ?? "bg-zinc-900"
+    //             : "bg-zinc-900 opacity-50"
+    //         }`}
+    //       >
+    //         {option}
+    //       </Button.Root>
+    //     )}
+    //   </For>
+    // </div>
   );
 }
 
