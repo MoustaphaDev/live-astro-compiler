@@ -1,28 +1,40 @@
 import AstroLogo from "~/assets/astro-logo.svg";
 import { TbTextWrap } from "solid-icons/tb";
-import { BsGearWideConnected } from "solid-icons/bs";
-import { For, createEffect, createSignal, on } from "solid-js";
-import { Button, Dialog } from "@kobalte/core";
-import { IoOpenOutline } from "solid-icons/io";
+import { BsCheckCircleFill, BsGearWideConnected } from "solid-icons/bs";
+import { IoSettingsOutline, IoOpenOutline } from "solid-icons/io";
+import { HiOutlineChevronUpDown } from "solid-icons/hi";
+import {
+  For,
+  createEffect,
+  createSignal,
+  on,
+  createSelector,
+  lazy,
+  Show,
+  useContext,
+} from "solid-js";
+import { Button, Dialog, Select as SelectPrimitive } from "@kobalte/core";
 
 import { MODES, MODE_TO_TITLE } from "~/lib/consts";
-import { Select, SelectItem, ToggleButton } from "./ui-kit";
-import { lazy } from "solid-js";
-import { IoSettingsOutline } from "solid-icons/io";
-import { createSelector } from "solid-js";
+import { SegmentedButton, ToggleButton } from "./ui-kit";
 import {
   wordWrapped,
   setWordWrapped,
   showMobilePreview,
   breakpointMatches,
-  showSourceMapVisualizer,
-  sourceMapVisualizerUrl,
   mode,
   code,
   setMode,
   setShowMobilePreview,
+  getStatefulURL,
+  currentCompilerVersion,
+  setShowSourceMapVisualizer,
 } from "~/lib/stores";
-import { getStatefulURL } from "~/lib/stores";
+import type { Modes } from "~/lib/types";
+import type { SettingsSectionProps } from "./Settings";
+import { createSourcemapURL } from "~/lib/utils";
+import { getCompilerOutput } from "~/lib/stores/compiler";
+import { toast } from "solid-sonner";
 
 export function Header() {
   return (
@@ -31,7 +43,10 @@ export function Header() {
         <h1 class="flex items-center">
           <img src={AstroLogo} class="z-10 h-8 sm:h-10 lg:h-14" />
           <span class="xs:text-xl relative ml-3 h-full font-montserrat text-lg font-semibold text-white lg:text-3xl lg:font-medium">
-            Live Compiler
+            Live Compiler{" "}
+            <span class="xs:text-lg text-base font-medium text-zinc-400 lg:text-2xl">
+              v{currentCompilerVersion()}
+            </span>
             <span class="absolute -top-20 left-24 hidden text-zinc-400/30 lg:block">
               <BsGearWideConnected class="inline h-48 w-48 animate-spin-2 motion-reduce:animate-none" />
             </span>
@@ -66,17 +81,20 @@ const loadSettingsSection = () => lazy(() => import("./Settings"));
 function SettingsDialog() {
   const [isLoadedSettingsSection, setLoadedSettingsSection] =
     createSignal(false);
-  let SettingsSection = () => <></>;
   const noopAfterFirstCall = createNoopAfterFirstCall(() =>
-    setLoadedSettingsSection(true)
+    setLoadedSettingsSection(true),
   );
+  const [isOpen, setIsOpen] = createSignal(false);
+  const closeModal = () => setIsOpen(false);
+
+  let SettingsSection = (props: SettingsSectionProps) => <></>;
   createEffect(() => {
     if (!isLoadedSettingsSection()) return;
     SettingsSection = loadSettingsSection();
     setLoadedSettingsSection(true);
   });
   return (
-    <Dialog.Root isModal>
+    <Dialog.Root modal open={isOpen()} onOpenChange={setIsOpen}>
       <Dialog.Trigger
         onClick={noopAfterFirstCall}
         class="inline-flex h-8 w-8 appearance-none items-center justify-center rounded-md border border-solid border-secondary bg-secondary text-base capitalize leading-none text-white outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary hover:ring-offset-0 focus:ring-2 focus:ring-accent-2  focus-visible:outline-offset-2 focus-visible:outline-accent-2 active:bg-accent-2 lg:h-10 lg:w-10 [&_*]:select-none "
@@ -85,7 +103,7 @@ function SettingsDialog() {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay class="fixed inset-0 z-50 animate-[overlayHide_250ms_ease_100ms_forwards] bg-[rgba(0,0,0,0.57)] data-[expanded]:animate-[overlayShow_250ms_ease]" />
-        <SettingsSection />
+        <SettingsSection closeModal={closeModal} />
       </Dialog.Portal>
     </Dialog.Root>
   );
@@ -94,8 +112,8 @@ function SettingsDialog() {
 function WordWrapToggle() {
   return (
     <ToggleButton
-      isPressed={wordWrapped()}
-      onPressedChange={setWordWrapped}
+      pressed={wordWrapped()!}
+      onChange={setWordWrapped}
       title="Toggle word wrap"
       aria-label="Toggle word wrap"
       class="hidden lg:inline"
@@ -106,28 +124,46 @@ function WordWrapToggle() {
 }
 
 function SectionToSourceMapVisualizer() {
+  // opens the source evanw source map visualizer
+  async function openSourcemapVisualization() {
+    const sourceMapUrl = await createSourcemapURL(
+      getCompilerOutput().tsxResult?.(),
+    );
+
+    if (!sourceMapUrl) {
+      toast.error("No source map found");
+      return;
+    }
+
+    window.open(sourceMapUrl, "_blank");
+  }
+
+  const showSourceMapVisualizer = () => {
+    return (showMobilePreview() || breakpointMatches.lg) && mode() === "TSX";
+  };
+
+  createEffect(() => {
+    if (mode() === "TSX") {
+      setShowSourceMapVisualizer(false);
+    }
+  });
+
   return (
-    <div class="fixed bottom-10 right-0 z-50 flex w-full items-center justify-center lg:justify-end lg:pr-10">
-      <div
-        class={`flex items-center rounded bg-zinc-900 transition-all duration-100 hover:bg-zinc-800 hover:text-zinc-200 focus:bg-zinc-800 focus:text-zinc-200 ${
-          (showMobilePreview() || breakpointMatches.lg) &&
-          showSourceMapVisualizer()
-            ? ""
-            : "opacity-0"
-        }`}
-      >
-        <a
-          href={sourceMapVisualizerUrl()!}
-          class="group rounded px-6 py-3 text-zinc-500 outline-none transition-colors duration-100 hover:text-zinc-200 focus:text-zinc-200 focus:ring focus:ring-accent-2"
-          target="_blank"
-        >
-          <span class="mr-4 w-0 overflow-hidden">Visualize Source map</span>
-          <span class="inline-block -translate-y-[2px] text-zinc-700 duration-100 group-hover:text-zinc-400 group-focus:text-zinc-400">
-            <IoOpenOutline class="inline h-6 w-6" />
-          </span>
-        </a>
+    <Show when={showSourceMapVisualizer()}>
+      <div class="fixed bottom-10 right-0 z-50 flex w-full items-center justify-center lg:justify-end lg:pr-10">
+        <div class="flex items-center rounded bg-zinc-900 transition-all duration-100 hover:bg-zinc-800 hover:text-zinc-200 focus:bg-zinc-800 focus:text-zinc-200">
+          <Button.Root
+            onClick={openSourcemapVisualization}
+            class="group rounded px-6 py-3 text-zinc-500 outline-none transition-colors duration-100 hover:text-zinc-200 focus:text-zinc-200 focus:ring focus:ring-accent-2"
+          >
+            <span class="mr-4 w-0 overflow-hidden">Visualize Source map</span>
+            <span class="inline-block -translate-y-[2px] text-zinc-700 duration-100 group-hover:text-zinc-400 group-focus:text-zinc-400">
+              <IoOpenOutline class="inline h-6 w-6" />
+            </span>
+          </Button.Root>
+        </div>
       </div>
-    </div>
+    </Show>
   );
 }
 
@@ -149,7 +185,7 @@ function ShareButton() {
   createEffect(
     on([mode, code, wordWrapped], () => {
       setShowCopied(false);
-    })
+    }),
   );
 
   return (
@@ -194,87 +230,103 @@ function ShareButton() {
 
 function DesktopModeSwitcher() {
   return (
-    <Select
-      aria-label="Modes"
+    <SelectPrimitive.Root
+      onChange={(val) => val && setMode(val)}
+      aria-label="Switch mode"
       value={mode()}
-      // @ts-expect-error this setter is wrapper the the og signal setter
-      onValueChange={setMode}
       placeholder="Select a mode"
-      class="hidden lg:inline-flex"
+      selectionBehavior="replace"
+      // @ts-expect-error
+      options={MODES}
+      itemComponent={(props) => {
+        return (
+          <SelectPrimitive.Item
+            class="select__item cursor-pointer"
+            item={props.item}
+            onclick={() => setMode(mode)}
+          >
+            <SelectPrimitive.ItemLabel class="capitalize">
+              {props.item.rawValue}
+            </SelectPrimitive.ItemLabel>
+            <SelectPrimitive.ItemIndicator class="select__item-indicator">
+              <BsCheckCircleFill />
+            </SelectPrimitive.ItemIndicator>
+          </SelectPrimitive.Item>
+        );
+      }}
     >
-      <For each={MODES}>
-        {(mode) => (
-          <SelectItem value={mode} onClick={() => setMode(mode)}>
-            {MODE_TO_TITLE[mode]}
-          </SelectItem>
-        )}
-      </For>
-    </Select>
+      <SelectPrimitive.Trigger
+        class="hidden h-8 w-[100px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-sm capitalize leading-none text-zinc-200 outline-none ring-offset-2 ring-offset-primary transition-shadow duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus:ring-2 focus:ring-accent-2  data-[invalid]:border-[hsl(0_72%_51%)] data-[invalid]:text-[hsl(0_72%_51%)] lg:inline-flex lg:h-10 lg:w-[200px] lg:text-sm"
+        aria-label="Themes"
+      >
+        <SelectPrimitive.Value<Modes> class="overflow-hidden text-ellipsis whitespace-nowrap data-[placeholder-shown]:text-zinc-500">
+          {(state) => MODE_TO_TITLE[state.selectedOption()]}
+        </SelectPrimitive.Value>
+
+        <SelectPrimitive.Icon class="select__icon">
+          <HiOutlineChevronUpDown />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+      <SelectPrimitive.Portal>
+        <SelectPrimitive.Content class="select__content">
+          <SelectPrimitive.Listbox class="select__listbox" />
+        </SelectPrimitive.Content>
+      </SelectPrimitive.Portal>
+    </SelectPrimitive.Root>
   );
 }
 
 function MobileModeSwitcher() {
+  // TODO: refactor the span tabs using the accessible `Tabs`
+  // component from kobalte
+  return (
+    <div class="flex flex-row items-center px-4">
+      <ModeSwitcherButton />
+      <div>
+        <SegmentedButton
+          options={["Editor", "Preview"]}
+          isMobile
+          activeOption={showMobilePreview() ? "Preview" : "Editor"}
+          handleOptionChange={(option) =>
+            setShowMobilePreview(option === "Preview")
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function ModeSwitcherButton() {
   const isSelected = createSelector(mode);
   const reducedModeToTitle = Object.fromEntries(
-    Object.entries(MODE_TO_TITLE).map(([k, v]) => [k, v.split(" ")[0]])
+    Object.entries(MODE_TO_TITLE).map(([k, v]) => [k, v.split(" ")[0]]),
   );
-  const [displayNone, setDisplayNone] = createSignal(false);
-
-  createEffect(() => {
-    if (showMobilePreview()) {
-      setTimeout(() => setDisplayNone(true), 400);
-      return;
-    }
-    setDisplayNone(false);
-  });
-
   return (
-    <div class="flex h-min flex-row items-center justify-between px-4">
-      <div
-        class={`cubic-bezier-0.4,0,0.2,1 shrink-1 flex w-full grow-0 flex-nowrap bg-primary font-montserrat transition-all duration-300 lg:hidden ${
-          !showMobilePreview()
-            ? "-translate-x-full opacity-0 motion-reduce:hidden"
-            : ""
-        }`}
-      >
-        <For each={MODES}>
-          {(mode) => (
-            <button
-              onClick={() => setMode(mode)}
-              classList={{
-                "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus:after:content-[''] focus:after:h-1 focus:bg-zinc-900 focus:after:bottom-0 focus:after:absolute focus:after:w-full focus:after:left-0 hover:bg-zinc-900/50":
-                  true,
-                [!isSelected(mode)
-                  ? "text-zinc-200 focus:after:bg-zinc-700"
-                  : "text-accent-2"]: true,
-                "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 font-semibold rounded-t":
-                  isSelected(mode),
-              }}
-            >
-              {reducedModeToTitle[mode]}
-            </button>
-          )}
-        </For>
-      </div>
-      <Button.Root
-        onClick={() => setShowMobilePreview((s) => !s)}
-        class="focus-visible::ring-accent-2 inline-flex appearance-none items-center justify-center divide-x divide-zinc-600 rounded-md border border-solid border-secondary text-base capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all  duration-[250ms,color] hover:ring-offset-0 focus-visible:outline-offset-2 focus-visible:outline-accent-2  focus-visible:ring-2 lg:hidden lg:h-10 lg:w-10 [&_*]:select-none "
-      >
-        <span
-          class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
-            !showMobilePreview() ? "bg-zinc-800" : "bg-zinc-900 opacity-50"
-          }`}
-        >
-          Editor
-        </span>
-        <span
-          class={`px-4 py-2 text-zinc-200 transition-opacity duration-200 ${
-            showMobilePreview() ? "bg-zinc-800" : "bg-zinc-900 opacity-50"
-          }`}
-        >
-          Preview
-        </span>
-      </Button.Root>
+    <div
+      class={`shrink-1 flex w-full grow-0 flex-nowrap bg-primary font-montserrat transition-all duration-300 lg:hidden ${
+        !showMobilePreview()
+          ? "-translate-x-full opacity-0 motion-reduce:hidden"
+          : ""
+      }`}
+    >
+      <For each={MODES}>
+        {(mode) => (
+          <button
+            onClick={() => setMode(mode)}
+            classList={{
+              "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus:after:content-[''] focus:after:h-1 focus:bg-zinc-900 focus:after:bottom-0 focus:after:absolute focus:after:w-full focus:after:left-0 hover:bg-zinc-900/50":
+                true,
+              [!isSelected(mode)
+                ? "text-zinc-200 focus:after:bg-zinc-700"
+                : "text-accent-2"]: true,
+              "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 font-semibold rounded-t":
+                isSelected(mode),
+            }}
+          >
+            {reducedModeToTitle[mode]}
+          </button>
+        )}
+      </For>
     </div>
   );
 }

@@ -13,7 +13,7 @@ type PersistantSignalOptions<T> = {
 };
 
 function isVFunction<T>(
-  value: T | SignalSetterFunction<T>
+  value: T | SignalSetterFunction<T>,
 ): value is SignalSetterFunction<T> {
   return typeof value === "function";
 }
@@ -58,7 +58,7 @@ export function usePersistantSignal<T>({
 /*
  * Only primitive types, objects and arrays are supported
  */
-export function getPersistedValue(key: string) {
+export function getPersistedValue<U = any>(key: string) {
   if (typeof window === "undefined") {
     return null;
   }
@@ -66,7 +66,9 @@ export function getPersistedValue(key: string) {
     // Get from local storage by key
     const item = window.localStorage.getItem(key);
     // Parse stored json or if none return the initial value
-    return item ? JSON.parse(item) : null;
+    return item && typeof item !== "undefined" && item !== "undefined"
+      ? (JSON.parse(item) as U)
+      : null;
   } catch (error) {
     // If error also return the initial valvue
     console.warn(error);
@@ -77,4 +79,39 @@ export function getPersistedValue(key: string) {
 export function setPersistentValue<T>(key: string, value: T): T {
   window.localStorage.setItem(key, JSON.stringify(value));
   return value;
+}
+
+type DebouncedFunction<T> = (...args: any) => Promise<T>;
+export function asyncDebounce<T>(
+  fn: DebouncedFunction<T>,
+  ms = 500,
+): DebouncedFunction<T> {
+  let timeoutId: NodeJS.Timeout;
+  return async (...args: any) => {
+    return new Promise((resolve) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(async () => {
+        resolve(await fn(...args));
+      }, ms);
+    });
+  };
+}
+
+/**
+ * This function is used to return a function reference from a hash of functions
+ * This is useful when we expect to pass to `createResource` a fetcher that can change
+ * @param hash The hash containing the functions
+ * @param functionToPick The function to pick from the hash
+ * @returns A function that will call the functionToPick from the hash
+ */
+export function returnFunctionReferenceFromHash<
+  Hash extends Record<string, (...args: any[]) => any>,
+  FnToPick extends keyof Hash,
+  FnToReturn extends Hash[FnToPick],
+>(hash: Hash, functionToPick: FnToPick) {
+  return (...args: Parameters<FnToReturn>): ReturnType<FnToReturn> => {
+    return hash[functionToPick](...args);
+  };
 }

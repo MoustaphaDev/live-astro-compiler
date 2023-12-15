@@ -10,10 +10,14 @@ export type Modes = (typeof MODES)[number];
 export type Options = {
   action: Modes;
 };
-export type StoredSearchParams = {
-  code?: string;
+
+export type EditorValues = {
+  currentCompilerVersion?: string;
   wordWrapped?: boolean;
   mode?: Modes;
+};
+export type CompilerValues = {
+  code?: string;
   parsePosition?: ParseOptions["position"];
   transformInternalURL?: TransformOptions["internalURL"];
   filename?: TransformOptions["filename"] | ConvertToTSXOptions["filename"];
@@ -25,6 +29,7 @@ export type StoredSearchParams = {
   transformCompact?: TransformOptions["compact"];
   transformResultScopedSlot?: TransformOptions["resultScopedSlot"];
 };
+export type StoredSearchParams = EditorValues & CompilerValues;
 
 export type ConsumedTransformOptions = {
   code?: string;

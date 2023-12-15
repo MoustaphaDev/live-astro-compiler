@@ -5,6 +5,7 @@ import {
   createEffect,
   createRenderEffect,
   createSignal,
+  on,
   onCleanup,
   onMount,
 } from "solid-js";
@@ -19,15 +20,19 @@ import { createAstroEditor } from "~/lib/language-tools/monaco-astro";
 import {
   breakpointMatches,
   code,
-  isAstroCompilerInitialized,
+  currentCompilerVersion,
+  hasCompilerVersionChangeBeenHandled,
+  mode,
   setCode,
+  setHasCompilerVersionChangeBeenHandled,
   setWordWrapped,
   showMobilePreview,
-  useCompilerOutput,
   wordWrapped,
 } from "~/lib/stores";
 import { getPersistedValue, setPersistentValue } from "~/lib/stores/utils";
 import type { EditorsHash } from "~/lib/types";
+import { getOutputByMode } from "~/lib/stores/compiler";
+import { LoadingEditor, LoadingError } from "./ui-kit";
 
 let codeCompilerRef: HTMLDivElement;
 let inputBoxRef: HTMLDivElement;
@@ -81,12 +86,16 @@ export function Editor() {
 
   createRenderEffect(async () => {
     if (isOnigasmLoaded()) return;
+    // initialize the onigasm wasm
     await onigasm.loadWASM(onigasmWasm);
     setIsOnigasmLoaded(true);
+
+    // initialize the astro compiler
+    // setHasCompilerVersionChangeBeenHandled(true);
   });
 
-  onMount(minimapDisplayEffect);
   onMount(() => {
+    minimapDisplayEffect();
     // attach word-wrap event to window when we hold ALT+Z
     window.addEventListener("keydown", toggleWordWrap);
     doSplit();
@@ -106,7 +115,7 @@ export function Editor() {
         }}
       >
         <Show when={isOnigasmLoaded()} fallback={<LoadingEditor />}>
-          <ErrorBoundary fallback={<div>Oh no!</div>}>
+          <ErrorBoundary fallback={<LoadingError />}>
             <InputBox />
           </ErrorBoundary>
         </Show>
@@ -114,15 +123,20 @@ export function Editor() {
       <div
         ref={codeCompilerRef!}
         classList={{
-          hidden: !showMobilePreview() && !breakpointMatches.lg,
+          hidden:
+            (!showMobilePreview() && !breakpointMatches.lg) ||
+            !hasCompilerVersionChangeBeenHandled(),
           "!w-full": showMobilePreview() && !breakpointMatches.lg,
         }}
       >
-        <Show when={isAstroCompilerInitialized()} fallback={<LoadingEditor />}>
-          <ErrorBoundary fallback={<div>Oh no!</div>}>
-            <CodeCompiler />
-          </ErrorBoundary>
-        </Show>
+        {/* <Show
+          when={hasCompilerVersionChangeBeenHandled()}
+          fallback={<LoadingEditor />}
+        > */}
+        <ErrorBoundary fallback={<LoadingError />}>
+          <CodeCompiler />
+        </ErrorBoundary>
+        {/* </Show> */}
       </div>
     </div>
   );
@@ -143,9 +157,10 @@ function InputBox() {
       setCode(text);
     });
   });
+
   createEffect(() => {
     editorsHash?.inputBox?.updateOptions({
-      wordWrap: !wordWrapped() ? "on" : "off",
+      wordWrap: wordWrapped() ? "on" : "off",
     });
   });
 
@@ -153,15 +168,13 @@ function InputBox() {
 }
 
 function CodeCompiler() {
-  // TODO: Maybe we shouldn't compile both the parse and transform result as only one is needed at a time
-  // a counter argument is that this makes the UI faster when switching between modes
-  const { unwrappedCompilerOutput } = useCompilerOutput(editorsHash);
-
   onMount(() => {
+    // const getCompilerOutput = createCompilerOutputGetter();
+    // const { unwrappedCompilerOutput } = getCompilerOutput(editorsHash);
     // do load the monaco editor
     editorsHash!.codeCompiler = monaco.editor.create(codeCompilerRef, {
       // TODO: fix wrong types
-      value: unwrappedCompilerOutput(),
+      value: getOutputByMode() ?? "",
       language: "typescript",
       readOnly: true,
       automaticLayout: true,
@@ -170,27 +183,17 @@ function CodeCompiler() {
     });
     createEffect(() => {
       editorsHash?.codeCompiler?.updateOptions({
-        wordWrap: !wordWrapped() ? "on" : "off",
+        wordWrap: wordWrapped() ? "on" : "off",
       });
     });
+
+    createEffect(
+      on([getOutputByMode, currentCompilerVersion], () => {
+        editorsHash?.codeCompiler?.setValue(getOutputByMode() ?? "");
+      }),
+    );
   });
   return <></>;
-}
-
-export function LoadingEditor() {
-  return (
-    <div class="flex h-full w-full items-center justify-center bg-primary">
-      <div class="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-white"></div>
-    </div>
-  );
-}
-
-export function LoadingError() {
-  return (
-    <div class="flex h-full w-full items-center justify-center bg-primary">
-      <div class="text-4xl font-bold text-red-600">X</div>
-    </div>
-  );
 }
 
 function doSplit() {
@@ -199,10 +202,7 @@ function doSplit() {
     sizes,
     gutterSize: 7,
     direction: "horizontal",
-    onDragEnd: function (sizes) {
-      localStorage.setItem("split-sizes", JSON.stringify(sizes));
-      setPersistentValue;
-    },
+    onDragEnd: (sizes) => setPersistentValue("split-sizes", sizes),
     dragInterval: 1,
     gutter: (_, direction) => {
       const gutter = (

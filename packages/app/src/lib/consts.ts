@@ -1,9 +1,13 @@
+import { Modes } from "./types";
+
 export const MODES = ["parse", "transform", "TSX"] as const;
 export const MODE_TO_TITLE = {
   parse: "AST result",
   transform: "TS transform",
   TSX: "TSX result",
-} as const;
+} as const satisfies Record<Modes, any>;
+
+export const DEFAULT_MODE: Modes = "transform";
 
 export const INITIAL_CODE = `---
 import { ShareButton, ModeSwitcher, WordWrapToggle, SettingsDialog } from "./ui"
@@ -11,7 +15,7 @@ import { MouseCursor } from "./mouse"
 import { Gear } from "./decoration"
 import { AstroLogo } from "./assets"
 
-console.log("Hellow world!")
+console.log("Hello world!")
 ---
 
 <div class="flex h-20 items-center justify-between overflow-hidden border-b-2 border-secondary px-8 font-montserrat font-medium [&_*]:select-none">

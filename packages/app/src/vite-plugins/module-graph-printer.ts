@@ -1,7 +1,7 @@
 import type { Plugin, ResolvedConfig } from "vite";
 import fs from "fs";
 // forked from https://github.com/ondras/rollup-plugin-graph/tree/master
-// Just done some minor changes, and migrated to TS and ES6.
+// Just did some minor changes, and migrated to TS and ES6.
 
 type Module = {
   id: string;
@@ -96,7 +96,6 @@ export function vitePluginModuleGraph(options: Options = {}): Plugin {
       if (options.prune) {
         prune(modules);
       }
-      console.log({ root: config!.root });
       toDot(modules, config!.root);
     },
   };

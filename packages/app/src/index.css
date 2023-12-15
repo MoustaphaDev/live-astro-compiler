@@ -21,9 +21,12 @@
     @apply mt-2 select-none text-xs text-[hsl(0_72%_51%)];
   }
   .select__content {
-    @apply rounded-md border border-solid border-secondary bg-primary/95 shadow-md;
+    @apply hidden rounded-md border border-solid border-secondary bg-primary/95 shadow-md lg:block;
   }
   .select__content[data-expanded] {
+    @apply animate-fade-in;
+  }
+  .select__content[data-closed] {
     @apply animate-fade-in;
   }
   .select__listbox {
@@ -113,4 +116,19 @@
   to {
     @apply -left-1/2 opacity-0;
   }
+}
+
+/* TODO: move this to tailwind config  */
+.versions-list-shadow {
+  --shadow-opacity: 0;
+  --blur-radius: 21px;
+  --spread-radius: -29px;
+  --vertical-offset: calc(var(--weight)*44px);
+  -webkit-box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
+  -moz-box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
+  box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
+}
+
+.shadow-show{
+  --shadow-opacity: 0.5;
 }

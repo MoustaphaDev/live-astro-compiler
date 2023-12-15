@@ -5,7 +5,8 @@
     "scripts": {
         "start": "pnpm --filter astro-live-compiler run start",
         "dev": "pnpm start",
-        "build": "turbo run build --concurrency=1"
+        "build": "turbo run build --concurrency=1",
+        "format": "prettier --write ."
     },
     "workspaces": [
         "packages/*"

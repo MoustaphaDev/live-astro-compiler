@@ -3,7 +3,7 @@ import { wireTmGrammars } from "monaco-editor-textmate";
 import { Registry, type IGrammarDefinition } from "monaco-textmate";
 
 async function dispatchGrammars(
-  scopeName: string
+  scopeName: string,
 ): Promise<IGrammarDefinition> {
   switch (scopeName) {
     case "source.vue":
@@ -70,7 +70,7 @@ async function dispatchGrammars(
 }
 
 export async function loadGrammars(
-  editor: monaco.editor.IStandaloneCodeEditor
+  editor: monaco.editor.IStandaloneCodeEditor,
 ) {
   const registry = new Registry({
     getGrammarDefinition: async (scopeName) => {
@@ -89,7 +89,6 @@ export async function loadGrammars(
 
   await wireTmGrammars(monaco, registry, grammars, editor);
 }
-
 
 // import { loadGrammars, loadTheme } from "monaco-volar";
 

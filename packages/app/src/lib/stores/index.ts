@@ -3,27 +3,11 @@ import * as fflate from "fflate";
 import { usePersistantSignal } from "./utils";
 import { createStore } from "solid-js/store";
 import { INITIAL_CODE, breakpoints } from "../consts";
-import {
-  batch,
-  createEffect,
-  createRenderEffect,
-  createResource,
-  createSignal,
-  on,
-} from "solid-js";
-import type {
-  ConsumedConvertToTSXOptions,
-  ConsumedParseOptions,
-  ConsumedTransformOptions,
-  EditorsHash,
-  StoredSearchParams,
-} from "~/lib/types";
-import {
-  createHashFromCompiledCode,
-  getParseResult,
-  getTSXResult,
-  getTransformResult,
-} from "~/lib/utils";
+import { createRenderEffect, createSignal, on } from "solid-js";
+import type { StoredSearchParams } from "~/lib/types";
+import { getDefaultCompilerVersionToLoad } from "../compiler/module";
+import { createEffect } from "solid-js";
+import { storeLastUsedCompilerVersion } from "../compiler/storage";
 
 // Here's the state initialization flow:
 // 1. Get the initial value from the URL search params
@@ -44,6 +28,19 @@ export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
     return urlSearchParams.code ?? persisted ?? INITIAL_CODE;
   },
 });
+const { compilerVersionToLoad: defaultCompilerVersionToLoad } =
+  await getDefaultCompilerVersionToLoad();
+export const [currentCompilerVersion, setCurrentCompilerVersion] =
+  usePersistantSignal<StoredSearchParams["currentCompilerVersion"]>({
+    key: "current-compiler-version",
+    initialValueSetter: (persisted) => {
+      return (
+        urlSearchParams.currentCompilerVersion ??
+        persisted ??
+        defaultCompilerVersionToLoad
+      );
+    },
+  });
 
 export const [mode, setMode] = usePersistantSignal<StoredSearchParams["mode"]>({
   key: "compiler-mode",
@@ -57,11 +54,12 @@ export const [wordWrapped, setWordWrapped] = usePersistantSignal<
   key: "inputbox-wordwrap",
   initialValueSetter: (persisted) =>
     urlSearchParams.wordWrapped ?? persisted ?? false,
-  saveDelay: 1000,
 });
 
-export const [isAstroCompilerInitialized, setIsAstroCompilerInitialized] =
-  createSignal(false);
+export const [
+  hasCompilerVersionChangeBeenHandled,
+  setHasCompilerVersionChangeBeenHandled,
+] = createSignal(false);
 
 export const [sourceMapVisualizerUrl, setSourceMapVisualizerUrl] = createSignal<
   null | string
@@ -141,118 +139,23 @@ export const [normalizedFilename, setNormalizedFilename] = usePersistantSignal<
     persisted ?? urlSearchParams?.normalizedFilename,
 });
 
-// ################################ DERIVED SIGNALS HERE ################################
+// ################################ HOOKS AND EFFECTS HERE ################################
 
-const consumedTransformOptions = () => {
-  return {
-    code: code(),
-    transformOptions: {
-      internalURL: transformInternalURL(),
-      filename: filename(),
-      normalizedFilename: normalizedFilename(),
-      sourcemap: transformSourcemap(),
-      astroGlobalArgs: transformAstroGlobalArgs(),
-      compact: transformCompact(),
-      resultScopedSlot: transformResultScopedSlot(),
-    },
-  } satisfies ConsumedTransformOptions;
-};
-
-const consumedParseOptions = () => {
-  return {
-    code: code(),
-    parseOptions: {
-      position: parsePosition(),
-    },
-  } satisfies ConsumedParseOptions;
-};
-
-const consumedTSXOptions = () => {
-  return {
-    code: code(),
-    convertToTSXOptions: {
-      filename: filename(),
-      normalizedFilename: normalizedFilename(),
-    },
-  } satisfies ConsumedConvertToTSXOptions;
-};
-
-const [transformResult] = createResource(
-  consumedTransformOptions,
-  getTransformResult
-);
-const [parseResult] = createResource(consumedParseOptions, getParseResult);
-export const [tsxResult] = createResource(consumedTSXOptions, getTSXResult);
-
-export const compilerOutput = () => {
-  switch (mode()) {
-    case "parse":
-      return parseResult();
-    case "transform":
-      return transformResult();
-    case "TSX":
-      return tsxResult();
-    default:
-      throw new Error("Invalid option");
-  }
-};
-
+// store the last used compiler version
 createEffect(
-  on([tsxResult, mode], async () => {
-    if (mode() !== "TSX") {
-      batch(() => {
-        setSourceMapVisualizerUrl(null);
-        setShowSourceMapVisualizer(false);
-      });
-      return;
-    }
-    const hash = await createHashFromCompiledCode(tsxResult());
-    const hasError = !hash;
-    const url = `https://evanw.github.io/source-map-visualization/#${hash}`;
-    if (!hasError) {
-      batch(() => {
-        setSourceMapVisualizerUrl(url);
-        setShowSourceMapVisualizer(true);
-      });
-      return;
-    }
-    console.error("Failed to create hash from compiled code");
-    batch(() => {
-      setSourceMapVisualizerUrl(null);
-      setShowSourceMapVisualizer(false);
-    });
-  })
+  on(
+    currentCompilerVersion,
+    () => {
+      storeLastUsedCompilerVersion(currentCompilerVersion());
+    },
+    { defer: true },
+  ),
 );
-
-// ################################ HOOKS HERE ################################
-
-export function useCompilerOutput(editorInstances: EditorsHash) {
-  const isString = (value: unknown): value is string =>
-    typeof value === "string";
-  function getResult() {
-    const _output = compilerOutput();
-    const output = isString(_output) ? _output : _output?.code;
-    return output;
-  }
-
-  createEffect(
-    on(compilerOutput, () => {
-      editorInstances?.codeCompiler?.setValue(getResult() ?? "");
-    })
-  );
-  return {
-    unwrappedCompilerOutput: getResult,
-  };
-}
 
 function useSearchParams() {
   const decoded = _getDecodedURLState();
   const [urlSearchParamsRecord, setUrlSearchParamsRecord] =
     createStore<StoredSearchParams>(decoded);
-
-  function _getSearchParams(): StoredSearchParams {
-    return { ...urlSearchParamsRecord };
-  }
 
   function getStatefulURL() {
     const encoded = _getEncodedURLState();
@@ -261,6 +164,10 @@ function useSearchParams() {
       : "";
     const statefulUrl = `${window.location.origin}${window.location.pathname}${urlParams}`;
     return statefulUrl;
+  }
+
+  function _getSearchParams(): StoredSearchParams {
+    return { ...urlSearchParamsRecord };
   }
 
   function _getEncodedURLState(): string | null {
@@ -307,6 +214,7 @@ function useSearchParams() {
 createRenderEffect(() => {
   // initialize the search params state
   setUrlSearchParamsRecord({
+    currentCompilerVersion: currentCompilerVersion(),
     code: code(),
     wordWrapped: wordWrapped(),
     mode: mode(),

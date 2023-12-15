@@ -1,101 +1,9 @@
-// @ts-ignore
-import {
-  convertToTSX,
-  // @ts-expect-error - types are pulled from the node version of the compiler which doesn't have the `initialize` function
-  initialize,
-  parse,
-  transform,
-} from "@astrojs/compiler";
-import astroWasm from "@astrojs/compiler/astro.wasm?url";
-
-import type { TransformResult } from "@astrojs/compiler/types";
-import type {
-  ConsumedConvertToTSXOptions,
-  ConsumedParseOptions,
-  ConsumedTransformOptions,
-} from "./types";
-
-let isCompilerInitialized = false;
-
-async function initializeCompiler() {
-  if (!isCompilerInitialized) {
-    await initialize({ wasmURL: astroWasm });
-    const { setIsAstroCompilerInitialized } = await import("./stores");
-    setIsAstroCompilerInitialized(true);
-    isCompilerInitialized = true;
-  }
-}
-
-async function transformCode(
-  options: ConsumedTransformOptions
-): Promise<TransformResult> {
-  await initializeCompiler();
-  const transformResult = await transform(
-    options.code ?? "",
-    options.transformOptions
-  );
-  return transformResult;
-}
-
-async function parseCode(options: ConsumedParseOptions): Promise<string> {
-  await initializeCompiler();
-  const parseResult = await parse(options.code ?? "", options.parseOptions);
-  return JSON.stringify(parseResult, null, 2);
-}
-
-async function convertToTSXCode(
-  options: ConsumedConvertToTSXOptions
-): Promise<string> {
-  await initializeCompiler();
-  const convertToTSXResult = await convertToTSX(
-    options.code ?? "",
-    options.convertToTSXOptions
-  );
-  return convertToTSXResult.code;
-}
-
-export const getTransformResult = async (
-  transformOptions: ConsumedTransformOptions
-) => {
-  try {
-    return await transformCode(transformOptions);
-  } catch (e) {
-    // TODO better err handling
-    // idea introduce a signal holding the errors and
-    // nicely display them in the UI
-    // throw e;
-    console.error(e);
-  }
-};
-
-export const getTSXResult = async (
-  convertToTSXOptions: ConsumedConvertToTSXOptions
-) => {
-  try {
-    return await convertToTSXCode(convertToTSXOptions);
-  } catch (e) {
-    // TODO better err handling
-    // throw e;
-    console.error(e);
-  }
-};
-
-export const getParseResult = async (parseOptions: ConsumedParseOptions) => {
-  try {
-    return await parseCode(parseOptions);
-  } catch (e) {
-    // TODO better err handling
-    // throw e;
-    console.error(e);
-  }
-};
-
 function utf16ToUTF8(x: string) {
   return unescape(encodeURIComponent(x));
 }
 
 // adapted from https://github.com/evanw/source-map-visualization/blob/gh-pages/code.js#L1621
-export async function createHashFromCompiledCode(code: string | undefined) {
+async function createSourcemapHash(code: string | undefined) {
   // Check for both "//" and "/*" comments
   if (!code) {
     console.warn(`No code was pasted`);
@@ -105,19 +13,19 @@ export async function createHashFromCompiledCode(code: string | undefined) {
   if (!match)
     match =
       /\/(\*)[#@] *sourceMappingURL=((?:[^\s*]|\*[^/])+)(?:[^*]|\*[^/])*\*\//.exec(
-        code
+        code,
       );
 
   // Check for a non-empty data URL payload
   if (!match) {
     console.warn(
-      `Failed to find an embedded "//}# sourceMappingURL=" comment in the pasted text'`
+      `Failed to find an embedded "//}# sourceMappingURL=" comment in the pasted text'`,
     );
     return;
   }
   if (!match[2]) {
     console.warn(
-      `Failed to find an embedded "/${match[1]}# sourceMappingURL=" comment in the pasted text'`
+      `Failed to find an embedded "/${match[1]}# sourceMappingURL=" comment in the pasted text'`,
     );
     return;
   }
@@ -131,7 +39,7 @@ export async function createHashFromCompiledCode(code: string | undefined) {
       `Failed to parse the URL in the "/${
         match[1]
         // @ts-expect-error
-      }# sourceMappingURL=" comment: ${(e && e.message) || e}`
+      }# sourceMappingURL=" comment: ${(e && e.message) || e}`,
     );
     return;
   }
@@ -143,4 +51,79 @@ export async function createHashFromCompiledCode(code: string | undefined) {
   let mapLength = `${map.length}\0`;
   const hash = btoa(`${codeLength}${code}${mapLength}${map}`);
   return hash;
+}
+
+export async function createSourcemapURL(source: string | undefined) {
+  if (source === undefined) return;
+
+  const hash = await createSourcemapHash(source);
+  const hasError = !hash;
+  const url = `https://evanw.github.io/source-map-visualization/#${hash}`;
+  if (!hasError) {
+    return url;
+  }
+  console.error("Failed to create hash from compiled code");
+}
+
+export function patchGlobals() {
+  patchConsole();
+  patchDefineProperties();
+}
+
+/** Silence textmate error until I find how to get rid of them */
+function patchConsole() {
+  const originalConsoleErrorFn = console.error.bind(console);
+  console.error = (...args) => {
+    const err = args[0];
+    const textmateErrorMessages = ["Grammar is in an endless loop"];
+    if (
+      textmateErrorMessages.some(
+        (msg) =>
+          (err?.message?.includes?.(msg) ||
+            err?.includes?.(msg) ||
+            err?.toString?.()?.includes?.(msg)) ??
+          false,
+      )
+    )
+      return;
+    originalConsoleErrorFn(...args);
+  };
+}
+
+/**
+ * HACK: we're patching the defineProperties method
+to avoid defining twice the `fs` and `process` properties.
+When subsequently loading compiler versions, the `wasm_exec.js` module
+from the compiler will try to define the `fs` and `process`
+properties again which will throw an error.
+This is a hack to avoid this error
+*/
+function patchDefineProperties() {
+  const propsToAvoidDefiningTwice = new Set(["fs", "process"]);
+  const patchOfDefineProperty = function (
+    obj: any,
+    prop: any,
+    descriptor: any,
+  ) {
+    // check if the property defined in the object
+    // if it's defined in `obj` then we don't need to define it again
+    if (
+      propsToAvoidDefiningTwice.has(prop) &&
+      Object.prototype.hasOwnProperty.call(obj, prop)
+    ) {
+      return obj;
+    }
+    // define the property using the original defineProperty method
+    return Object.defineProperty(obj, prop, descriptor);
+  };
+
+  Object.defineProperties = function <T>(
+    obj: T,
+    props: Record<string, PropertyDescriptor>,
+  ) {
+    for (const prop in props) {
+      patchOfDefineProperty(obj, prop, props[prop]);
+    }
+    return obj;
+  };
 }

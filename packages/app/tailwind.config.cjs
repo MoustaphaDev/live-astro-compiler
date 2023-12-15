@@ -19,7 +19,11 @@ module.exports = {
         "spin-2": "spin-2 8s cubic-bezier(0.4, 0, 0.2, 1) infinite",
       },
       boxShadow: {
-        custom: "5px 5px 15px 5px rgba(0,0,0,.2), 0px 10px 13px -7px #090909c7",
+        "settings-header":
+          "5px 5px 15px 5px rgba(0,0,0,.2), 0px 10px 13px -7px #090909c7",
+        // FIX: made a `versions-list-shadow` class until I can
+        // figure out why this isn't working
+        "compiler-versions-list-top": getCompilerVersionsListShadow(),
       },
       keyframes: {
         "spin-2": {
@@ -53,3 +57,12 @@ module.exports = {
     },
   },
 };
+
+function getCompilerVersionsListShadow() {
+  const shadowOpacity = 0.3;
+  const blurRadius = 21;
+  const spreadRadius = -29;
+  const verticalOffset = 44;
+
+  return `inset 0px ${verticalOffset}px ${blurRadius}px ${spreadRadius}px rgba(0,0,0,${shadowOpacity}px)`;
+}

@@ -1,5 +1,4 @@
 import { onMount } from "solid-js";
-
 import { VsChromeClose } from "solid-icons/vs";
 import { Dialog } from "@kobalte/core";
 import { Separator, TextField, ToggleButton, ToggleField } from "./ui-kit";
@@ -19,24 +18,30 @@ import {
   transformResultScopedSlot,
   setTransformResultScopedSlot,
 } from "~/lib/stores";
+import { CompilerVersionSwitcher } from "./CompilerVersionsSwitcher";
 
-export default function SettingsSection() {
+export type SettingsSectionProps = {
+  closeModal: () => void;
+};
+export default function SettingsSection(props: SettingsSectionProps) {
   let dialogHeader: HTMLDivElement | null = null;
   let dialogDescriptionRef: HTMLDivElement | null = null;
-  let parseOptionsRef: HTMLHeadingElement | null = null;
   onMount(() => {
+    const topMostElementInModalContent = document.querySelector(
+      "[data-top-most-element-in-modal-content]",
+    );
     // take the `parseOptions` heading as a reference to observe the scrolled navbar
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries[0].isIntersecting) {
-          dialogHeader!.classList.add("shadow-custom");
+          dialogHeader!.classList.add("shadow-settings-header");
         } else {
-          dialogHeader!.classList.remove("shadow-custom");
+          dialogHeader!.classList.remove("shadow-settings-header");
         }
       },
-      { rootMargin: "-50px", root: dialogDescriptionRef! }
+      { rootMargin: "-50px", root: dialogDescriptionRef! },
     );
-    observer.observe(parseOptionsRef!);
+    observer.observe(topMostElementInModalContent!);
   });
 
   return (
@@ -58,28 +63,24 @@ export default function SettingsSection() {
           ref={dialogDescriptionRef!}
         >
           <div class="mt-10 flex h-full flex-col space-y-10">
-            {/* // display all the `Parse` options */}
+            {/* display the version changer */}
+            <CompilerVersionSwitcher closeModal={props.closeModal} />
+            <Separator />
+            {/* display all the `Parse` options */}
             <div>
-              <h3
-                class="text-md mb-2 font-bold text-white"
-                ref={parseOptionsRef!}
-              >
-                Parse Options
-              </h3>
+              <h3 class="text-md mb-2 font-bold text-white">Parse Options</h3>
               <div>
                 <ToggleField label="position">
                   <ToggleButton
-                    isPressed={parsePosition()}
-                    onPressedChange={setParsePosition}
+                    pressed={parsePosition()}
+                    onChange={setParsePosition}
                     title="Toggle position"
                     aria-label="Toggle positoin"
-                  >
-                    <div></div>
-                  </ToggleButton>
+                  />
                 </ToggleField>
               </div>
             </div>
-            {/* // display all the `Transform` options */}
+            {/* display all the `Transform` options */}
             <Separator />
             <div>
               <h3 class="text-md mb-2 font-bold text-white">
@@ -89,54 +90,50 @@ export default function SettingsSection() {
                 <TextField
                   placeholder="internalURL"
                   value={transformInternalURL()}
-                  onValueChange={setTransformInternalURL}
+                  onChange={setTransformInternalURL}
                 >
                   internalURL
                 </TextField>
                 <TextField
                   placeholder="filename"
                   value={filename()}
-                  onValueChange={setFilename}
+                  onChange={setFilename}
                 >
                   filename
                 </TextField>
                 <TextField
                   placeholder="normalizedFilename"
                   value={normalizedFilename()}
-                  onValueChange={setNormalizedFilename}
+                  onChange={setNormalizedFilename}
                 >
                   normalizedFilename
                 </TextField>
                 <TextField
                   placeholder="astroGlobalArgs"
                   value={transformAstroGlobalArgs()}
-                  onValueChange={setTransformAstroGlobalArgs}
+                  onChange={setTransformAstroGlobalArgs}
                 >
                   astroGlobalArgs
                 </TextField>
                 <ToggleField label="compact">
                   <ToggleButton
-                    isPressed={transformCompact()!}
-                    onPressedChange={setTranformCompact}
+                    pressed={transformCompact()!}
+                    onChange={setTranformCompact}
                     title="Toggle compact"
                     aria-label="Toggle compact"
-                  >
-                    <div></div>
-                  </ToggleButton>
+                  />
                 </ToggleField>
                 <ToggleField label="resultScopedSlot">
                   <ToggleButton
-                    isPressed={transformResultScopedSlot()}
-                    onPressedChange={setTransformResultScopedSlot}
+                    pressed={transformResultScopedSlot()}
+                    onChange={setTransformResultScopedSlot}
                     title="Toggle position"
                     aria-label="Toggle positoin"
-                  >
-                    <div></div>
-                  </ToggleButton>
+                  />
                 </ToggleField>
               </div>
             </div>
-            {/* // display all the `ConvertToTSX` options */}
+            {/* display all the `ConvertToTSX` options */}
             <Separator />
             <div>
               <h3 class="text-md mb-2 font-bold text-white">
@@ -146,14 +143,14 @@ export default function SettingsSection() {
                 <TextField
                   placeholder="filename"
                   value={filename()}
-                  onValueChange={setFilename}
+                  onChange={setFilename}
                 >
                   convertToTSXFilename
                 </TextField>
                 <TextField
                   placeholder="normalizedFilename"
                   value={normalizedFilename()}
-                  onValueChange={setNormalizedFilename}
+                  onChange={setNormalizedFilename}
                 >
                   normalizedFilename
                 </TextField>
