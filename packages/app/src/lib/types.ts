@@ -1,10 +1,11 @@
-import {
+import type {
   ConvertToTSXOptions,
   ParseOptions,
   TransformOptions,
 } from "@astrojs/compiler/types";
 import type { MODES } from "./consts";
 import type * as monaco from "monaco-editor";
+import type { Accessor } from "solid-js";
 
 export type Modes = (typeof MODES)[number];
 export type Options = {
@@ -30,6 +31,9 @@ export type CompilerValues = {
   transformResultScopedSlot?: TransformOptions["resultScopedSlot"];
 };
 export type StoredSearchParams = EditorValues & CompilerValues;
+export type StoredSignals = {
+  [key in keyof StoredSearchParams]: Accessor<StoredSearchParams[key]>;
+};
 
 export type ConsumedTransformOptions = {
   code?: string;

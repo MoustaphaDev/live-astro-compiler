@@ -11,7 +11,6 @@ import {
   createSelector,
   lazy,
   Show,
-  useContext,
 } from "solid-js";
 import { Button, Dialog, Select as SelectPrimitive } from "@kobalte/core";
 
@@ -26,7 +25,6 @@ import {
   code,
   setMode,
   setShowMobilePreview,
-  getStatefulURL,
   currentCompilerVersion,
   setShowSourceMapVisualizer,
 } from "~/lib/stores";
@@ -35,6 +33,7 @@ import type { SettingsSectionProps } from "./Settings";
 import { createSourcemapURL } from "~/lib/utils";
 import { getCompilerOutput } from "~/lib/stores/compiler";
 import { toast } from "solid-sonner";
+import { SearchParamsHelpers } from "~/lib/stores/utils";
 
 export function Header() {
   return (
@@ -175,7 +174,7 @@ function ShareButton() {
       alert("Your browser does not support clipboard sharing");
       return;
     }
-    const statefulURL = getStatefulURL();
+    const statefulURL = SearchParamsHelpers.computePlaygroundStatefulURL();
     navigator.clipboard.writeText(statefulURL);
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 3000);

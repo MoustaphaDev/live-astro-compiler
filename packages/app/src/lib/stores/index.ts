@@ -1,9 +1,7 @@
 import { createBreakpoints } from "@solid-primitives/media";
-import * as fflate from "fflate";
-import { usePersistantSignal } from "./utils";
-import { createStore } from "solid-js/store";
+import { SearchParamsHelpers, usePersistantSignal } from "./utils";
 import { INITIAL_CODE, breakpoints } from "../consts";
-import { createRenderEffect, createSignal, on } from "solid-js";
+import { createSignal, on } from "solid-js";
 import type { StoredSearchParams } from "~/lib/types";
 import { getDefaultCompilerVersionToLoad } from "../compiler/module";
 import { createEffect } from "solid-js";
@@ -15,11 +13,8 @@ import { storeLastUsedCompilerVersion } from "../compiler/storage";
 // 3. Fallback to a default value if specified
 
 // ################################ EDITOR SIGNALS HERE ################################
-const hookResult = useSearchParams();
-const { setUrlSearchParamsRecord, getSearchParams } = hookResult;
-export const { getStatefulURL } = hookResult;
-
-const urlSearchParams = getSearchParams();
+const urlSearchParams = SearchParamsHelpers.parsePlaygroundStateFromURL();
+SearchParamsHelpers.clearPlaygroundStateFromURL();
 
 // TODOL refactor `usePersistantSignal` to not need to be passed a generic type
 export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
@@ -152,148 +147,17 @@ createEffect(
     { defer: true },
   ),
 );
-
-function useSearchParams() {
-  const decoded = _getDecodedURLState();
-  const [urlSearchParamsRecord, setUrlSearchParamsRecord] =
-    createStore<StoredSearchParams>(decoded);
-
-  function getStatefulURL() {
-    const encoded = _getEncodedURLState();
-    const urlParams = encoded
-      ? `?${new URLSearchParams(`?editor-state=${encoded}`).toString()}`
-      : "";
-    const statefulUrl = `${window.location.origin}${window.location.pathname}${urlParams}`;
-    return statefulUrl;
-  }
-
-  function _getSearchParams(): StoredSearchParams {
-    return { ...urlSearchParamsRecord };
-  }
-
-  function _getEncodedURLState(): string | null {
-    if (Object.keys(urlSearchParamsRecord).length === 0) {
-      return null;
-    }
-    const stringified = JSON.stringify(urlSearchParamsRecord);
-    try {
-      const unint8Data = fflate.strToU8(stringified);
-      const compressedData = fflate.compressSync(unint8Data, { level: 9 });
-      const compressedString = JSON.stringify(Array.from(compressedData));
-      return window.btoa(compressedString);
-    } catch (err) {
-      return null;
-    }
-  }
-
-  function _getDecodedURLState(): StoredSearchParams {
-    const urlParams = new URLSearchParams(window.location.search);
-    const state = urlParams.get("editor-state");
-
-    if (!state) {
-      return {};
-    }
-    try {
-      const compressedArray = new Uint8Array(JSON.parse(window.atob(state)));
-      const decompressedArray = fflate.decompressSync(compressedArray);
-      const decoder = new TextDecoder();
-      const decompressedString = decoder.decode(decompressedArray);
-
-      return JSON.parse(decompressedString);
-    } catch (err) {
-      return {};
-    }
-  }
-
-  return {
-    setUrlSearchParamsRecord,
-    getStatefulURL,
-    getSearchParams: _getSearchParams,
-  };
-}
-
-createRenderEffect(() => {
-  // initialize the search params state
-  setUrlSearchParamsRecord({
-    currentCompilerVersion: currentCompilerVersion(),
-    code: code(),
-    wordWrapped: wordWrapped(),
-    mode: mode(),
-    parsePosition: parsePosition(),
-    transformInternalURL: transformInternalURL(),
-    filename: filename(),
-    normalizedFilename: normalizedFilename(),
-    transformSourcemap: transformSourcemap(),
-    transformAstroGlobalArgs: transformAstroGlobalArgs(),
-    transformCompact: transformCompact(),
-    transformResultScopedSlot: transformResultScopedSlot(),
-  });
-
-  // remove the search params from the URL
-  window.history.replaceState({}, "", window.location.pathname);
+SearchParamsHelpers.trackStateSignals({
+  currentCompilerVersion,
+  code,
+  wordWrapped,
+  mode,
+  parsePosition,
+  transformInternalURL,
+  filename,
+  normalizedFilename,
+  transformSourcemap,
+  transformAstroGlobalArgs,
+  transformCompact,
+  transformResultScopedSlot,
 });
-
-class SearchParamsHelpers {
-  getPlaygroundStatefulURL() {
-    const encoded = this.getHashedPlaygroundState();
-    const urlParams = encoded
-      ? `?${new URLSearchParams(`?editor-state=${encoded}`).toString()}`
-      : "";
-    const statefulUrl = `${window.location.origin}${window.location.pathname}${urlParams}`;
-    return statefulUrl;
-  }
-
-  private getHashedPlaygroundState(): string | null {
-    const playgroundStateSnapshot = this.getPlaygroundStateSnapshot();
-    if (Object.keys(playgroundStateSnapshot).length === 0) {
-      return null;
-    }
-    try {
-      const stringifiedPlaygroundStateSnapshot = JSON.stringify(
-        playgroundStateSnapshot,
-      );
-      const unint8Data = fflate.strToU8(stringifiedPlaygroundStateSnapshot);
-      const compressedData = fflate.compressSync(unint8Data, { level: 9 });
-      const compressedString = JSON.stringify(Array.from(compressedData));
-      return window.btoa(compressedString);
-    } catch (err) {
-      return null;
-    }
-  }
-
-  private getPlaygroundStateSnapshot() {
-    return {
-      currentCompilerVersion: currentCompilerVersion(),
-      code: code(),
-      wordWrapped: wordWrapped(),
-      mode: mode(),
-      parsePosition: parsePosition(),
-      transformInternalURL: transformInternalURL(),
-      filename: filename(),
-      normalizedFilename: normalizedFilename(),
-      transformSourcemap: transformSourcemap(),
-      transformAstroGlobalArgs: transformAstroGlobalArgs(),
-      transformCompact: transformCompact(),
-      transformResultScopedSlot: transformResultScopedSlot(),
-    };
-  }
-
-  private getUnhashedPlaygroundState(): StoredSearchParams | {} {
-    const urlParams = new URLSearchParams(window.location.search);
-    const state = urlParams.get("editor-state");
-
-    if (!state) {
-      return {};
-    }
-    try {
-      const compressedArray = new Uint8Array(JSON.parse(window.atob(state)));
-      const decompressedArray = fflate.decompressSync(compressedArray);
-      const decoder = new TextDecoder();
-      const decompressedString = decoder.decode(decompressedArray);
-
-      return JSON.parse(decompressedString);
-    } catch (err) {
-      return {};
-    }
-  }
-}

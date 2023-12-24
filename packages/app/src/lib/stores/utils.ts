@@ -1,5 +1,7 @@
 import { debounce } from "@solid-primitives/scheduled";
 import { type Accessor, createSignal } from "solid-js";
+import { StoredSearchParams, type StoredSignals } from "../types";
+import * as fflate from "fflate";
 
 // doesn't match all signatures of signals, this is just what we need
 type PersistantSignal<T> = [Accessor<T>, PersistantSignalSetter<T>];
@@ -114,4 +116,88 @@ export function returnFunctionReferenceFromHash<
   return (...args: Parameters<FnToReturn>): ReturnType<FnToReturn> => {
     return hash[functionToPick](...args);
   };
+}
+
+// TODO: implement caching to avoid
+// re-computing the stateful URL when
+// its dependencies haven't changed
+export class SearchParamsHelpers {
+  private static stateSignals: StoredSignals;
+  static trackStateSignals(stateSignals: StoredSignals) {
+    this.stateSignals = stateSignals;
+  }
+  static computePlaygroundStatefulURL() {
+    const hashedPlaygroundStateSnapshot =
+      this.computeHashedPlaygroundStateSnapshot();
+    const urlParams = hashedPlaygroundStateSnapshot
+      ? `?${new URLSearchParams(
+          `?editor-state=${hashedPlaygroundStateSnapshot}`,
+        ).toString()}`
+      : "";
+    const statefulUrl = `${window.location.origin}${window.location.pathname}${urlParams}`;
+    return statefulUrl;
+  }
+
+  static clearPlaygroundStateFromURL() {
+    // remove the search params from the URL
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
+  static parsePlaygroundStateFromURL(): StoredSearchParams {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stringifiedEditorStateSnapshot = urlParams.get("editor-state");
+
+    if (!stringifiedEditorStateSnapshot) {
+      return {};
+    }
+    try {
+      const binaryData = new Uint8Array(
+        JSON.parse(window.atob(stringifiedEditorStateSnapshot)),
+      );
+      const decompressedBynaryData = fflate.decompressSync(binaryData);
+      const decoder = new TextDecoder();
+      const decompressedSnapshotString = decoder.decode(decompressedBynaryData);
+      return JSON.parse(decompressedSnapshotString);
+    } catch (err) {
+      return {};
+    }
+  }
+
+  private static computeHashedPlaygroundStateSnapshot(): string | null {
+    const playgroundStateSnapshot = this.getPlaygroundStateSnapshot();
+    if (Object.keys(playgroundStateSnapshot).length === 0) {
+      return null;
+    }
+    try {
+      const stringifiedSnapshot = JSON.stringify(playgroundStateSnapshot);
+      const binarifiedSnapshot = fflate.strToU8(stringifiedSnapshot);
+      const compressedSnapshot = fflate.compressSync(binarifiedSnapshot, {
+        level: 9,
+      });
+      const stringifiedCompressedSnapshot = JSON.stringify(
+        Array.from(compressedSnapshot),
+      );
+      return window.btoa(stringifiedCompressedSnapshot);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  private static getPlaygroundStateSnapshot() {
+    return {
+      currentCompilerVersion: this.stateSignals.currentCompilerVersion?.(),
+      code: this.stateSignals.code?.(),
+      wordWrapped: this.stateSignals.wordWrapped?.(),
+      mode: this.stateSignals.mode?.(),
+      parsePosition: this.stateSignals.parsePosition?.(),
+      transformInternalURL: this.stateSignals.transformInternalURL?.(),
+      filename: this.stateSignals.filename?.(),
+      normalizedFilename: this.stateSignals.normalizedFilename?.(),
+      transformSourcemap: this.stateSignals.transformSourcemap?.(),
+      transformAstroGlobalArgs: this.stateSignals.transformAstroGlobalArgs?.(),
+      transformCompact: this.stateSignals.transformCompact?.(),
+      transformResultScopedSlot:
+        this.stateSignals.transformResultScopedSlot?.(),
+    };
+  }
 }
