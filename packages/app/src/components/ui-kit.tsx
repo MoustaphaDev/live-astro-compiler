@@ -107,7 +107,6 @@ export function SegmentedButton<T extends string[] = string[]>(
       class="inline-flex divide-x divide-zinc-600 overflow-hidden rounded-md border border-solid border-secondary text-base capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] focus-within:outline-offset-2 focus-within:outline-accent-2 focus-within:ring-2 focus-within:ring-accent-2 [&_*]:select-none"
       classList={{
         "lg:hidden": props.isMobile,
-        "[&[data-checked]]:bg-accent-2": true,
       }}
     >
       <For each={props.options}>
@@ -115,10 +114,10 @@ export function SegmentedButton<T extends string[] = string[]>(
           <RadioGroup.Item value={option} class="cursor-pointer">
             <RadioGroup.ItemInput />
             <RadioGroup.ItemControl
-              class="bg-zinc-900/50 px-6 py-3 text-zinc-200 transition-colors"
+              class="px-6 py-3 text-zinc-200 transition-colors"
               classList={{
                 [props.activeOption === option
-                  ? props.activeClass ?? "bg-zinc-800/100"
+                  ? props.activeClass ?? "bg-zinc-800"
                   : "bg-zinc-900/50"]: true,
               }}
             >
