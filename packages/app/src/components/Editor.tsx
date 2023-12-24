@@ -21,17 +21,15 @@ import {
   breakpointMatches,
   code,
   currentCompilerVersion,
+  getOutputByMode,
   hasCompilerVersionChangeBeenHandled,
-  mode,
   setCode,
-  setHasCompilerVersionChangeBeenHandled,
   setWordWrapped,
   showMobilePreview,
   wordWrapped,
 } from "~/lib/stores";
 import { getPersistedValue, setPersistentValue } from "~/lib/stores/utils";
 import type { EditorsHash } from "~/lib/types";
-import { getOutputByMode } from "~/lib/stores/compiler";
 import { LoadingEditor, LoadingError } from "./ui-kit";
 
 let codeCompilerRef: HTMLDivElement;

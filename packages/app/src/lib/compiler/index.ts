@@ -1,4 +1,1 @@
-export {
-  remoteCompilerModule,
-  initializeCompilerWithDefaultVersion,
-} from "./module";
+export { remoteCompilerModule } from "./module";

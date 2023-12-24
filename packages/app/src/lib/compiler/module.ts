@@ -16,14 +16,6 @@ import { createPromiseAndActions } from "./utils";
 
 export let remoteCompilerModule: CompilerModule | null = null;
 
-export async function initializeCompilerWithDefaultVersion() {
-  const { compilerVersionToLoad: defaultCompilerVersionToLoad } =
-    await getDefaultCompilerVersionToLoad();
-
-  // initialize the compiler module with the default compiler version
-  await setCompilerWithFallbackHandling(defaultCompilerVersionToLoad);
-}
-
 /**
  *
  * @param version the version of the compiler to load
@@ -51,7 +43,10 @@ async function setCompiler(version: string): Promise<{
       module: compilerModule,
       wasmURL,
     });
-    console.info("Compiler tests finished:\n%s", JSON.stringify(testResults, null, 2));
+    console.info(
+      "Compiler tests finished:\n%s",
+      JSON.stringify(testResults, null, 2),
+    );
     storeCompilerDetails({
       version,
       compatibilityMap: testResults,
@@ -109,8 +104,7 @@ export async function setCompilerWithFallbackHandling(
   try {
     const { status } = await setCompiler(version);
     if (status === "failure") {
-      let { compilerVersionToLoad: fallbackCompilerVersion } =
-        await getDefaultCompilerVersionToLoad();
+      let { fallbackCompilerVersion } = await getFallbackCompilerVersion();
       const { status: fallbackStatus } = await setCompiler(
         fallbackCompilerVersion,
       );
@@ -142,19 +136,18 @@ export async function setCompilerWithFallbackHandling(
   }
 }
 
-// the marking state is used to determine if we should run the compatibility tests or not
-export async function getDefaultCompilerVersionToLoad(): Promise<{
-  compilerVersionToLoad: string;
+export async function getFallbackCompilerVersion(): Promise<{
+  fallbackCompilerVersion: string;
 }> {
   const lastUsedCompilerVersion = getLastUsedCompilerVersion();
   if (!lastUsedCompilerVersion) {
     return {
-      compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
+      fallbackCompilerVersion: await fetchLatestProductionCompilerVersion(),
     };
   }
 
   return {
-    compilerVersionToLoad: await fetchLatestProductionCompilerVersion(),
+    fallbackCompilerVersion: lastUsedCompilerVersion,
   };
 }
 

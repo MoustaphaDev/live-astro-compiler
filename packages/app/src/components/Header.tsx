@@ -27,11 +27,11 @@ import {
   setShowMobilePreview,
   currentCompilerVersion,
   setShowSourceMapVisualizer,
+  getCompilerOutput,
 } from "~/lib/stores";
 import type { Modes } from "~/lib/types";
 import type { SettingsSectionProps } from "./Settings";
 import { createSourcemapURL } from "~/lib/utils";
-import { getCompilerOutput } from "~/lib/stores/compiler";
 import { toast } from "solid-sonner";
 import { SearchParamsHelpers } from "~/lib/stores/utils";
 

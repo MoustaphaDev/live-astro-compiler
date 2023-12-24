@@ -11,7 +11,9 @@ type LatestCompilerDetailsStored = StoredCompilerDetails & {
 };
 
 const COMPILER_KEY_PREFIX = "compiler-version";
-const LAST_USED_COMPILER_VERSION_KEY = "last-used-compiler-version";
+// do not change this key, it's used to store the last used compiler version
+// it's gonna break the previously generated stateful links
+export const LAST_USED_COMPILER_VERSION_KEY = "current-compiler-version";
 
 function createCompilerVersionKey(version: string) {
   return `${COMPILER_KEY_PREFIX}-${version}`;
@@ -22,13 +24,6 @@ export function getLastUsedCompilerVersion() {
     LAST_USED_COMPILER_VERSION_KEY,
   );
   return lastUsedVersion;
-}
-
-export function storeLastUsedCompilerVersion(version: string | undefined) {
-  if (!version) {
-    return;
-  }
-  setPersistentValue(LAST_USED_COMPILER_VERSION_KEY, version);
 }
 
 export function getStoredCompilerDetails(version: string) {

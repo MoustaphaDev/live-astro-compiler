@@ -8,26 +8,24 @@ import type {
 } from "../types";
 import {
   code,
-  currentCompilerVersion,
-  filename,
   mode,
+  currentCompilerVersion,
+  setHasCompilerVersionChangeBeenHandled,
+  filename,
   normalizedFilename,
   parsePosition,
-  setHasCompilerVersionChangeBeenHandled,
   transformAstroGlobalArgs,
   transformCompact,
   transformInternalURL,
   transformResultScopedSlot,
   transformSourcemap,
 } from ".";
-import {
-  initializeCompilerWithDefaultVersion,
-  remoteCompilerModule,
-} from "../compiler";
+import { remoteCompilerModule } from "../compiler";
 import type { TransformResult } from "@astrojs/compiler";
 import { asyncDebounce, returnFunctionReferenceFromHash } from "./utils";
 import type { CompilerModule } from "../compiler/fetch";
 import { toast } from "solid-sonner";
+import { setCompilerWithFallbackHandling } from "../compiler/module";
 
 async function transformCode(
   options: ConsumedTransformOptions,
@@ -110,18 +108,21 @@ function createWrapperCompilerFunctions() {
   };
 }
 // TODO: find a better place for this
-const compilerInitializingPromise = initializeCompilerWithDefaultVersion();
-toast.promise(compilerInitializingPromise, {
-  loading: "Loading compiler",
-  success: () => {
-    setHasCompilerVersionChangeBeenHandled(true);
-    return "Compiler loaded";
-  },
-  error: "Failed to load compiler",
-});
-await compilerInitializingPromise;
+export async function initializeCompiler(version: string) {
+  const compilerInitializingPromise = setCompilerWithFallbackHandling(version);
+  toast.promise(compilerInitializingPromise, {
+    loading: "Loading compiler",
+    success: () => {
+      setHasCompilerVersionChangeBeenHandled(true);
+      return "Compiler loaded";
+    },
+    error: "Failed to load compiler",
+  });
+  await compilerInitializingPromise;
+  setHasCompilerVersionChangeBeenHandled(true);
+}
 
-function createCompilerOutputGetter() {
+export function createCompilerOutputGetter() {
   let compilerFunctions = createWrapperCompilerFunctions();
   const consumedTransformOptions = () => {
     return {
@@ -212,7 +213,3 @@ function createCompilerOutputGetter() {
     getOutputByMode,
   };
 }
-
-// ################################ EXPORTS HERE ################################
-export const { getCompilerOutput, getOutputByMode } =
-  createCompilerOutputGetter();
