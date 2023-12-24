@@ -165,6 +165,7 @@ function RefreshButton(props: RefreshButtonProps) {
   return (
     <Button.Root
       onClick={handleRefresh}
+      disabled={props.loading}
       class="outline-none ring-offset-0 ring-offset-primary transition-all duration-[250ms,color] focus-visible:ring-2 focus-visible:ring-accent-2 [&_svg]:focus-visible:text-accent-2"
     >
       <div class="flex items-center justify-center">
