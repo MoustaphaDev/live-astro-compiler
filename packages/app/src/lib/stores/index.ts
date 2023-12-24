@@ -146,6 +146,7 @@ createEffect(
   on(
     currentCompilerVersion,
     () => {
+      if (!currentCompilerVersion()) return;
       storeLastUsedCompilerVersion(currentCompilerVersion());
     },
     { defer: true },
@@ -231,3 +232,68 @@ createRenderEffect(() => {
   // remove the search params from the URL
   window.history.replaceState({}, "", window.location.pathname);
 });
+
+class SearchParamsHelpers {
+  getPlaygroundStatefulURL() {
+    const encoded = this.getHashedPlaygroundState();
+    const urlParams = encoded
+      ? `?${new URLSearchParams(`?editor-state=${encoded}`).toString()}`
+      : "";
+    const statefulUrl = `${window.location.origin}${window.location.pathname}${urlParams}`;
+    return statefulUrl;
+  }
+
+  private getHashedPlaygroundState(): string | null {
+    const playgroundStateSnapshot = this.getPlaygroundStateSnapshot();
+    if (Object.keys(playgroundStateSnapshot).length === 0) {
+      return null;
+    }
+    try {
+      const stringifiedPlaygroundStateSnapshot = JSON.stringify(
+        playgroundStateSnapshot,
+      );
+      const unint8Data = fflate.strToU8(stringifiedPlaygroundStateSnapshot);
+      const compressedData = fflate.compressSync(unint8Data, { level: 9 });
+      const compressedString = JSON.stringify(Array.from(compressedData));
+      return window.btoa(compressedString);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  private getPlaygroundStateSnapshot() {
+    return {
+      currentCompilerVersion: currentCompilerVersion(),
+      code: code(),
+      wordWrapped: wordWrapped(),
+      mode: mode(),
+      parsePosition: parsePosition(),
+      transformInternalURL: transformInternalURL(),
+      filename: filename(),
+      normalizedFilename: normalizedFilename(),
+      transformSourcemap: transformSourcemap(),
+      transformAstroGlobalArgs: transformAstroGlobalArgs(),
+      transformCompact: transformCompact(),
+      transformResultScopedSlot: transformResultScopedSlot(),
+    };
+  }
+
+  private getUnhashedPlaygroundState(): StoredSearchParams | {} {
+    const urlParams = new URLSearchParams(window.location.search);
+    const state = urlParams.get("editor-state");
+
+    if (!state) {
+      return {};
+    }
+    try {
+      const compressedArray = new Uint8Array(JSON.parse(window.atob(state)));
+      const decompressedArray = fflate.decompressSync(compressedArray);
+      const decoder = new TextDecoder();
+      const decompressedString = decoder.decode(decompressedArray);
+
+      return JSON.parse(decompressedString);
+    } catch (err) {
+      return {};
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { debounce } from "@solid-primitives/scheduled";
 import { type Accessor, createSignal } from "solid-js";
 
-// doesn't match all overloads of signals, this is just what we need
+// doesn't match all signatures of signals, this is just what we need
 type PersistantSignal<T> = [Accessor<T>, PersistantSignalSetter<T>];
 type PersistantSignalSetter<T> = (v: T | SignalSetterFunction<T>) => T;
 type SignalSetterFunction<T> = (prev?: T) => T;

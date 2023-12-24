@@ -155,7 +155,6 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
     const handler = createCompilerChangeHandler({
       onSuccessfulChange(version) {
         setCurrentCompilerVersion(version);
-        // setHasCompilerVersionChangeBeenHandled(true);
       },
     });
     isHandlingCompilerVersionChange = true;
