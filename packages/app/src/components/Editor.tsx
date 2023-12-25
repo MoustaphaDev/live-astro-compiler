@@ -32,6 +32,7 @@ import { getPersistedValue, setPersistentValue } from "~/lib/stores/utils";
 import type { EditorsHash } from "~/lib/types";
 import { LoadingEditor, LoadingError } from "./ui-kit";
 import { initializeCompiler } from "~/lib/stores/compiler";
+import { debounce } from "@solid-primitives/scheduled";
 
 let codeCompilerRef: HTMLDivElement;
 let inputBoxRef: HTMLDivElement;
@@ -138,7 +139,7 @@ export function Editor() {
 }
 
 function InputBox() {
-  createEffect(async () => {
+  onMount(async () => {
     console.log("Ran this effect!");
     // do load the monaco editor
     editorsHash!.inputBox = await createAstroEditor(inputBoxRef, {
@@ -147,11 +148,13 @@ function InputBox() {
       fontFamily: "Fira Code",
       fontLigatures: true,
     });
-    editorsHash?.inputBox.onDidChangeModelContent(() => {
-      // get the updated text content of the editor
-      const text = editorsHash.inputBox!.getValue();
-      setCode(text);
-    });
+    editorsHash?.inputBox.onDidChangeModelContent(
+      debounce(() => {
+        // get the updated text content of the editor
+        const text = editorsHash.inputBox!.getValue();
+        setCode(text);
+      }, 500),
+    );
   });
 
   createEffect(() => {
