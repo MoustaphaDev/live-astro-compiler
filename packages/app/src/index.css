@@ -123,12 +123,15 @@
   --shadow-opacity: 0;
   --blur-radius: 21px;
   --spread-radius: -29px;
-  --vertical-offset: calc(var(--weight)*44px);
-  -webkit-box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
-  -moz-box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
-  box-shadow: inset 0px var(--vertical-offset) var(--blur-radius) var(--spread-radius) rgba(0,0,0,var(--shadow-opacity));
+  --vertical-offset: calc(var(--weight) * 44px);
+  -webkit-box-shadow: inset 0px var(--vertical-offset) var(--blur-radius)
+    var(--spread-radius) rgba(0, 0, 0, var(--shadow-opacity));
+  -moz-box-shadow: inset 0px var(--vertical-offset) var(--blur-radius)
+    var(--spread-radius) rgba(0, 0, 0, var(--shadow-opacity));
+  box-shadow: inset 0px var(--vertical-offset) var(--blur-radius)
+    var(--spread-radius) rgba(0, 0, 0, var(--shadow-opacity));
 }
 
-.shadow-show{
+.shadow-show {
   --shadow-opacity: 0.5;
 }
