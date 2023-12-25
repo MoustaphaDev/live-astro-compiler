@@ -52,3 +52,5 @@ export type EditorsHash = {
   codeCompiler: monaco.editor.IStandaloneCodeEditor | null;
   inputBox: monaco.editor.IStandaloneCodeEditor | null;
 };
+
+export type FunctionGeneric<T> = (...args: any[]) => T;

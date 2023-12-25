@@ -83,24 +83,6 @@ export function setPersistentValue<T>(key: string, value: T): T {
   return value;
 }
 
-export type DebouncedFunction<T> = (...args: any) => Promise<T>;
-export function asyncDebounce<T>(
-  fn: DebouncedFunction<T>,
-  ms = 500,
-): DebouncedFunction<T> {
-  let timeoutId: NodeJS.Timeout;
-  return async (...args: any) => {
-    return new Promise((resolve) => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      timeoutId = setTimeout(async () => {
-        resolve(await fn(...args));
-      }, ms);
-    });
-  };
-}
-
 /**
  * This function is used to return a function reference from a hash of functions
  * This is useful when we expect to pass to `createResource` a fetcher that can change
