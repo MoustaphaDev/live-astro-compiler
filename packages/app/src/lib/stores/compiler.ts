@@ -136,17 +136,17 @@ export function createCompilerOutputGetter() {
   // only when the `code` has changed AND the `mode` is set to a specific one
   // A drawback of this approach is `code` is duplicated in memory 3 times
   // but I think it's worth it for the performance gain and the simplicity of the code
-  const transformCode = createMemo((prevCode: string) => {
+  const valueToTransform = createMemo((prevCode: string) => {
     if (mode() === "transform") return code()!;
     return prevCode;
   }, code()!);
 
-  const parseCode = createMemo((prevCode: string) => {
+  const valueToParse = createMemo((prevCode: string) => {
     if (mode() === "parse") return code()!;
     return prevCode;
   }, code()!);
 
-  const convertToTSXCode = createMemo((prevCode: string) => {
+  const valueToconvertToTSX = createMemo((prevCode: string) => {
     if (mode() === "TSX") return code()!;
     return prevCode;
   }, code()!);
@@ -154,7 +154,7 @@ export function createCompilerOutputGetter() {
   let compilerFunctions = createWrapperCompilerFunctions();
   const consumedTransformOptions = () => {
     return {
-      code: transformCode(),
+      code: valueToTransform(),
       transformOptions: {
         internalURL: transformInternalURL(),
         filename: filename(),
@@ -169,7 +169,7 @@ export function createCompilerOutputGetter() {
 
   const consumedParseOptions = () => {
     return {
-      code: parseCode(),
+      code: valueToParse(),
       parseOptions: {
         position: parsePosition(),
       },
@@ -178,7 +178,7 @@ export function createCompilerOutputGetter() {
 
   const consumedTSXOptions = () => {
     return {
-      code: convertToTSXCode(),
+      code: valueToconvertToTSX(),
       convertToTSXOptions: {
         filename: filename(),
         normalizedFilename: normalizedFilename(),
