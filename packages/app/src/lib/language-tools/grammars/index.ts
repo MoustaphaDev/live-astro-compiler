@@ -89,14 +89,3 @@ export async function loadGrammars(
 
   await wireTmGrammars(monaco, registry, grammars, editor);
 }
-
-// import { loadGrammars, loadTheme } from "monaco-volar";
-
-// const theme = loadTheme()
-
-// const editorInstance = editor.create(element, {
-//     theme,
-//     /* other options*/
-// })
-
-// loadGrammars(editorInstance);

@@ -40,8 +40,6 @@ export const [
   setHasCompilerVersionChangeBeenHandled,
 ] = createSignal(false);
 
-await initializeCompiler(currentCompilerVersion()!);
-
 export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
   key: "code-input-value",
   initialValueSetter: (persisted) => {
@@ -84,7 +82,7 @@ export const [parsePosition, setParsePosition] = usePersistantSignal<
 >({
   key: "parse-position",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.parsePosition,
+    persisted ?? urlSearchParams?.parsePosition ?? false,
 });
 
 // Transform options
@@ -115,14 +113,14 @@ export const [transformCompact, setTranformCompact] = usePersistantSignal<
 >({
   key: "transform-compact",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.transformCompact,
+    persisted ?? urlSearchParams?.transformCompact ?? false,
 });
 
 export const [transformResultScopedSlot, setTransformResultScopedSlot] =
   usePersistantSignal<StoredSearchParams["transformResultScopedSlot"]>({
     key: "transform-resultScopedSlot",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.transformResultScopedSlot,
+      persisted ?? urlSearchParams?.transformResultScopedSlot ?? false,
   });
 
 // Common options (convertToTSX, transform)

@@ -31,7 +31,7 @@ import {
 } from "~/lib/stores";
 import type { Modes } from "~/lib/types";
 import type { SettingsSectionProps } from "./Settings";
-import { createSourcemapURL } from "~/lib/utils";
+import { createNoopAfterFirstCall, createSourcemapURL } from "~/lib/utils";
 import { toast } from "solid-sonner";
 import { SearchParamsHelpers } from "~/lib/stores/utils";
 
@@ -66,17 +66,6 @@ export function Header() {
   );
 }
 
-function createNoopAfterFirstCall(fn: () => void) {
-  let called = false;
-  return () => {
-    if (called) return;
-    called = true;
-    return fn();
-  };
-}
-
-const loadSettingsSection = () => lazy(() => import("./Settings"));
-
 function SettingsDialog() {
   const [isLoadedSettingsSection, setLoadedSettingsSection] =
     createSignal(false);
@@ -86,23 +75,21 @@ function SettingsDialog() {
   const [isOpen, setIsOpen] = createSignal(false);
   const closeModal = () => setIsOpen(false);
 
-  let SettingsSection = (props: SettingsSectionProps) => <></>;
-  createEffect(() => {
-    if (!isLoadedSettingsSection()) return;
-    SettingsSection = loadSettingsSection();
-    setLoadedSettingsSection(true);
-  });
+  const SettingsSection = lazy(() => import("./Settings"));
+
   return (
     <Dialog.Root modal open={isOpen()} onOpenChange={setIsOpen}>
       <Dialog.Trigger
         onClick={noopAfterFirstCall}
-        class="inline-flex h-8 w-8 appearance-none items-center justify-center rounded-md border border-solid border-secondary bg-secondary text-base capitalize leading-none text-white outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary hover:ring-offset-0 focus:ring-2 focus:ring-accent-2  focus-visible:outline-offset-2 focus-visible:outline-accent-2 active:bg-accent-2 lg:h-10 lg:w-10 [&_*]:select-none "
+        class="inline-flex h-8 w-8 appearance-none items-center justify-center rounded-md border border-solid border-secondary bg-secondary text-base capitalize leading-none text-white outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary hover:ring-offset-0 focus:ring-2 focus:ring-accent-2  focus-visible:outline-offset-2 focus-visible:outline-accent-2 active:bg-accent-2 lg:h-10 lg:w-10 [&_*]:select-none"
       >
         <IoSettingsOutline class="h-5 w-5" />
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay class="fixed inset-0 z-50 animate-[overlayHide_250ms_ease_100ms_forwards] bg-[rgba(0,0,0,0.57)] data-[expanded]:animate-[overlayShow_250ms_ease]" />
-        <SettingsSection closeModal={closeModal} />
+        <Show when={isLoadedSettingsSection()}>
+          <SettingsSection closeModal={closeModal} />
+        </Show>
       </Dialog.Portal>
     </Dialog.Root>
   );

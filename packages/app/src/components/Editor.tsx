@@ -31,6 +31,7 @@ import {
 import { getPersistedValue, setPersistentValue } from "~/lib/stores/utils";
 import type { EditorsHash } from "~/lib/types";
 import { LoadingEditor, LoadingError } from "./ui-kit";
+import { initializeCompiler } from "~/lib/stores/compiler";
 
 let codeCompilerRef: HTMLDivElement;
 let inputBoxRef: HTMLDivElement;
@@ -47,15 +48,15 @@ monaco.editor.setTheme("vitesse-dark");
 
 // TODO maybe add the astro language server to have proper
 // diagnostics instead of just disabling them?
-createEffect(() => {
-  monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-    noSemanticValidation: false,
-    noSyntaxValidation: false,
-  });
-  emmetHTML(monaco, ["html", "astro"]);
-});
 
 export function Editor() {
+  createEffect(() => {
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+    });
+    emmetHTML(monaco, ["html", "astro"]);
+  });
   function minimapDisplayEffect() {
     if (!breakpointMatches.lg) {
       editorsHash?.codeCompiler?.updateOptions({
@@ -82,14 +83,12 @@ export function Editor() {
 
   const [isOnigasmLoaded, setIsOnigasmLoaded] = createSignal(false);
 
-  createRenderEffect(async () => {
+  queueMicrotask(async () => {
     if (isOnigasmLoaded()) return;
     // initialize the onigasm wasm
     await onigasm.loadWASM(onigasmWasm);
     setIsOnigasmLoaded(true);
-
-    // initialize the astro compiler
-    // setHasCompilerVersionChangeBeenHandled(true);
+    await initializeCompiler(currentCompilerVersion()!);
   });
 
   onMount(() => {
@@ -121,27 +120,26 @@ export function Editor() {
       <div
         ref={codeCompilerRef!}
         classList={{
-          hidden:
-            (!showMobilePreview() && !breakpointMatches.lg) ||
-            !hasCompilerVersionChangeBeenHandled(),
+          hidden: !showMobilePreview() && !breakpointMatches.lg,
           "!w-full": showMobilePreview() && !breakpointMatches.lg,
         }}
       >
-        {/* <Show
+        <Show
           when={hasCompilerVersionChangeBeenHandled()}
           fallback={<LoadingEditor />}
-        > */}
-        <ErrorBoundary fallback={<LoadingError />}>
-          <CodeCompiler />
-        </ErrorBoundary>
-        {/* </Show> */}
+        >
+          <ErrorBoundary fallback={<LoadingError />}>
+            <CodeCompiler />
+          </ErrorBoundary>
+        </Show>
       </div>
     </div>
   );
 }
 
 function InputBox() {
-  onMount(async () => {
+  createEffect(async () => {
+    console.log("Ran this effect!");
     // do load the monaco editor
     editorsHash!.inputBox = await createAstroEditor(inputBoxRef, {
       value: code(),
@@ -167,9 +165,7 @@ function InputBox() {
 
 function CodeCompiler() {
   onMount(() => {
-    // const getCompilerOutput = createCompilerOutputGetter();
-    // const { unwrappedCompilerOutput } = getCompilerOutput(editorsHash);
-    // do load the monaco editor
+    // load the monaco editor
     editorsHash!.codeCompiler = monaco.editor.create(codeCompilerRef, {
       // TODO: fix wrong types
       value: getOutputByMode() ?? "",

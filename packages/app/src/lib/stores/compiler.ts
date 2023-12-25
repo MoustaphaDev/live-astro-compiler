@@ -1,5 +1,4 @@
 // ################################ DERIVED SIGNALS HERE ################################
-
 import { createEffect, createResource, on } from "solid-js";
 import type {
   ConsumedConvertToTSXOptions,
@@ -19,10 +18,15 @@ import {
   transformInternalURL,
   transformResultScopedSlot,
   transformSourcemap,
+  hasCompilerVersionChangeBeenHandled,
 } from ".";
 import { remoteCompilerModule } from "../compiler";
 import type { TransformResult } from "@astrojs/compiler";
-import { asyncDebounce, returnFunctionReferenceFromHash } from "./utils";
+import {
+  type DebouncedFunction,
+  asyncDebounce,
+  returnFunctionReferenceFromHash,
+} from "./utils";
 import type { CompilerModule } from "../compiler/fetch";
 import { toast } from "solid-sonner";
 import { setCompilerWithFallbackHandling } from "../compiler/module";
@@ -57,9 +61,19 @@ async function convertToTSXCode(
   return convertToTSXResult.code;
 }
 
+type CreateWrapperCompilerFunctions = {
+  getTransformResult: DebouncedFunction<TransformResult | undefined>;
+  getTSXResult: DebouncedFunction<string | undefined>;
+  getParseResult: DebouncedFunction<string | undefined>;
+};
 function createWrapperCompilerFunctions() {
   if (!remoteCompilerModule) {
-    throw new Error("Compiler not initialized");
+    // throw new Error("Compiler not initialized");
+    return {
+      getTransformResult: () => null,
+      getTSXResult: () => null,
+      getParseResult: () => null,
+    } as unknown as CreateWrapperCompilerFunctions;
   }
   const { convertToTSX, parse, transform } = remoteCompilerModule;
 
@@ -106,20 +120,6 @@ function createWrapperCompilerFunctions() {
     getTSXResult,
     getParseResult,
   };
-}
-// TODO: find a better place for this
-export async function initializeCompiler(version: string) {
-  const compilerInitializingPromise = setCompilerWithFallbackHandling(version);
-  toast.promise(compilerInitializingPromise, {
-    loading: "Loading compiler",
-    success: () => {
-      setHasCompilerVersionChangeBeenHandled(true);
-      return "Compiler loaded";
-    },
-    error: "Failed to load compiler",
-  });
-  await compilerInitializingPromise;
-  setHasCompilerVersionChangeBeenHandled(true);
 }
 
 export function createCompilerOutputGetter() {
@@ -191,19 +191,25 @@ export function createCompilerOutputGetter() {
     }
   }
 
+  function invalidateCompilerFunctions(args: [string | undefined, boolean]) {
+    const [, hasCompilerVersionChangeBeenHandled] = args;
+    if (!hasCompilerVersionChangeBeenHandled) {
+      return;
+    }
+    // update the compiler functions
+    Object.assign(compilerFunctions, createWrapperCompilerFunctions());
+
+    // refetch the results
+    refetchTransformResult();
+    refetchParseResult();
+    refetchTsxResult();
+  }
+
   // ################################ EFFECTS HERE ################################
   createEffect(
     on(
-      currentCompilerVersion,
-      () => {
-        // update the compiler functions
-        Object.assign(compilerFunctions, createWrapperCompilerFunctions());
-
-        // refetch the results
-        refetchTransformResult();
-        refetchParseResult();
-        refetchTsxResult();
-      },
+      [currentCompilerVersion, hasCompilerVersionChangeBeenHandled],
+      invalidateCompilerFunctions,
       { defer: true },
     ),
   );
@@ -212,4 +218,18 @@ export function createCompilerOutputGetter() {
     getCompilerOutput,
     getOutputByMode,
   };
+}
+
+// TODO: find a better place for this
+export async function initializeCompiler(version: string) {
+  const compilerInitializingPromise = setCompilerWithFallbackHandling(version);
+  toast.promise(compilerInitializingPromise, {
+    loading: "Loading compiler",
+    success: () => {
+      return "Compiler loaded";
+    },
+    error: "Failed to load compiler",
+  });
+  await compilerInitializingPromise;
+  setHasCompilerVersionChangeBeenHandled(true);
 }

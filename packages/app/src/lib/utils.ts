@@ -127,3 +127,12 @@ function patchDefineProperties() {
     return obj;
   };
 }
+
+export function createNoopAfterFirstCall(fn: () => void) {
+  let called = false;
+  return () => {
+    if (called) return;
+    called = true;
+    return fn();
+  };
+}

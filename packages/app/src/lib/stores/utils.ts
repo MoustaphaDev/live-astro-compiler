@@ -83,7 +83,7 @@ export function setPersistentValue<T>(key: string, value: T): T {
   return value;
 }
 
-type DebouncedFunction<T> = (...args: any) => Promise<T>;
+export type DebouncedFunction<T> = (...args: any) => Promise<T>;
 export function asyncDebounce<T>(
   fn: DebouncedFunction<T>,
   ms = 500,

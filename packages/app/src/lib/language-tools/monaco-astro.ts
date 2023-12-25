@@ -1,9 +1,7 @@
 import * as monaco from "monaco-editor";
 import { splitProps } from "solid-js";
 
-export const loadGrammars = async (
-  editor: monaco.editor.IStandaloneCodeEditor,
-) => {
+const loadGrammars = async (editor: monaco.editor.IStandaloneCodeEditor) => {
   const grammars = await import("./grammars");
   return grammars.loadGrammars(editor);
 };
