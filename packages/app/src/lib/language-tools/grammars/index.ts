@@ -6,11 +6,6 @@ async function dispatchGrammars(
   scopeName: string,
 ): Promise<IGrammarDefinition> {
   switch (scopeName) {
-    case "source.vue":
-      return {
-        format: "json",
-        content: await import("./vue.tmLanguage.json"),
-      };
     case "source.astro":
       return {
         format: "json",
@@ -47,16 +42,6 @@ async function dispatchGrammars(
       return {
         format: "json",
         content: await import("./css.tmLanguage.json"),
-      };
-    case "source.stylus":
-      return {
-        format: "json",
-        content: await import("./stylus.tmLanguage.json"),
-      };
-    case "source.markdown":
-      return {
-        format: "json",
-        content: await import("./markdown.tmLanguage.json"),
       };
     default:
       return {
