@@ -13,6 +13,7 @@ import {
   storeCompilerDetails,
 } from "./storage";
 import { createPromiseAndActions } from "./utils";
+import { debugLog } from "../utils";
 
 export let remoteCompilerModule: CompilerModule | null = null;
 
@@ -35,7 +36,7 @@ async function setCompiler(version: string): Promise<{
   const { isMarked } = getCompilerMarkingState(version);
 
   if (!isMarked!) {
-    console.info("Running compiler tests...");
+    debugLog("Running compiler tests...");
     // run compatibility tests
     // later implement this like described in our detailed design
     // for now, just run the tests
@@ -43,7 +44,7 @@ async function setCompiler(version: string): Promise<{
       module: compilerModule,
       wasmURL,
     });
-    console.info(
+    debugLog(
       "Compiler tests finished:\n%s",
       JSON.stringify(testResults, null, 2),
     );

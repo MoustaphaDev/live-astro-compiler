@@ -33,6 +33,7 @@ import type { EditorsHash } from "~/lib/types";
 import { LoadingEditor, LoadingError } from "./ui-kit";
 import { initializeCompiler } from "~/lib/stores/compiler";
 import { debounce } from "@solid-primitives/scheduled";
+import { debugLog } from "~/lib/utils";
 
 let codeCompilerRef: HTMLDivElement;
 let inputBoxRef: HTMLDivElement;
@@ -140,7 +141,7 @@ export function Editor() {
 
 function InputBox() {
   onMount(async () => {
-    console.log("Ran this effect!");
+    debugLog("Ran this effect!");
     // do load the monaco editor
     editorsHash!.inputBox = await createAstroEditor(inputBoxRef, {
       value: code(),

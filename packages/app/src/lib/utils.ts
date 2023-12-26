@@ -136,3 +136,9 @@ export function createNoopAfterFirstCall(fn: () => void) {
     return fn();
   };
 }
+
+export function debugLog(...args: any[]) {
+  if (import.meta.env.DEV) {
+    console.log(...args);
+  }
+}

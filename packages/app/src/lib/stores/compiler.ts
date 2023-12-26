@@ -32,6 +32,7 @@ import type { TransformResult } from "@astrojs/compiler";
 import { returnFunctionReferenceFromHash } from "./utils";
 import type { CompilerModule } from "../compiler/fetch";
 import { setCompilerWithFallbackHandling } from "../compiler/module";
+import { debugLog } from "../utils";
 
 async function transformCode(
   options: ConsumedTransformOptions,
@@ -82,7 +83,7 @@ function createWrapperCompilerFunctions() {
   const getTransformResult = async (
     transformOptions: ConsumedTransformOptions,
   ) => {
-    console.log("Computing getTransformResult...");
+    debugLog("Computing getTransformResult...");
     try {
       return await transformCode(transformOptions, transform);
     } catch (e) {
@@ -97,7 +98,7 @@ function createWrapperCompilerFunctions() {
   const getTSXResult = async (
     convertToTSXOptions: ConsumedConvertToTSXOptions,
   ) => {
-    console.log("Computing getTSXResult...");
+    debugLog("Computing getTSXResult...");
     try {
       return await convertToTSXCode(convertToTSXOptions, convertToTSX);
     } catch (e) {
@@ -108,7 +109,7 @@ function createWrapperCompilerFunctions() {
   };
 
   const getParseResult = async (parseOptions: ConsumedParseOptions) => {
-    console.log("Computing getParseResult...");
+    debugLog("Computing getParseResult...");
     try {
       return await parseCode(parseOptions, parse);
     } catch (e) {
@@ -240,7 +241,7 @@ export function createCompilerOutputGetter() {
   }
 
   function invalidateCompilerFunctions(...args: unknown[]) {
-    console.log("Reassigning compiler functions...");
+    debugLog("Reassigning compiler functions...");
     // update the compiler functions
     Object.assign(compilerFunctions, createWrapperCompilerFunctions());
     currentCycleCompilerVersion = currentCompilerVersion();
