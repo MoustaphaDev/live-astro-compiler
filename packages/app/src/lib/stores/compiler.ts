@@ -251,17 +251,29 @@ export function createCompilerOutputGetter() {
   function refetchResourceOfCurrentMode() {
     // refetch the results for the current mode
     // defer fetching of the other results
-    switch (mode()) {
-      case "TSX":
-        refetchTsxResult();
-        break;
-      case "parse":
-        refetchParseResult();
-        break;
-      case "transform":
-        refetchTransformResult();
-        break;
-    }
+    // this doesn't work as expected currently
+    // After when switching compiler versions, when switching modes
+    // the other results are not fetched until the `code` changes
+    // switch (mode()) {
+    //   case "TSX":
+    //     refetchTsxResult();
+    //     break;
+    //   case "parse":
+    //     refetchParseResult();
+    //     break;
+    //   case "transform":
+    //     refetchTransformResult();
+    //     break;
+    // }
+    // this is a quick fix for the above issue
+    // refetch all the results when switching compiler versions
+    refectchAllResources();
+  }
+
+  function refectchAllResources() {
+    refetchTsxResult();
+    refetchParseResult();
+    refetchTransformResult();
   }
 
   // ################################ EFFECTS HERE ################################
