@@ -97,7 +97,7 @@ export function Editor() {
     // attach word-wrap event to window when we hold ALT+Z
     window.addEventListener("keydown", toggleWordWrap);
     doSplit();
-          });
+  });
   onCleanup(() => {
     window.removeEventListener("keydown", toggleWordWrap);
   });
