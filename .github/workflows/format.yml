@@ -11,6 +11,10 @@ jobs:
     format:
         if: github.repository_owner == 'MoustaphaDev'
         runs-on: ubuntu-latest
+        permissions:
+            # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+            contents: write
+
         env:
             NODE_OPTIONS: '--max_old_space_size=4096'
         steps:
