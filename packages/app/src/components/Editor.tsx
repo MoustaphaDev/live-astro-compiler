@@ -94,15 +94,14 @@ export function Editor() {
   });
 
   onMount(() => {
-    minimapDisplayEffect();
     // attach word-wrap event to window when we hold ALT+Z
     window.addEventListener("keydown", toggleWordWrap);
     doSplit();
-  });
+          });
   onCleanup(() => {
     window.removeEventListener("keydown", toggleWordWrap);
   });
-  createRenderEffect(minimapDisplayEffect);
+  createEffect(minimapDisplayEffect);
 
   return (
     <div class="flex h-full w-full flex-row items-stretch overflow-hidden">
