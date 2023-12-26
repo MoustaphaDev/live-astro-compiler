@@ -1,5 +1,11 @@
 // ################################ DERIVED SIGNALS HERE ################################
-import { createEffect, createMemo, createResource, on } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createReaction,
+  createResource,
+  on,
+} from "solid-js";
 import type {
   ConsumedConvertToTSXOptions,
   ConsumedParseOptions,
@@ -25,7 +31,6 @@ import { remoteCompilerModule } from "../compiler";
 import type { TransformResult } from "@astrojs/compiler";
 import { returnFunctionReferenceFromHash } from "./utils";
 import type { CompilerModule } from "../compiler/fetch";
-import { toast } from "solid-sonner";
 import { setCompilerWithFallbackHandling } from "../compiler/module";
 
 async function transformCode(
@@ -63,7 +68,6 @@ type CreateWrapperCompilerFunctions = {
   getTSXResult: FunctionGeneric<string | undefined>;
   getParseResult: FunctionGeneric<string | undefined>;
 };
-const cachedResults = new Map();
 function createWrapperCompilerFunctions() {
   if (!remoteCompilerModule) {
     // throw new Error("Compiler not initialized");
@@ -74,14 +78,13 @@ function createWrapperCompilerFunctions() {
     } as unknown as CreateWrapperCompilerFunctions;
   }
   const { convertToTSX, parse, transform } = remoteCompilerModule;
+
   const getTransformResult = async (
     transformOptions: ConsumedTransformOptions,
   ) => {
-    console.log("Compute getTransformResult");
+    console.log("Computing getTransformResult...");
     try {
-      const result = await transformCode(transformOptions, transform);
-      cachedResults.set("transform", result);
-      return result;
+      return await transformCode(transformOptions, transform);
     } catch (e) {
       // TODO better err handling
       // idea introduce a signal holding the errors and
@@ -94,11 +97,9 @@ function createWrapperCompilerFunctions() {
   const getTSXResult = async (
     convertToTSXOptions: ConsumedConvertToTSXOptions,
   ) => {
-    console.log("Compute getTSXResult");
+    console.log("Computing getTSXResult...");
     try {
-      const result = await convertToTSXCode(convertToTSXOptions, convertToTSX);
-      cachedResults.set("tsx", result);
-      return result;
+      return await convertToTSXCode(convertToTSXOptions, convertToTSX);
     } catch (e) {
       // TODO better err handling
       // throw e;
@@ -107,11 +108,9 @@ function createWrapperCompilerFunctions() {
   };
 
   const getParseResult = async (parseOptions: ConsumedParseOptions) => {
-    console.log("Compute getParseResult");
+    console.log("Computing getParseResult...");
     try {
-      const result = await parseCode(parseOptions, parse);
-      cachedResults.set("parse", result);
-      return result;
+      return await parseCode(parseOptions, parse);
     } catch (e) {
       // TODO better err handling
       // throw e;
@@ -127,6 +126,13 @@ function createWrapperCompilerFunctions() {
 }
 
 export function createCompilerOutputGetter() {
+  const compilerFunctions = createWrapperCompilerFunctions();
+  let currentCycleCompilerVersion = currentCompilerVersion();
+  // invalidate the memo cache when the compiler version changes
+  const codeMemoInvalidator = {
+    equals: (a: any, b: any) =>
+      a === b && currentCycleCompilerVersion === currentCompilerVersion(),
+  };
   // The resources were always updated when the value of `code` changes,
   // leading to MANY unnecessary computations
   // Ideally, they should only get updated when the value of `code` has
@@ -136,25 +142,38 @@ export function createCompilerOutputGetter() {
   // only when the `code` has changed AND the `mode` is set to a specific one
   // A drawback of this approach is `code` is duplicated in memory 3 times
   // but I think it's worth it for the performance gain and the simplicity of the code
-  const valueToTransform = createMemo((prevCode: string) => {
-    if (mode() === "transform") return code()!;
-    return prevCode;
-  }, code()!);
+  // Later we could refactor this to instead keep track state changes instead
+  // of the values themselves to avoid duplication
+  const codeToTransform = createMemo(
+    (prevCode: string) => {
+      if (mode() === "transform") return code()!;
+      return prevCode;
+    },
+    code()!,
+    codeMemoInvalidator,
+  );
 
-  const valueToParse = createMemo((prevCode: string) => {
-    if (mode() === "parse") return code()!;
-    return prevCode;
-  }, code()!);
+  const codeToParse = createMemo(
+    (prevCode: string) => {
+      if (mode() === "parse") return code()!;
+      return prevCode;
+    },
+    code()!,
+    codeMemoInvalidator,
+  );
 
-  const valueToconvertToTSX = createMemo((prevCode: string) => {
-    if (mode() === "TSX") return code()!;
-    return prevCode;
-  }, code()!);
+  const codeToConvertToTSX = createMemo(
+    (prevCode: string) => {
+      if (mode() === "TSX") return code()!;
+      return prevCode;
+    },
+    code()!,
+    codeMemoInvalidator,
+  );
 
-  let compilerFunctions = createWrapperCompilerFunctions();
   const consumedTransformOptions = () => {
     return {
-      code: valueToTransform(),
+      code: codeToTransform(),
       transformOptions: {
         internalURL: transformInternalURL(),
         filename: filename(),
@@ -169,7 +188,7 @@ export function createCompilerOutputGetter() {
 
   const consumedParseOptions = () => {
     return {
-      code: valueToParse(),
+      code: codeToParse(),
       parseOptions: {
         position: parsePosition(),
       },
@@ -178,7 +197,7 @@ export function createCompilerOutputGetter() {
 
   const consumedTSXOptions = () => {
     return {
-      code: valueToconvertToTSX(),
+      code: codeToConvertToTSX(),
       convertToTSXOptions: {
         filename: filename(),
         normalizedFilename: normalizedFilename(),
@@ -208,6 +227,7 @@ export function createCompilerOutputGetter() {
     };
   }
 
+  // rename this `getOutputOfCurrentMode`?
   function getOutputByMode() {
     switch (mode()) {
       case "TSX":
@@ -219,14 +239,15 @@ export function createCompilerOutputGetter() {
     }
   }
 
-  function invalidateCompilerFunctions(args: [string | undefined, boolean]) {
-    const [, hasCompilerVersionChangeBeenHandled] = args;
-    if (!hasCompilerVersionChangeBeenHandled) {
-      return;
-    }
+  function invalidateCompilerFunctions(...args: unknown[]) {
+    console.log("Reassigning compiler functions...");
     // update the compiler functions
     Object.assign(compilerFunctions, createWrapperCompilerFunctions());
+    currentCycleCompilerVersion = currentCompilerVersion();
+    refetchResourceOfCurrentMode();
+  }
 
+  function refetchResourceOfCurrentMode() {
     // refetch the results for the current mode
     // defer fetching of the other results
     switch (mode()) {
@@ -243,13 +264,14 @@ export function createCompilerOutputGetter() {
   }
 
   // ################################ EFFECTS HERE ################################
+  // invalidate the compiler functions when the compiler version changes
   createEffect(
-    on(
-      [currentCompilerVersion, hasCompilerVersionChangeBeenHandled],
-      invalidateCompilerFunctions,
-      { defer: true },
-    ),
+    on(currentCompilerVersion, invalidateCompilerFunctions, { defer: true }),
   );
+
+  // invalidate the compiler functions when the compiler has been initialized
+  const track = createReaction(() => invalidateCompilerFunctions());
+  track(() => hasCompilerVersionChangeBeenHandled());
 
   return {
     getCompilerOutput,
@@ -258,14 +280,6 @@ export function createCompilerOutputGetter() {
 }
 
 export async function initializeCompiler(version: string) {
-  const compilerInitializingPromise = setCompilerWithFallbackHandling(version);
-  toast.promise(compilerInitializingPromise, {
-    loading: "Loading compiler",
-    success: () => {
-      return "Compiler loaded";
-    },
-    error: "Failed to load compiler",
-  });
-  await compilerInitializingPromise;
+  await setCompilerWithFallbackHandling(version);
   setHasCompilerVersionChangeBeenHandled(true);
 }
