@@ -1,21 +1,19 @@
 <center>
-<h1>Live Astro Compiler</h1>
+  <h1>Live Astro Compiler</h1>
 </center>
 
 <center>
-<h2>Preview the compiled output of Astro components</h2>
+  <h2>Preview the compiled output of Astro components</h2>
 </center>
 
-## TODO
+## Roadmap
 
-- Nicely display errors in the UI
-- Add `resolvePath` and `preprocessStyle` transform options
-- Add a prettier formatter button
-- Add theme switcher
-- Add view displaying all resulting properties of a transform. The result of a transform has this shape
+- Surface compiler errors in the UI
+- Add a format button
+- Display all transform outputs
 
 ```ts
-export interface TransformResult {
+interface TransformResult {
   code: string; // only this is displayed currently
   map: string;
   scope: string;
@@ -26,5 +24,16 @@ export interface TransformResult {
   hydratedComponents: HydratedComponent[];
   clientOnlyComponents: HydratedComponent[];
   containsHead: boolean;
+  propagation: boolean;
+}
+```
+
+- Display all the TSX outputs
+
+```ts
+interface TSXResult {
+  code: string; // only this is displayed currently
+  map: SourceMap;
+  diagnostics: DiagnosticMessage[];
 }
 ```
