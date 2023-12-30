@@ -1,6 +1,5 @@
 import { type Plugin, defineConfig, loadEnv } from "vite";
 import solidPlugin from "vite-plugin-solid";
-import devtools from "solid-devtools/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import monacoEditorPluginModule from "vite-plugin-monaco-editor";
 import { vitePluginModuleGraph } from "./src/vite-plugins/module-graph-printer.js";
@@ -13,7 +12,6 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
     plugins: [
-      devtools({ autoname: true }),
       solidPlugin(),
       tsConfigPaths(),
       monacoEditorPlugin({

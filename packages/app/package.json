@@ -6,8 +6,9 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build && pnpm postbuild",
+    "build": "tsc && vite build && pnpm postbuild",
     "postbuild": "node ./scripts/postbuild.cjs",
+    "tsc": "tsc",
     "serve": "vite preview"
   },
   "license": "MIT",
@@ -18,7 +19,6 @@
     "glob": "^10.3.10",
     "prettier": "^3.1.0",
     "prettier-plugin-tailwindcss": "^0.5.7",
-    "solid-devtools": "^0.29.2",
     "typescript": "^5.3.2",
     "vite": "^4.0.0",
     "vite-plugin-monaco-editor": "^1.1.0",
