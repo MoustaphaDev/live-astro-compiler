@@ -65,8 +65,6 @@ export type TSXTabToResultMap = {
   otherMetadata: Omit<TSXResult, "code">;
 };
 
-export type TSXTabs = keyof TSXTabToResultMap;
-
 export type TransformTabToResultMap = {
   code: TransformResult["code"];
   components: Pick<
@@ -75,10 +73,18 @@ export type TransformTabToResultMap = {
   >;
   css: Pick<TransformResult, "css" | "styleError">;
   scripts: Pick<TransformResult, "scripts">;
-  othersMetadata: Omit<
+  otherMetadata: Omit<
     TransformResult,
-    keyof Omit<TransformTabToResultMap, "others">
+    UnionOfObjectValues<
+      Omit<TransformTabToResultMap, "otherMetadata" | "code"> & {
+        code: { code: TransformResult["code"] };
+      }
+    >
   >;
 };
 
+export type TSXTabs = keyof TSXTabToResultMap;
 export type TransformTabs = keyof TransformTabToResultMap;
+
+type UnionOfObjectValues<T> = KeysOfUnion<T[keyof T]>;
+type KeysOfUnion<T> = T extends T ? keyof T : never;

@@ -11,6 +11,8 @@ import type {
   ConsumedParseOptions,
   ConsumedTransformOptions,
   FunctionGeneric,
+  TSXTabToResultMap,
+  TransformTabToResultMap,
 } from "../types";
 import {
   code,
@@ -26,15 +28,16 @@ import {
   transformResultScopedSlot,
   transformSourcemap,
   hasCompilerVersionChangeBeenHandled,
+  viewDetailedResults,
 } from ".";
 import { remoteCompilerModule } from "../compiler";
-import type { TransformResult } from "@astrojs/compiler";
+import type { TSXResult, TransformResult } from "@astrojs/compiler";
 import { returnFunctionReferenceFromHash } from "./utils";
 import type { CompilerModule } from "../compiler/fetch";
 import { setCompilerWithFallbackHandling } from "../compiler/module";
 import { debugLog } from "../utils";
 
-async function transformCode(
+async function transformWrapper(
   options: ConsumedTransformOptions,
   transformFn: CompilerModule["transform"],
 ): Promise<TransformResult> {
@@ -45,7 +48,7 @@ async function transformCode(
   return transformResult;
 }
 
-async function parseCode(
+async function parseWrapper(
   options: ConsumedParseOptions,
   parseFn: CompilerModule["parse"],
 ): Promise<string> {
@@ -53,20 +56,20 @@ async function parseCode(
   return JSON.stringify(parseResult, null, 2);
 }
 
-async function convertToTSXCode(
+async function convertToTSXWrapper(
   options: ConsumedConvertToTSXOptions,
   convertToTSXFn: CompilerModule["convertToTSX"],
-): Promise<string> {
+): Promise<TSXResult> {
   const convertToTSXResult = await convertToTSXFn(
     options.code ?? "",
     options.convertToTSXOptions,
   );
-  return convertToTSXResult.code;
+  return convertToTSXResult;
 }
 
 type CreateWrapperCompilerFunctions = {
   getTransformResult: FunctionGeneric<TransformResult | undefined>;
-  getTSXResult: FunctionGeneric<string | undefined>;
+  getTSXResult: FunctionGeneric<TSXResult | undefined>;
   getParseResult: FunctionGeneric<string | undefined>;
 };
 function createWrapperCompilerFunctions() {
@@ -85,7 +88,7 @@ function createWrapperCompilerFunctions() {
   ) => {
     debugLog("Computing getTransformResult...");
     try {
-      return await transformCode(transformOptions, transform);
+      return await transformWrapper(transformOptions, transform);
     } catch (e) {
       // TODO better err handling
       // idea introduce a signal holding the errors and
@@ -100,7 +103,7 @@ function createWrapperCompilerFunctions() {
   ) => {
     debugLog("Computing getTSXResult...");
     try {
-      return await convertToTSXCode(convertToTSXOptions, convertToTSX);
+      return await convertToTSXWrapper(convertToTSXOptions, convertToTSX);
     } catch (e) {
       // TODO better err handling
       // throw e;
@@ -111,7 +114,7 @@ function createWrapperCompilerFunctions() {
   const getParseResult = async (parseOptions: ConsumedParseOptions) => {
     debugLog("Computing getParseResult...");
     try {
-      return await parseCode(parseOptions, parse);
+      return await parseWrapper(parseOptions, parse);
     } catch (e) {
       // TODO better err handling
       // throw e;
@@ -236,11 +239,11 @@ export function createCompilerOutputGetter() {
       case "parse":
         return parseResult();
       case "transform":
-        return transformResult()?.code;
+        return transformResult();
     }
   }
 
-  function invalidateCompilerFunctions(...args: unknown[]) {
+  function invalidateCompilerFunctions() {
     debugLog("Reassigning compiler functions...");
     // update the compiler functions
     Object.assign(compilerFunctions, createWrapperCompilerFunctions());
@@ -279,7 +282,7 @@ export function createCompilerOutputGetter() {
   // ################################ EFFECTS HERE ################################
   // invalidate the compiler functions when the compiler version changes
   createEffect(
-    on(currentCompilerVersion, invalidateCompilerFunctions, { defer: true }),
+    on([currentCompilerVersion], invalidateCompilerFunctions, { defer: true }),
   );
 
   // invalidate the compiler functions when the compiler has been initialized
@@ -290,6 +293,54 @@ export function createCompilerOutputGetter() {
     getCompilerOutput,
     getOutputByMode,
   };
+}
+
+// maybe use a map instead of an object?
+function createTransformTabToResultMap(
+  transformResult: TransformResult,
+): TransformTabToResultMap {
+  const {
+    clientOnlyComponents,
+    code,
+    containsHead,
+    css,
+    diagnostics,
+    hydratedComponents,
+    map,
+    propagation,
+    scope,
+    scripts,
+    styleError,
+  } = transformResult;
+  return {
+    code,
+    css: { css, styleError },
+    components: {
+      clientOnlyComponents,
+      hydratedComponents,
+    },
+    scripts: {
+      scripts: scripts,
+    },
+    otherMetadata: {
+      containsHead,
+      diagnostics,
+      map,
+      propagation,
+      scope,
+    },
+  } as const;
+}
+
+function createTSXTabToResultMap(tsxResult: TSXResult): TSXTabToResultMap {
+  const { code, diagnostics, map } = tsxResult;
+  return {
+    code,
+    otherMetadata: {
+      diagnostics,
+      map,
+    },
+  } as const;
 }
 
 export async function initializeCompiler(version: string) {
