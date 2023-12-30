@@ -2,6 +2,7 @@ import { debounce } from "@solid-primitives/scheduled";
 import { type Accessor, createSignal } from "solid-js";
 import { StoredSearchParams, type StoredSignals } from "../types";
 import * as fflate from "fflate";
+import { debugLog } from "../utils";
 
 // doesn't match all signatures of signals, this is just what we need
 export type PersistentSignal<T> = [Accessor<T>, PersistentSignalSetter<T>];
@@ -130,6 +131,7 @@ export class SearchParamsHelpers {
     const stringifiedEditorStateSnapshot = urlParams.get("editor-state");
 
     if (!stringifiedEditorStateSnapshot) {
+      debugLog("No editor state found in URL");
       return {};
     }
     try {
@@ -139,8 +141,11 @@ export class SearchParamsHelpers {
       const decompressedBinaryData = fflate.decompressSync(binaryData);
       const decoder = new TextDecoder();
       const decompressedSnapshotString = decoder.decode(decompressedBinaryData);
+
+      debugLog("Found editor state in URL");
       return JSON.parse(decompressedSnapshotString);
     } catch (err) {
+      debugLog("Failed to parse editor state from URL");
       return {};
     }
   }
@@ -165,7 +170,8 @@ export class SearchParamsHelpers {
     }
   }
 
-  private static getPlaygroundStateSnapshot() {
+  private static getPlaygroundStateSnapshot(): StoredSearchParams {
+    debugLog("Computing editor state snapshot");
     return {
       currentCompilerVersion: this.stateSignals.currentCompilerVersion?.(),
       code: this.stateSignals.code?.(),
@@ -180,6 +186,9 @@ export class SearchParamsHelpers {
       transformCompact: this.stateSignals.transformCompact?.(),
       transformResultScopedSlot:
         this.stateSignals.transformResultScopedSlot?.(),
+      viewDetailedResults: this.stateSignals.viewDetailedResults?.(),
+      selectedTransformTab: this.stateSignals.selectedTransformTab?.(),
+      selectedTSXTab: this.stateSignals.selectedTSXTab?.(),
     };
   }
 }

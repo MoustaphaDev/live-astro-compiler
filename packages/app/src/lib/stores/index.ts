@@ -75,14 +75,14 @@ export const [viewDetailedResults, setViewDetailedResults] =
   usePersistentSignal<StoredSearchParams["viewDetailedResults"]>({
     key: "view-detailed-results",
     initialValueSetter: (persisted) =>
-      urlSearchParams?.viewDetailedResults ?? persisted ?? false,
+      urlSearchParams.viewDetailedResults ?? persisted ?? false,
   });
 
 export const [selectedTransformTab, setSelectedTransformTab] =
   usePersistentSignal<StoredSearchParams["selectedTransformTab"]>({
     key: "selected-transform-tab",
     initialValueSetter: (persisted) =>
-      urlSearchParams?.selectedTransformTab ?? persisted ?? "code",
+      urlSearchParams.selectedTransformTab ?? persisted ?? "code",
   });
 
 export const [selectedTSXTab, setSelectedTSXTab] = usePersistentSignal<
@@ -90,7 +90,7 @@ export const [selectedTSXTab, setSelectedTSXTab] = usePersistentSignal<
 >({
   key: "selected-tsx-tab",
   initialValueSetter: (persisted) =>
-    urlSearchParams?.selectedTSXTab ?? persisted ?? "code",
+    urlSearchParams.selectedTSXTab ?? persisted ?? "code",
 });
 
 import.meta.env.DEV &&
@@ -113,7 +113,7 @@ export const [parsePosition, setParsePosition] = usePersistentSignal<
 >({
   key: "parse-position",
   initialValueSetter: (persisted) =>
-    urlSearchParams?.parsePosition ?? persisted ?? false,
+    urlSearchParams.parsePosition ?? persisted ?? false,
 });
 
 // Transform options
@@ -121,7 +121,7 @@ export const [transformInternalURL, setTransformInternalURL] =
   usePersistentSignal<StoredSearchParams["transformInternalURL"]>({
     key: "transform-internalURL",
     initialValueSetter: (persisted) =>
-      urlSearchParams?.transformInternalURL ?? persisted ?? "",
+      urlSearchParams.transformInternalURL ?? persisted ?? "",
   });
 
 export const [transformSourcemap, setTransformSourcemap] = usePersistentSignal<
@@ -129,14 +129,14 @@ export const [transformSourcemap, setTransformSourcemap] = usePersistentSignal<
 >({
   key: "transform-sourcemap",
   initialValueSetter: (persisted) =>
-    urlSearchParams?.transformSourcemap ?? persisted ?? false,
+    urlSearchParams.transformSourcemap ?? persisted ?? false,
 });
 
 export const [transformAstroGlobalArgs, setTransformAstroGlobalArgs] =
   usePersistentSignal<StoredSearchParams["transformAstroGlobalArgs"]>({
     key: "transform-astroGlobalArgs",
     initialValueSetter: (persisted) =>
-      urlSearchParams?.transformAstroGlobalArgs ?? persisted ?? "",
+      urlSearchParams.transformAstroGlobalArgs ?? persisted ?? "",
   });
 
 export const [transformCompact, setTranformCompact] = usePersistentSignal<
@@ -144,14 +144,14 @@ export const [transformCompact, setTranformCompact] = usePersistentSignal<
 >({
   key: "transform-compact",
   initialValueSetter: (persisted) =>
-    urlSearchParams?.transformCompact ?? persisted ?? false,
+    urlSearchParams.transformCompact ?? persisted ?? false,
 });
 
 export const [transformResultScopedSlot, setTransformResultScopedSlot] =
   usePersistentSignal<StoredSearchParams["transformResultScopedSlot"]>({
     key: "transform-resultScopedSlot",
     initialValueSetter: (persisted) =>
-      urlSearchParams?.transformResultScopedSlot ?? persisted ?? false,
+      urlSearchParams.transformResultScopedSlot ?? persisted ?? false,
   });
 
 // Common options (convertToTSX, transform)
@@ -159,7 +159,7 @@ export const [filename, setFilename] = usePersistentSignal<
   StoredSearchParams["filename"]
 >({
   key: "filename",
-  initialValueSetter: (persisted) => urlSearchParams?.filename ?? persisted,
+  initialValueSetter: (persisted) => urlSearchParams.filename ?? persisted,
 });
 
 export const [normalizedFilename, setNormalizedFilename] = usePersistentSignal<
@@ -167,7 +167,7 @@ export const [normalizedFilename, setNormalizedFilename] = usePersistentSignal<
 >({
   key: "normalizedFilename",
   initialValueSetter: (persisted) =>
-    urlSearchParams?.normalizedFilename ?? persisted,
+    urlSearchParams.normalizedFilename ?? persisted,
 });
 
 // ################################ HOOKS AND EFFECTS HERE ################################
