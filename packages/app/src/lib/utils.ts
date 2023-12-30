@@ -142,3 +142,11 @@ export function debugLog(...args: any[]) {
     console.log(...args);
   }
 }
+
+export function isObject(obj: any): obj is Record<string, any> {
+  return obj !== null && typeof obj === "object";
+}
+
+export function isNullish(val: any): val is null | undefined {
+  return val === null || typeof val === "undefined";
+}

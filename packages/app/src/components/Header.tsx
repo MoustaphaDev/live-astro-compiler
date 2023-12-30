@@ -113,7 +113,7 @@ function SectionToSourceMapVisualizer() {
   // opens the source evanw source map visualizer
   async function openSourcemapVisualization() {
     const sourceMapUrl = await createSourcemapURL(
-      getCompilerOutput().tsxResult?.(),
+      getCompilerOutput().tsxResult?.()?.code,
     );
 
     if (!sourceMapUrl) {

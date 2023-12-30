@@ -3,7 +3,6 @@ import {
   ErrorBoundary,
   Show,
   createEffect,
-  createRenderEffect,
   createSignal,
   on,
   onCleanup,
@@ -31,7 +30,7 @@ import {
 import { getPersistedValue, setPersistentValue } from "~/lib/stores/utils";
 import type { EditorsHash } from "~/lib/types";
 import { LoadingEditor, LoadingError } from "./ui-kit";
-import { initializeCompiler } from "~/lib/stores/compiler";
+import { initializeCompiler, unWrapOutput } from "~/lib/stores/compiler";
 import { debounce } from "@solid-primitives/scheduled";
 import { debugLog } from "~/lib/utils";
 
@@ -171,7 +170,7 @@ function CodeCompiler() {
     // load the monaco editor
     editorsHash!.codeCompiler = monaco.editor.create(codeCompilerRef, {
       // TODO: fix wrong types
-      value: getOutputByMode() ?? "",
+      value: unWrapOutput(getOutputByMode()),
       language: "typescript",
       readOnly: true,
       automaticLayout: true,
@@ -186,12 +185,13 @@ function CodeCompiler() {
 
     createEffect(
       on([getOutputByMode, currentCompilerVersion], () => {
-        editorsHash?.codeCompiler?.setValue(getOutputByMode() ?? "");
+        editorsHash?.codeCompiler?.setValue(unWrapOutput(getOutputByMode()));
       }),
     );
   });
   return <></>;
 }
+// tabs list here
 
 function doSplit() {
   const sizes = getPersistedValue("split-sizes") ?? [50, 50];

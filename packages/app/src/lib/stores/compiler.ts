@@ -29,13 +29,15 @@ import {
   transformSourcemap,
   hasCompilerVersionChangeBeenHandled,
   viewDetailedResults,
+  selectedTSXTab,
+  selectedTransformTab,
 } from ".";
 import { remoteCompilerModule } from "../compiler";
 import type { TSXResult, TransformResult } from "@astrojs/compiler";
 import { returnFunctionReferenceFromHash } from "./utils";
 import type { CompilerModule } from "../compiler/fetch";
 import { setCompilerWithFallbackHandling } from "../compiler/module";
-import { debugLog } from "../utils";
+import { debugLog, isNullish, isObject } from "../utils";
 
 async function transformWrapper(
   options: ConsumedTransformOptions,
@@ -234,12 +236,32 @@ export function createCompilerOutputGetter() {
   // rename this `getOutputOfCurrentMode`?
   function getOutputByMode() {
     switch (mode()) {
-      case "TSX":
-        return tsxResult();
+      case "transform": {
+        if (!viewDetailedResults()) {
+          return transformResult()?.code;
+        }
+        const transformTabToResultMap = createTransformTabToResultMap(
+          transformResult()!,
+        );
+        const transformTab = selectedTransformTab();
+        const content = isCode(transformTab)
+          ? transformResult()?.code
+          : transformTabToResultMap[transformTab];
+        return content;
+      }
+      case "TSX": {
+        if (!viewDetailedResults()) {
+          return tsxResult()?.code;
+        }
+        const tsxTabToResultMap = createTSXTabToResultMap(tsxResult()!);
+        const tsxTab = selectedTSXTab();
+        const content = isCode(tsxTab)
+          ? tsxResult()?.code
+          : tsxTabToResultMap[tsxTab];
+        return content;
+      }
       case "parse":
         return parseResult();
-      case "transform":
-        return transformResult();
     }
   }
 
@@ -295,13 +317,25 @@ export function createCompilerOutputGetter() {
   };
 }
 
+function isCode(code: unknown): code is "code" {
+  return typeof code === "string";
+}
+
+export function unWrapOutput(
+  output: ReturnType<
+    ReturnType<typeof createCompilerOutputGetter>["getOutputByMode"]
+  >,
+): string {
+  if (isNullish(output)) return "";
+  return isObject(output) ? JSON.stringify(output, null, 2) : output;
+}
+
 // maybe use a map instead of an object?
 function createTransformTabToResultMap(
   transformResult: TransformResult,
 ): TransformTabToResultMap {
   const {
     clientOnlyComponents,
-    code,
     containsHead,
     css,
     diagnostics,
@@ -313,7 +347,6 @@ function createTransformTabToResultMap(
     styleError,
   } = transformResult;
   return {
-    code,
     css: { css, styleError },
     components: {
       clientOnlyComponents,

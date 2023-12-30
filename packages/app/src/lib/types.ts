@@ -66,7 +66,6 @@ export type TSXTabToResultMap = {
 };
 
 export type TransformTabToResultMap = {
-  code: TransformResult["code"];
   components: Pick<
     TransformResult,
     "hydratedComponents" | "clientOnlyComponents"
@@ -75,16 +74,12 @@ export type TransformTabToResultMap = {
   scripts: Pick<TransformResult, "scripts">;
   otherMetadata: Omit<
     TransformResult,
-    UnionOfObjectValues<
-      Omit<TransformTabToResultMap, "otherMetadata" | "code"> & {
-        code: { code: TransformResult["code"] };
-      }
-    >
+    UnionOfObjectValues<Omit<TransformTabToResultMap, "otherMetadata">> | "code"
   >;
 };
 
-export type TSXTabs = keyof TSXTabToResultMap;
-export type TransformTabs = keyof TransformTabToResultMap;
+export type TSXTabs = keyof TSXTabToResultMap | "code";
+export type TransformTabs = keyof TransformTabToResultMap | "code";
 
 type UnionOfObjectValues<T> = KeysOfUnion<T[keyof T]>;
 type KeysOfUnion<T> = T extends T ? keyof T : never;
