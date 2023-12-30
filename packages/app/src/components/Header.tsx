@@ -15,7 +15,7 @@ import {
 import { Button, Dialog, Select as SelectPrimitive } from "@kobalte/core";
 
 import { MODES, MODE_TO_TITLE } from "~/lib/consts";
-import { SegmentedButton, ToggleButton } from "./ui-kit";
+import { SegmentedButton, TabsList, ToggleButton } from "./ui-kit";
 import {
   wordWrapped,
   setWordWrapped,
@@ -295,24 +295,11 @@ function ModeSwitcherButton() {
           : ""
       }`}
     >
-      <For each={MODES}>
-        {(mode) => (
-          <button
-            onClick={() => setMode(mode)}
-            classList={{
-              "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus:after:content-[''] focus:after:h-1 focus:bg-zinc-900 focus:after:bottom-0 focus:after:absolute focus:after:w-full focus:after:left-0 hover:bg-zinc-900/50":
-                true,
-              [!isSelected(mode)
-                ? "text-zinc-200 focus:after:bg-zinc-700"
-                : "text-accent-2"]: true,
-              "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 font-semibold rounded-t":
-                isSelected(mode),
-            }}
-          >
-            {reducedModeToTitle[mode]}
-          </button>
-        )}
-      </For>
+      <TabsList
+        signal={[mode, setMode]}
+        items={MODES}
+        refineLabel={(mode) => reducedModeToTitle[mode]}
+      />
     </div>
   );
 }
