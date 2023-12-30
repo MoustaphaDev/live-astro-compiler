@@ -86,7 +86,7 @@ export const [transformInternalURL, setTransformInternalURL] =
   usePersistentSignal<StoredSearchParams["transformInternalURL"]>({
     key: "transform-internalURL",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.transformInternalURL,
+      persisted ?? urlSearchParams?.transformInternalURL ?? "",
   });
 
 export const [transformSourcemap, setTransformSourcemap] = usePersistentSignal<
@@ -94,14 +94,14 @@ export const [transformSourcemap, setTransformSourcemap] = usePersistentSignal<
 >({
   key: "transform-sourcemap",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.transformSourcemap,
+    persisted ?? urlSearchParams?.transformSourcemap ?? false,
 });
 
 export const [transformAstroGlobalArgs, setTransformAstroGlobalArgs] =
   usePersistentSignal<StoredSearchParams["transformAstroGlobalArgs"]>({
     key: "transform-astroGlobalArgs",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.transformAstroGlobalArgs,
+      persisted ?? urlSearchParams?.transformAstroGlobalArgs ?? "",
   });
 
 export const [transformCompact, setTranformCompact] = usePersistentSignal<

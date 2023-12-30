@@ -125,7 +125,7 @@ export class SearchParamsHelpers {
     window.history.replaceState({}, "", window.location.pathname);
   }
 
-  static parsePlaygroundStateFromURL(): StoredSearchParams {
+  static parsePlaygroundStateFromURL(): Partial<StoredSearchParams> {
     const urlParams = new URLSearchParams(window.location.search);
     const stringifiedEditorStateSnapshot = urlParams.get("editor-state");
 
