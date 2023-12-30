@@ -67,6 +67,29 @@ export const [showSourceMapVisualizer, setShowSourceMapVisualizer] =
 export const [showMobilePreview, setShowMobilePreview] = createSignal(false);
 export const breakpointMatches = createBreakpoints(breakpoints);
 
+// advanced view signals
+export const [viewDetailedResults, setViewDetailedResults] =
+  usePersistentSignal<StoredSearchParams["viewDetailedResults"]>({
+    key: "view-detailed-results",
+    initialValueSetter: (persisted) =>
+      persisted ?? urlSearchParams?.viewDetailedResults ?? false,
+  });
+
+export const [selectedTransformTab, setSelectedTransformTab] =
+  usePersistentSignal<StoredSearchParams["selectedTransformTab"]>({
+    key: "selected-transform-tab",
+    initialValueSetter: (persisted) =>
+      persisted ?? urlSearchParams?.selectedTransformTab ?? "code",
+  });
+
+export const [selectedTSXTab, setSelectedTSXTab] = usePersistentSignal<
+  StoredSearchParams["selectedTSXTab"]
+>({
+  key: "selected-tsx-tab",
+  initialValueSetter: (persisted) =>
+    persisted ?? urlSearchParams?.selectedTSXTab ?? "code",
+});
+
 // ################################ COMPILER SIGNALS HERE ################################
 
 // Since the compiler types don't change very often, we can just hard code
@@ -144,6 +167,9 @@ SearchParamsHelpers.trackStateSignals({
   code,
   wordWrapped,
   mode,
+  selectedTSXTab,
+  selectedTransformTab,
+  viewDetailedResults,
   parsePosition,
   transformInternalURL,
   filename,

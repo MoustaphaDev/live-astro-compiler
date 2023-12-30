@@ -1,7 +1,9 @@
 import type {
   ConvertToTSXOptions,
   ParseOptions,
+  TSXResult,
   TransformOptions,
+  TransformResult,
 } from "@astrojs/compiler/types";
 import type { MODES } from "./consts";
 import type * as monaco from "monaco-editor";
@@ -16,6 +18,9 @@ export type EditorValues = {
   currentCompilerVersion: string;
   wordWrapped: boolean;
   mode: Modes;
+  viewDetailedResults: boolean;
+  selectedTSXTab: TSXTabs;
+  selectedTransformTab: TransformTabs;
 };
 export type CompilerValues = {
   code: string;
@@ -54,3 +59,26 @@ export type EditorsHash = {
 };
 
 export type FunctionGeneric<T> = (...args: any[]) => T;
+
+export type TSXTabToResultMap = {
+  code: TSXResult["code"];
+  otherMetadata: Omit<TSXResult, "code">;
+};
+
+export type TSXTabs = keyof TSXTabToResultMap;
+
+export type TransformTabToResultMap = {
+  code: TransformResult["code"];
+  components: Pick<
+    TransformResult,
+    "hydratedComponents" | "clientOnlyComponents"
+  >;
+  css: Pick<TransformResult, "css" | "styleError">;
+  scripts: Pick<TransformResult, "scripts">;
+  othersMetadata: Omit<
+    TransformResult,
+    keyof Omit<TransformTabToResultMap, "others">
+  >;
+};
+
+export type TransformTabs = keyof TransformTabToResultMap;
