@@ -9,13 +9,13 @@ export const MODE_TO_TITLE = {
 
 export const DEFAULT_MODE: Modes = "transform";
 
-export const TSX_TABS: Readonly<TSXTab[]> = ["code", "otherMetadata"] as const;
+export const TSX_TABS: Readonly<TSXTab[]> = ["code", "misc"] as const;
 export const TRANSFORM_TABS: Readonly<TransformTab[]> = [
   "code",
-  "components",
+  "hydration",
   "css",
-  "otherMetadata",
   "scripts",
+  "misc",
 ] as const;
 
 export const INITIAL_CODE = `---

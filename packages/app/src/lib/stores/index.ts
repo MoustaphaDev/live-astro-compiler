@@ -6,6 +6,8 @@ import type { StoredSearchParams } from "~/lib/types";
 import { getFallbackCompilerVersion } from "../compiler/module";
 import { createCompilerOutputGetter, initializeCompiler } from "./compiler";
 import { LAST_USED_COMPILER_VERSION_KEY } from "../compiler/storage";
+import { createEffect } from "solid-js";
+import { debugLog } from "../utils";
 
 // Here's the state initialization flow:
 // 1. Get the initial value from the URL search params
@@ -88,6 +90,14 @@ export const [selectedTSXTab, setSelectedTSXTab] = usePersistentSignal<
   key: "selected-tsx-tab",
   initialValueSetter: (persisted) =>
     persisted ?? urlSearchParams?.selectedTSXTab ?? "code",
+});
+
+createEffect(() => {
+  debugLog(
+    "selectedTSXTab:%s\nselectedTransformTab:%s",
+    selectedTSXTab(),
+    selectedTransformTab(),
+  );
 });
 
 // ################################ COMPILER SIGNALS HERE ################################

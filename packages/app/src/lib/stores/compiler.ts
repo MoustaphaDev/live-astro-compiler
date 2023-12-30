@@ -237,26 +237,29 @@ export function createCompilerOutputGetter() {
   function getOutputByMode() {
     switch (mode()) {
       case "transform": {
+        const _transformResult = transformResult();
         if (!viewDetailedResults()) {
-          return transformResult()?.code;
+          return _transformResult?.code;
         }
-        const transformTabToResultMap = createTransformTabToResultMap(
-          transformResult()!,
-        );
+        if (!_transformResult) return;
+        const transformTabToResultMap =
+          createTransformTabToResultMap(_transformResult);
         const transformTab = selectedTransformTab();
         const content = isCode(transformTab)
-          ? transformResult()?.code
+          ? _transformResult?.code
           : transformTabToResultMap[transformTab];
         return content;
       }
       case "TSX": {
+        const _tsxResult = tsxResult();
         if (!viewDetailedResults()) {
-          return tsxResult()?.code;
+          return _tsxResult?.code;
         }
-        const tsxTabToResultMap = createTSXTabToResultMap(tsxResult()!);
+        if (!_tsxResult) return;
+        const tsxTabToResultMap = createTSXTabToResultMap(_tsxResult);
         const tsxTab = selectedTSXTab();
         const content = isCode(tsxTab)
-          ? tsxResult()?.code
+          ? _tsxResult?.code
           : tsxTabToResultMap[tsxTab];
         return content;
       }
@@ -318,7 +321,7 @@ export function createCompilerOutputGetter() {
 }
 
 function isCode(code: unknown): code is "code" {
-  return typeof code === "string";
+  return code === "code";
 }
 
 export function unWrapOutput(
@@ -348,14 +351,14 @@ function createTransformTabToResultMap(
   } = transformResult;
   return {
     css: { css, styleError },
-    components: {
+    hydration: {
       clientOnlyComponents,
       hydratedComponents,
     },
     scripts: {
       scripts: scripts,
     },
-    otherMetadata: {
+    misc: {
       containsHead,
       diagnostics,
       map,
@@ -369,7 +372,7 @@ function createTSXTabToResultMap(tsxResult: TSXResult): TSXTabToResultMap {
   const { code, diagnostics, map } = tsxResult;
   return {
     code,
-    otherMetadata: {
+    misc: {
       diagnostics,
       map,
     },

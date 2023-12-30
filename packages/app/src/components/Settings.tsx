@@ -17,6 +17,8 @@ import {
   setTranformCompact,
   transformResultScopedSlot,
   setTransformResultScopedSlot,
+  viewDetailedResults,
+  setViewDetailedResults,
 } from "~/lib/stores";
 import { CompilerVersionSwitcher } from "./CompilerVersionsSwitcher";
 
@@ -75,7 +77,7 @@ export default function SettingsSection(props: SettingsSectionProps) {
                     pressed={parsePosition()}
                     onChange={setParsePosition}
                     title="Toggle position"
-                    aria-label="Toggle positoin"
+                    aria-label="Toggle position"
                   />
                 </ToggleField>
               </div>
@@ -154,6 +156,23 @@ export default function SettingsSection(props: SettingsSectionProps) {
                 >
                   normalizedFilename
                 </TextField>
+              </div>
+            </div>
+            <Separator />
+            {/* display advanced settings */}
+            <div>
+              <h3 class="text-md mb-2 font-bold text-white">
+                Advanced settings
+              </h3>
+              <div>
+                <ToggleField label="Detailed Compiler Results">
+                  <ToggleButton
+                    pressed={viewDetailedResults()}
+                    onChange={setViewDetailedResults}
+                    title="Detailed Compiler Results"
+                    aria-label="Detailed Compiler Results"
+                  />
+                </ToggleField>
               </div>
             </div>
             <div class="flex h-full w-full !select-text items-end justify-center text-center font-montserrat text-zinc-300">

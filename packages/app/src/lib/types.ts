@@ -62,19 +62,19 @@ export type FunctionGeneric<T> = (...args: any[]) => T;
 
 export type TSXTabToResultMap = {
   code: TSXResult["code"];
-  otherMetadata: Omit<TSXResult, "code">;
+  misc: Omit<TSXResult, "code">;
 };
 
 export type TransformTabToResultMap = {
-  components: Pick<
+  hydration: Pick<
     TransformResult,
     "hydratedComponents" | "clientOnlyComponents"
   >;
   css: Pick<TransformResult, "css" | "styleError">;
   scripts: Pick<TransformResult, "scripts">;
-  otherMetadata: Omit<
+  misc: Omit<
     TransformResult,
-    UnionOfObjectValues<Omit<TransformTabToResultMap, "otherMetadata">> | "code"
+    UnionOfObjectValues<Omit<TransformTabToResultMap, "misc">> | "code"
   >;
 };
 

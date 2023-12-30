@@ -177,6 +177,12 @@ function InputBox() {
   return <></>;
 }
 
+createEffect(
+  on([getOutputByMode], () => {
+    console.log("getOutputByMode changed!");
+  }),
+);
+
 function CodeCompiler() {
   onMount(() => {
     // load the monaco editor
