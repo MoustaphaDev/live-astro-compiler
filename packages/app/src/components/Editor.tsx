@@ -177,11 +177,12 @@ function InputBox() {
   return <></>;
 }
 
-createEffect(
-  on([getOutputByMode], () => {
-    console.log("getOutputByMode changed!");
-  }),
-);
+import.meta.env.DEV &&
+  createEffect(
+    on([getOutputByMode], () => {
+      debugLog("getOutputByMode changed!");
+    }),
+  );
 
 function CodeCompiler() {
   onMount(() => {

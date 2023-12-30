@@ -92,13 +92,14 @@ export const [selectedTSXTab, setSelectedTSXTab] = usePersistentSignal<
     persisted ?? urlSearchParams?.selectedTSXTab ?? "code",
 });
 
-createEffect(() => {
-  debugLog(
-    "selectedTSXTab:%s\nselectedTransformTab:%s",
-    selectedTSXTab(),
-    selectedTransformTab(),
-  );
-});
+import.meta.env.DEV &&
+  createEffect(() => {
+    debugLog(
+      "selectedTSXTab:%s\nselectedTransformTab:%s",
+      selectedTSXTab(),
+      selectedTransformTab(),
+    );
+  });
 
 // ################################ COMPILER SIGNALS HERE ################################
 
