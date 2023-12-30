@@ -4,14 +4,14 @@ import { StoredSearchParams, type StoredSignals } from "../types";
 import * as fflate from "fflate";
 
 // doesn't match all signatures of signals, this is just what we need
-type PersistantSignal<T> = [Accessor<T>, PersistantSignalSetter<T>];
-type PersistantSignalSetter<T> = (v: T | SignalSetterFunction<T>) => T;
+export type PersistentSignal<T> = [Accessor<T>, PersistentSignalSetter<T>];
+type PersistentSignalSetter<T> = (v: T | SignalSetterFunction<T>) => T;
 type SignalSetterFunction<T> = (prev?: T) => T;
 
 type PersistantSignalOptions<T> = {
   saveDelay?: number;
   key: string;
-  initialValueSetter: (persistedValue: T) => T;
+  initialValueSetter: (persistedValue?: T | undefined) => T;
 };
 
 function isVFunction<T>(
@@ -23,11 +23,11 @@ function isVFunction<T>(
 // TODOL refactor to not need to be passed a generic type
 // automatically infer the return type
 
-export function usePersistantSignal<T>({
+export function usePersistentSignal<T>({
   saveDelay = 1500,
   key,
   initialValueSetter,
-}: PersistantSignalOptions<T>): PersistantSignal<T> {
+}: PersistantSignalOptions<T>): PersistentSignal<T> {
   const persistedValue = getPersistedValue(key);
   const valueOnLoad = initialValueSetter(persistedValue);
 
@@ -52,7 +52,7 @@ export function usePersistantSignal<T>({
     });
     onAfterSet(key, updatedValue);
     return updatedValue;
-  }) satisfies PersistantSignalSetter<T>;
+  }) satisfies PersistentSignalSetter<T>;
 
   return [getter, setter];
 }

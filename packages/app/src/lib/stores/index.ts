@@ -1,5 +1,5 @@
 import { createBreakpoints } from "@solid-primitives/media";
-import { SearchParamsHelpers, usePersistantSignal } from "./utils";
+import { SearchParamsHelpers, usePersistentSignal } from "./utils";
 import { INITIAL_CODE, breakpoints } from "../consts";
 import { createSignal } from "solid-js";
 import type { StoredSearchParams } from "~/lib/types";
@@ -23,7 +23,7 @@ SearchParamsHelpers.clearPlaygroundStateFromURL();
 // TODO refactor `usePersistantSignal` to not need to be passed a generic type
 const { fallbackCompilerVersion } = await getFallbackCompilerVersion();
 export const [currentCompilerVersion, setCurrentCompilerVersion] =
-  usePersistantSignal<StoredSearchParams["currentCompilerVersion"]>({
+  usePersistentSignal<StoredSearchParams["currentCompilerVersion"]>({
     // current-compiler-version
     key: LAST_USED_COMPILER_VERSION_KEY,
     initialValueSetter: (persisted) => {
@@ -40,30 +40,26 @@ export const [
   setHasCompilerVersionChangeBeenHandled,
 ] = createSignal(false);
 
-export const [code, setCode] = usePersistantSignal<StoredSearchParams["code"]>({
+export const [code, setCode] = usePersistentSignal<StoredSearchParams["code"]>({
   key: "code-input-value",
   initialValueSetter: (persisted) => {
     return urlSearchParams.code ?? persisted ?? INITIAL_CODE;
   },
 });
 
-export const [mode, setMode] = usePersistantSignal<StoredSearchParams["mode"]>({
+export const [mode, setMode] = usePersistentSignal<StoredSearchParams["mode"]>({
   key: "compiler-mode",
   initialValueSetter: (persisted) =>
     urlSearchParams.mode ?? persisted ?? "transform",
 });
 
-export const [wordWrapped, setWordWrapped] = usePersistantSignal<
+export const [wordWrapped, setWordWrapped] = usePersistentSignal<
   StoredSearchParams["wordWrapped"]
 >({
   key: "inputbox-wordwrap",
   initialValueSetter: (persisted) =>
     urlSearchParams.wordWrapped ?? persisted ?? false,
 });
-
-export const [sourceMapVisualizerUrl, setSourceMapVisualizerUrl] = createSignal<
-  null | string
->(null);
 
 export const [showSourceMapVisualizer, setShowSourceMapVisualizer] =
   createSignal(false);
@@ -77,7 +73,7 @@ export const breakpointMatches = createBreakpoints(breakpoints);
 // the options and it
 
 // Parse options
-export const [parsePosition, setParsePosition] = usePersistantSignal<
+export const [parsePosition, setParsePosition] = usePersistentSignal<
   StoredSearchParams["parsePosition"]
 >({
   key: "parse-position",
@@ -87,13 +83,13 @@ export const [parsePosition, setParsePosition] = usePersistantSignal<
 
 // Transform options
 export const [transformInternalURL, setTransformInternalURL] =
-  usePersistantSignal<StoredSearchParams["transformInternalURL"]>({
+  usePersistentSignal<StoredSearchParams["transformInternalURL"]>({
     key: "transform-internalURL",
     initialValueSetter: (persisted) =>
       persisted ?? urlSearchParams?.transformInternalURL,
   });
 
-export const [transformSourcemap, setTransformSourcemap] = usePersistantSignal<
+export const [transformSourcemap, setTransformSourcemap] = usePersistentSignal<
   StoredSearchParams["transformSourcemap"]
 >({
   key: "transform-sourcemap",
@@ -102,13 +98,13 @@ export const [transformSourcemap, setTransformSourcemap] = usePersistantSignal<
 });
 
 export const [transformAstroGlobalArgs, setTransformAstroGlobalArgs] =
-  usePersistantSignal<StoredSearchParams["transformAstroGlobalArgs"]>({
+  usePersistentSignal<StoredSearchParams["transformAstroGlobalArgs"]>({
     key: "transform-astroGlobalArgs",
     initialValueSetter: (persisted) =>
       persisted ?? urlSearchParams?.transformAstroGlobalArgs,
   });
 
-export const [transformCompact, setTranformCompact] = usePersistantSignal<
+export const [transformCompact, setTranformCompact] = usePersistentSignal<
   StoredSearchParams["transformCompact"]
 >({
   key: "transform-compact",
@@ -117,21 +113,21 @@ export const [transformCompact, setTranformCompact] = usePersistantSignal<
 });
 
 export const [transformResultScopedSlot, setTransformResultScopedSlot] =
-  usePersistantSignal<StoredSearchParams["transformResultScopedSlot"]>({
+  usePersistentSignal<StoredSearchParams["transformResultScopedSlot"]>({
     key: "transform-resultScopedSlot",
     initialValueSetter: (persisted) =>
       persisted ?? urlSearchParams?.transformResultScopedSlot ?? false,
   });
 
 // Common options (convertToTSX, transform)
-export const [filename, setFilename] = usePersistantSignal<
+export const [filename, setFilename] = usePersistentSignal<
   StoredSearchParams["filename"]
 >({
   key: "filename",
   initialValueSetter: (persisted) => persisted ?? urlSearchParams?.filename,
 });
 
-export const [normalizedFilename, setNormalizedFilename] = usePersistantSignal<
+export const [normalizedFilename, setNormalizedFilename] = usePersistentSignal<
   StoredSearchParams["normalizedFilename"]
 >({
   key: "normalizedFilename",
