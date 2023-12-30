@@ -283,7 +283,6 @@ function MobileModeSwitcher() {
 }
 
 function ModeSwitcherButton() {
-  const isSelected = createSelector(mode);
   const reducedModeToTitle = Object.fromEntries(
     Object.entries(MODE_TO_TITLE).map(([k, v]) => [k, v.split(" ")[0]]),
   );

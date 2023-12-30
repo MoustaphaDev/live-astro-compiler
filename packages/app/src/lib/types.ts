@@ -19,8 +19,8 @@ export type EditorValues = {
   wordWrapped: boolean;
   mode: Modes;
   viewDetailedResults: boolean;
-  selectedTSXTab: TSXTabs;
-  selectedTransformTab: TransformTabs;
+  selectedTSXTab: TSXTab;
+  selectedTransformTab: TransformTab;
 };
 export type CompilerValues = {
   code: string;
@@ -78,8 +78,8 @@ export type TransformTabToResultMap = {
   >;
 };
 
-export type TSXTabs = keyof TSXTabToResultMap | "code";
-export type TransformTabs = keyof TransformTabToResultMap | "code";
+export type TSXTab = keyof TSXTabToResultMap | "code";
+export type TransformTab = keyof TransformTabToResultMap | "code";
 
 type UnionOfObjectValues<T> = KeysOfUnion<T[keyof T]>;
 type KeysOfUnion<T> = T extends T ? keyof T : never;

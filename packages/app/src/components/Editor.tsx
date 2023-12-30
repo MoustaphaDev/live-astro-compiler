@@ -1,7 +1,9 @@
 import { BsGripVertical } from "solid-icons/bs";
 import {
   ErrorBoundary,
+  Match,
   Show,
+  Switch,
   createEffect,
   createSignal,
   on,
@@ -22,17 +24,24 @@ import {
   currentCompilerVersion,
   getOutputByMode,
   hasCompilerVersionChangeBeenHandled,
+  mode,
+  selectedTSXTab,
+  selectedTransformTab,
   setCode,
+  setSelectedTSXTab,
+  setSelectedTransformTab,
   setWordWrapped,
   showMobilePreview,
+  viewDetailedResults,
   wordWrapped,
 } from "~/lib/stores";
 import { getPersistedValue, setPersistentValue } from "~/lib/stores/utils";
 import type { EditorsHash } from "~/lib/types";
-import { LoadingEditor, LoadingError } from "./ui-kit";
+import { LoadingEditor, LoadingError, TabsList } from "./ui-kit";
 import { initializeCompiler, unWrapOutput } from "~/lib/stores/compiler";
 import { debounce } from "@solid-primitives/scheduled";
 import { debugLog } from "~/lib/utils";
+import { TRANSFORM_TABS, TSX_TABS } from "~/lib/consts";
 
 let codeCompilerRef: HTMLDivElement;
 let inputBoxRef: HTMLDivElement;
@@ -124,6 +133,9 @@ export function Editor() {
           "!w-full": showMobilePreview() && !breakpointMatches.lg,
         }}
       >
+        <Show when={viewDetailedResults()}>
+          <DetailedResultsView />
+        </Show>
         <Show
           when={hasCompilerVersionChangeBeenHandled()}
           fallback={<LoadingEditor />}
@@ -191,7 +203,39 @@ function CodeCompiler() {
   });
   return <></>;
 }
+
 // tabs list here
+function TSXOutputTabs() {
+  return (
+    <TabsList
+      items={TSX_TABS}
+      signal={[selectedTSXTab, setSelectedTSXTab]}
+      refineLabel={(label) => label[0].toUpperCase() + label.slice(1)}
+    />
+  );
+}
+
+function TransformOutputTabs() {
+  return (
+    <TabsList
+      items={TRANSFORM_TABS}
+      signal={[selectedTransformTab, setSelectedTransformTab]}
+    />
+  );
+}
+
+function DetailedResultsView() {
+  return (
+    <Switch>
+      <Match when={mode() === "TSX"}>
+        <TSXOutputTabs />
+      </Match>
+      <Match when={mode() === "transform"}>
+        <TransformOutputTabs />
+      </Match>
+    </Switch>
+  );
+}
 
 function doSplit() {
   const sizes = getPersistedValue("split-sizes") ?? [50, 50];

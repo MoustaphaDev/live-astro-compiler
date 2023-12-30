@@ -1,4 +1,4 @@
-import { Modes } from "./types";
+import type { Modes, TSXTab, TransformTab } from "./types";
 
 export const MODES = ["parse", "transform", "TSX"] as const;
 export const MODE_TO_TITLE = {
@@ -8,6 +8,15 @@ export const MODE_TO_TITLE = {
 } as const satisfies Record<Modes, any>;
 
 export const DEFAULT_MODE: Modes = "transform";
+
+export const TSX_TABS: Readonly<TSXTab[]> = ["code", "otherMetadata"] as const;
+export const TRANSFORM_TABS: Readonly<TransformTab[]> = [
+  "code",
+  "components",
+  "css",
+  "otherMetadata",
+  "scripts",
+] as const;
 
 export const INITIAL_CODE = `---
 import { ShareButton, ModeSwitcher, WordWrapToggle, SettingsDialog } from "./ui"
