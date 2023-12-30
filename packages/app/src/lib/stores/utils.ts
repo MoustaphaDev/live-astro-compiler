@@ -136,9 +136,9 @@ export class SearchParamsHelpers {
       const binaryData = new Uint8Array(
         JSON.parse(window.atob(stringifiedEditorStateSnapshot)),
       );
-      const decompressedBynaryData = fflate.decompressSync(binaryData);
+      const decompressedBinaryData = fflate.decompressSync(binaryData);
       const decoder = new TextDecoder();
-      const decompressedSnapshotString = decoder.decode(decompressedBynaryData);
+      const decompressedSnapshotString = decoder.decode(decompressedBinaryData);
       return JSON.parse(decompressedSnapshotString);
     } catch (err) {
       return {};

@@ -4,7 +4,7 @@ import { INITIAL_CODE, breakpoints } from "../consts";
 import { createSignal } from "solid-js";
 import type { StoredSearchParams } from "~/lib/types";
 import { getFallbackCompilerVersion } from "../compiler/module";
-import { createCompilerOutputGetter, initializeCompiler } from "./compiler";
+import { createCompilerOutputGetter } from "./compiler";
 import { LAST_USED_COMPILER_VERSION_KEY } from "../compiler/storage";
 import { createEffect } from "solid-js";
 import { debugLog } from "../utils";
@@ -21,6 +21,7 @@ SearchParamsHelpers.clearPlaygroundStateFromURL();
 // IMPORTANT: DO NOT CHANGE ANY OF THE KEY NAMES
 // AS THEY ARE USED TO GENERATE THE STATEFUL LINKS
 // AND CHANGING THEM WILL BREAK THE PREVIOUSLY GENERATED LINKS
+// ILL NEED TO CREATE A FALLBACK SYSTEM IF I EVER NEED TO CHANGE THEM
 
 // TODO refactor `usePersistantSignal` to not need to be passed a generic type
 const { fallbackCompilerVersion } = await getFallbackCompilerVersion();
@@ -74,14 +75,14 @@ export const [viewDetailedResults, setViewDetailedResults] =
   usePersistentSignal<StoredSearchParams["viewDetailedResults"]>({
     key: "view-detailed-results",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.viewDetailedResults ?? false,
+      urlSearchParams?.viewDetailedResults ?? persisted ?? false,
   });
 
 export const [selectedTransformTab, setSelectedTransformTab] =
   usePersistentSignal<StoredSearchParams["selectedTransformTab"]>({
     key: "selected-transform-tab",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.selectedTransformTab ?? "code",
+      urlSearchParams?.selectedTransformTab ?? persisted ?? "code",
   });
 
 export const [selectedTSXTab, setSelectedTSXTab] = usePersistentSignal<
@@ -89,7 +90,7 @@ export const [selectedTSXTab, setSelectedTSXTab] = usePersistentSignal<
 >({
   key: "selected-tsx-tab",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.selectedTSXTab ?? "code",
+    urlSearchParams?.selectedTSXTab ?? persisted ?? "code",
 });
 
 import.meta.env.DEV &&
@@ -112,7 +113,7 @@ export const [parsePosition, setParsePosition] = usePersistentSignal<
 >({
   key: "parse-position",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.parsePosition ?? false,
+    urlSearchParams?.parsePosition ?? persisted ?? false,
 });
 
 // Transform options
@@ -120,7 +121,7 @@ export const [transformInternalURL, setTransformInternalURL] =
   usePersistentSignal<StoredSearchParams["transformInternalURL"]>({
     key: "transform-internalURL",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.transformInternalURL ?? "",
+      urlSearchParams?.transformInternalURL ?? persisted ?? "",
   });
 
 export const [transformSourcemap, setTransformSourcemap] = usePersistentSignal<
@@ -128,14 +129,14 @@ export const [transformSourcemap, setTransformSourcemap] = usePersistentSignal<
 >({
   key: "transform-sourcemap",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.transformSourcemap ?? false,
+    urlSearchParams?.transformSourcemap ?? persisted ?? false,
 });
 
 export const [transformAstroGlobalArgs, setTransformAstroGlobalArgs] =
   usePersistentSignal<StoredSearchParams["transformAstroGlobalArgs"]>({
     key: "transform-astroGlobalArgs",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.transformAstroGlobalArgs ?? "",
+      urlSearchParams?.transformAstroGlobalArgs ?? persisted ?? "",
   });
 
 export const [transformCompact, setTranformCompact] = usePersistentSignal<
@@ -143,14 +144,14 @@ export const [transformCompact, setTranformCompact] = usePersistentSignal<
 >({
   key: "transform-compact",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.transformCompact ?? false,
+    urlSearchParams?.transformCompact ?? persisted ?? false,
 });
 
 export const [transformResultScopedSlot, setTransformResultScopedSlot] =
   usePersistentSignal<StoredSearchParams["transformResultScopedSlot"]>({
     key: "transform-resultScopedSlot",
     initialValueSetter: (persisted) =>
-      persisted ?? urlSearchParams?.transformResultScopedSlot ?? false,
+      urlSearchParams?.transformResultScopedSlot ?? persisted ?? false,
   });
 
 // Common options (convertToTSX, transform)
@@ -158,7 +159,7 @@ export const [filename, setFilename] = usePersistentSignal<
   StoredSearchParams["filename"]
 >({
   key: "filename",
-  initialValueSetter: (persisted) => persisted ?? urlSearchParams?.filename,
+  initialValueSetter: (persisted) => urlSearchParams?.filename ?? persisted,
 });
 
 export const [normalizedFilename, setNormalizedFilename] = usePersistentSignal<
@@ -166,7 +167,7 @@ export const [normalizedFilename, setNormalizedFilename] = usePersistentSignal<
 >({
   key: "normalizedFilename",
   initialValueSetter: (persisted) =>
-    persisted ?? urlSearchParams?.normalizedFilename,
+    urlSearchParams?.normalizedFilename ?? persisted,
 });
 
 // ################################ HOOKS AND EFFECTS HERE ################################
@@ -178,9 +179,9 @@ SearchParamsHelpers.trackStateSignals({
   code,
   wordWrapped,
   mode,
+  viewDetailedResults,
   selectedTSXTab,
   selectedTransformTab,
-  viewDetailedResults,
   parsePosition,
   transformInternalURL,
   filename,
