@@ -1,6 +1,5 @@
 node_modules
 dist
 *.local
-.turbo
 module-graph.dot
 .vercel
