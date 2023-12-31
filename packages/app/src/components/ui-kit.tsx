@@ -16,6 +16,7 @@ import {
 import { toast } from "solid-sonner";
 import type { PersistentSignal } from "~/lib/stores/utils";
 import { createMemo } from "solid-js";
+import { debugLog } from "~/lib/utils";
 
 type ToggleFieldProps = ComponentProps<"div"> & {
   label: string;
@@ -195,17 +196,16 @@ export function TabsList<T extends readonly string[] | string[]>(
     <For each={props.items}>
       {(item) => {
         const label = props.refineLabel?.(item) ?? item;
-        console.log("RENDER!!!!");
+        debugLog("Rendering tab item...");
         return (
           <button
-            onMouseDown={() => clickHandler(item)}
+            class="relative inline-block w-min px-4 py-4 text-sm capitalize outline-none hover:bg-zinc-900/50 focus-visible:bg-zinc-900 focus-visible:after:absolute focus-visible:after:bottom-0 focus-visible:after:left-0 focus-visible:after:h-1 focus-visible:after:w-full focus-visible:after:content-['']"
+            onMouseDown={[clickHandler, item]}
+            onKeyDown={[clickHandler, item]}
             classList={{
-              "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus-visible:after:content-[''] focus-visible:after:h-1 focus-visible:bg-zinc-900 focus-visible:after:bottom-0 focus-visible:after:absolute focus-visible:after:w-full focus-visible:after:left-0 hover:bg-zinc-900/50":
-                true,
-              [!isSelected(item)
-                ? "text-zinc-300 focus-visible:after:bg-zinc-700"
-                : "text-accent-2"]: true,
-              "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 rounded-t":
+              "text-zinc-300 focus-visible:after:bg-zinc-700":
+                !isSelected(item),
+              "text-accent-2 bg-zinc-900/50 after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 rounded-t":
                 isSelected(item),
             }}
           >
