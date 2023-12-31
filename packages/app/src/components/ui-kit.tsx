@@ -5,6 +5,7 @@ import {
   For,
   Signal,
   createSelector,
+  Accessor,
 } from "solid-js";
 import {
   Separator as SeparatorPrimitive,
@@ -14,6 +15,7 @@ import {
 } from "@kobalte/core";
 import { toast } from "solid-sonner";
 import type { PersistentSignal } from "~/lib/stores/utils";
+import { createMemo } from "solid-js";
 
 type ToggleFieldProps = ComponentProps<"div"> & {
   label: string;
@@ -193,16 +195,17 @@ export function TabsList<T extends readonly string[] | string[]>(
     <For each={props.items}>
       {(item) => {
         const label = props.refineLabel?.(item) ?? item;
+        console.log("RENDER!!!!");
         return (
           <button
             onClick={() => clickHandler(item)}
             classList={{
-              "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus:after:content-[''] focus:after:h-1 focus:bg-zinc-900 focus:after:bottom-0 focus:after:absolute focus:after:w-full focus:after:left-0 hover:bg-zinc-900/50":
+              "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus-visible:after:content-[''] focus-visible:after:h-1 focus-visible:bg-zinc-900 focus-visible:after:bottom-0 focus-visible:after:absolute focus-visible:after:w-full focus-visible:after:left-0 hover:bg-zinc-900/50":
                 true,
               [!isSelected(item)
-                ? "text-zinc-200 focus:after:bg-zinc-700"
+                ? "text-zinc-200 focus-visible:after:bg-zinc-700"
                 : "text-accent-2"]: true,
-              "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 font-semibold rounded-t":
+              "after:content-[''] after:h-1 after:bottom-0 after:absolute after:w-full after:left-0 after:bg-accent-2 text-accent-2 rounded-t":
                 isSelected(item),
             }}
           >
@@ -229,4 +232,8 @@ export function LoadingError() {
       <div class="text-4xl font-bold text-red-600">X</div>
     </div>
   );
+}
+
+export function createJSXMemo<T extends JSX.Element>(jsx: T): Accessor<T> {
+  return createMemo(() => jsx);
 }
