@@ -198,7 +198,7 @@ export function TabsList<T extends readonly string[] | string[]>(
         console.log("RENDER!!!!");
         return (
           <button
-            onClick={() => clickHandler(item)}
+            onMouseDown={() => clickHandler(item)}
             classList={{
               "relative capitalize py-4 inline-block outline-none w-min px-4 text-sm focus-visible:after:content-[''] focus-visible:after:h-1 focus-visible:bg-zinc-900 focus-visible:after:bottom-0 focus-visible:after:absolute focus-visible:after:w-full focus-visible:after:left-0 hover:bg-zinc-900/50":
                 true,
