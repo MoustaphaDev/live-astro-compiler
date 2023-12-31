@@ -20,7 +20,6 @@ const transformOutputTabsMemo = createJSXMemo(
   />,
 );
 
-// tabs list here
 function TSXOutputTabs() {
   return tSXOutputTabsMemo();
 }

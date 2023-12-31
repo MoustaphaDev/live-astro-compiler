@@ -234,6 +234,9 @@ export function LoadingError() {
   );
 }
 
+/**
+ reduces the amount of re-renders in conditionally rendered components
+*/
 export function createJSXMemo<T extends JSX.Element>(jsx: T): Accessor<T> {
   return createMemo(() => jsx);
 }

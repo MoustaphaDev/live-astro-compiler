@@ -44,7 +44,6 @@ const editorsHash: EditorsHash = {
   inputBox: null,
 };
 
-// TODO: add theme switcher
 // @ts-expect-error
 monaco.editor.defineTheme("vitesse-dark", dark);
 monaco.editor.setTheme("vitesse-dark");
@@ -97,7 +96,7 @@ export function Editor() {
   onMount(() => {
     // attach word-wrap event to window when we hold ALT+Z
     window.addEventListener("keydown", toggleWordWrap);
-    doSplit();
+    createResizable();
   });
   onCleanup(() => {
     window.removeEventListener("keydown", toggleWordWrap);
@@ -144,7 +143,6 @@ export function Editor() {
 
 function InputBox() {
   onMount(async () => {
-    debugLog("Ran this effect!");
     // do load the monaco editor
     editorsHash!.inputBox = await createAstroEditor(inputBoxRef, {
       value: code(),
@@ -204,7 +202,7 @@ function CodeCompiler() {
   return <></>;
 }
 
-function doSplit() {
+function createResizable() {
   const sizes = getPersistedValue("split-sizes") ?? [50, 50];
   Split([inputBoxRef, codeCompilerRef], {
     sizes,
