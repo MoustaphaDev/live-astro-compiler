@@ -21,8 +21,8 @@ function isVFunction<T>(
   return typeof value === "function";
 }
 
-// TODOL refactor to not need to be passed a generic type
-// automatically infer the return type
+// TODO: refactor to not need to be passed a generic type
+// automatically infer the return type, if possible
 
 export function usePersistentSignal<T>({
   saveDelay = 1500,
@@ -32,9 +32,9 @@ export function usePersistentSignal<T>({
   const persistedValue = getPersistedValue(key);
   const valueOnLoad = initialValueSetter(persistedValue);
 
-  if (persistedValue === null) {
-    setPersistentValue(key, valueOnLoad);
-  }
+  // Persist the initial value to localStorage regardless
+  // of whether it was loaded from localStorage or not
+  setPersistentValue(key, valueOnLoad);
 
   const [getter, _setter] = createSignal(valueOnLoad);
 
