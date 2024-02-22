@@ -43,10 +43,10 @@ async function transformWrapper(
   options: ConsumedTransformOptions,
   transformFn: CompilerModule["transform"],
 ): Promise<TransformResult> {
-  const transformResult = await transformFn(
-    options.code ?? "",
-    options.transformOptions,
-  );
+  const transformResult = await transformFn(options.code ?? "", {
+    resolvePath: async (path) => path,
+    ...options.transformOptions,
+  });
   return transformResult;
 }
 
