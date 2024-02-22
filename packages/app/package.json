@@ -6,7 +6,9 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "tsc && vite build && pnpm postbuild",
+    "tsc:lint": "tsc --noEmit",
+    "build": "pnpm tsc:lint && vite build && pnpm postbuild",
+    "build:ci": "vite build && pnpm postbuild",
     "postbuild": "node ./scripts/postbuild.cjs",
     "tsc": "tsc",
     "serve": "vite preview"
