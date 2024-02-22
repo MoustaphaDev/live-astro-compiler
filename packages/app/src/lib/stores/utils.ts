@@ -189,6 +189,8 @@ export class SearchParamsHelpers {
       viewDetailedResults: this.stateSignals.viewDetailedResults?.(),
       selectedTransformTab: this.stateSignals.selectedTransformTab?.(),
       selectedTSXTab: this.stateSignals.selectedTSXTab?.(),
+      transformExperimentalRenderScript:
+        this.stateSignals.transformExperimentalRenderScript?.(),
     };
   }
 }
