@@ -19,6 +19,8 @@ import {
   setTransformResultScopedSlot,
   viewDetailedResults,
   setViewDetailedResults,
+  transformExperimentalRenderScript,
+  setTransformExperimentalRenderScript,
 } from "~/lib/stores";
 import { CompilerVersionSwitcher } from "./CompilerVersionsSwitcher";
 
@@ -131,6 +133,14 @@ export default function SettingsSection(props: SettingsSectionProps) {
                     onChange={setTransformResultScopedSlot}
                     title="Toggle position"
                     aria-label="Toggle positoin"
+                  />
+                </ToggleField>
+                <ToggleField label="experimental.renderScript">
+                  <ToggleButton
+                    pressed={transformExperimentalRenderScript()}
+                    onChange={setTransformExperimentalRenderScript}
+                    title="Toggle renderScript option"
+                    aria-label="Toggle renderScript option"
                   />
                 </ToggleField>
               </div>

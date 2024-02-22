@@ -154,6 +154,17 @@ export const [transformResultScopedSlot, setTransformResultScopedSlot] =
       urlSearchParams.transformResultScopedSlot ?? persisted ?? false,
   });
 
+export const [
+  transformExperimentalRenderScript,
+  setTransformExperimentalRenderScript,
+] = usePersistentSignal<
+  StoredSearchParams["transformExperimentalRenderScript"]
+>({
+  key: "render-script",
+  initialValueSetter: (persisted) =>
+    urlSearchParams.transformExperimentalRenderScript ?? persisted ?? false,
+});
+
 // Common options (convertToTSX, transform)
 export const [filename, setFilename] = usePersistentSignal<
   StoredSearchParams["filename"]
@@ -190,4 +201,5 @@ SearchParamsHelpers.trackStateSignals({
   transformAstroGlobalArgs,
   transformCompact,
   transformResultScopedSlot,
+  transformExperimentalRenderScript,
 });

@@ -34,6 +34,7 @@ export type CompilerValues = {
   transformAstroGlobalArgs: TransformOptions["astroGlobalArgs"];
   transformCompact: TransformOptions["compact"];
   transformResultScopedSlot: TransformOptions["resultScopedSlot"];
+  transformExperimentalRenderScript: TransformOptions["renderScript"];
 };
 export type StoredSearchParams = EditorValues & CompilerValues;
 export type StoredSignals = {

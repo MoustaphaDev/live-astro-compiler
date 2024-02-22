@@ -31,6 +31,7 @@ import {
   viewDetailedResults,
   selectedTSXTab,
   selectedTransformTab,
+  transformExperimentalRenderScript,
 } from ".";
 import { remoteCompilerModule } from "../compiler";
 import type { TSXResult, TransformResult } from "@astrojs/compiler";
@@ -188,6 +189,7 @@ export function createCompilerOutputGetter() {
         astroGlobalArgs: transformAstroGlobalArgs(),
         compact: transformCompact(),
         resultScopedSlot: transformResultScopedSlot(),
+        renderScript: transformExperimentalRenderScript(),
       },
     } satisfies ConsumedTransformOptions;
   };
@@ -369,12 +371,13 @@ function createTransformTabToResultMap(
 }
 
 function createTSXTabToResultMap(tsxResult: TSXResult): TSXTabToResultMap {
-  const { code, diagnostics, map } = tsxResult;
+  const { code, diagnostics, map, metaRanges } = tsxResult;
   return {
     code,
     misc: {
       diagnostics,
       map,
+      metaRanges,
     },
   } as const;
 }
