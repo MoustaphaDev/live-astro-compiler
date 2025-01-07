@@ -95,7 +95,7 @@ export async function fetchLatestProductionCompilerVersion(): Promise<string> {
   return latestProductionCompilerVersion;
 }
 
-export type CompilerModule = typeof import("@astrojs/compiler");
+export type CompilerModule = typeof import("@astrojs/compiler/types");
 export type CompilerModuleAndWasm = {
   module: CompilerModule;
   wasmURL: {

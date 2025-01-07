@@ -1,18 +1,15 @@
 {
-    "name": "root",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "start": "pnpm --filter astro-live-compiler run start",
-        "dev": "pnpm start",
-        "build": "pnpm --filter astro-live-compiler run build",
-        "format": "prettier --write ."
-    },
-    "workspaces": [
-        "packages/*"
-    ],
-    "devDependencies": {
-        "@types/node": "^18.19.18"
-    },
-    "packageManager": "pnpm@8.10.2"
+  "name": "root",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "pnpm --filter astro-live-compiler run start",
+    "dev": "pnpm start",
+    "build": "pnpm --filter astro-live-compiler run build",
+    "format": "prettier --write ."
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "packageManager": "pnpm@9.15.2"
 }

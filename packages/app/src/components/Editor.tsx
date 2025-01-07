@@ -1,12 +1,12 @@
 import { BsGripVertical } from "solid-icons/bs";
 import {
-  ErrorBoundary,
-  Show,
   createEffect,
   createSignal,
+  ErrorBoundary,
   on,
   onCleanup,
   onMount,
+  Show,
 } from "solid-js";
 import Split from "split.js";
 // @ts-ignore
@@ -144,6 +144,7 @@ export function Editor() {
 function InputBox() {
   onMount(async () => {
     // do load the monaco editor
+    // @ts-expect-error -  this will be defined by the time its used
     editorsHash!.inputBox = await createAstroEditor(inputBoxRef, {
       value: code(),
       automaticLayout: true,
@@ -178,6 +179,7 @@ import.meta.env.DEV &&
 function CodeCompiler() {
   onMount(() => {
     // load the monaco editor
+    // @ts-expect-error -  this will be defined by the time its used
     editorsHash!.codeCompiler = monaco.editor.create(codeCompilerRef, {
       // TODO: fix wrong types
       value: unWrapOutput(getOutputByMode()),
@@ -204,6 +206,7 @@ function CodeCompiler() {
 
 function createResizable() {
   const sizes = getPersistedValue("split-sizes") ?? [50, 50];
+  // @ts-expect-error -  this will be defined by the time its used
   Split([inputBoxRef, codeCompilerRef], {
     sizes,
     gutterSize: 7,
