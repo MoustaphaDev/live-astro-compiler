@@ -1,6 +1,6 @@
 import { debounce } from "@solid-primitives/scheduled";
 import { type Accessor, createSignal } from "solid-js";
-import { StoredSearchParams, type StoredSignals } from "../types";
+import type { StoredSearchParams, StoredSignals } from "../types";
 import * as fflate from "fflate";
 import { debugLog } from "../utils";
 
@@ -110,14 +110,16 @@ export class SearchParamsHelpers {
     this.stateSignals = stateSignals;
   }
   static computePlaygroundStatefulURL() {
-    const hashedPlaygroundStateSnapshot =
-      this.computeHashedPlaygroundStateSnapshot();
+    const hashedPlaygroundStateSnapshot = this
+      .computeHashedPlaygroundStateSnapshot();
     const urlParams = hashedPlaygroundStateSnapshot
       ? `?${new URLSearchParams(
-          `?editor-state=${hashedPlaygroundStateSnapshot}`,
-        ).toString()}`
+        `?editor-state=${hashedPlaygroundStateSnapshot}`,
+      ).toString()
+      }`
       : "";
-    const statefulUrl = `${window.location.origin}${window.location.pathname}${urlParams}`;
+    const statefulUrl =
+      `${window.location.origin}${window.location.pathname}${urlParams}`;
     return statefulUrl;
   }
 
@@ -183,14 +185,16 @@ export class SearchParamsHelpers {
       normalizedFilename: this.stateSignals.normalizedFilename?.(),
       transformSourcemap: this.stateSignals.transformSourcemap?.(),
       transformAstroGlobalArgs: this.stateSignals.transformAstroGlobalArgs?.(),
+      transformAnnotateSourceFile: this.stateSignals
+        .transformAnnotateSourceFile?.(),
       transformCompact: this.stateSignals.transformCompact?.(),
-      transformResultScopedSlot:
-        this.stateSignals.transformResultScopedSlot?.(),
+      transformResultScopedSlot: this.stateSignals
+        .transformResultScopedSlot?.(),
       viewDetailedResults: this.stateSignals.viewDetailedResults?.(),
       selectedTransformTab: this.stateSignals.selectedTransformTab?.(),
       selectedTSXTab: this.stateSignals.selectedTSXTab?.(),
-      transformExperimentalRenderScript:
-        this.stateSignals.transformExperimentalRenderScript?.(),
+      transformRenderScript: this.stateSignals
+        .transformRenderScript?.(),
     };
   }
 }

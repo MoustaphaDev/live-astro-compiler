@@ -1,9 +1,9 @@
 import type {
   ConvertToTSXOptions,
   ParseOptions,
-  TSXResult,
   TransformOptions,
   TransformResult,
+  TSXResult,
 } from "@astrojs/compiler/types";
 import type { MODES } from "./consts";
 import type * as monaco from "monaco-editor";
@@ -28,13 +28,14 @@ export type CompilerValues = {
   transformInternalURL: TransformOptions["internalURL"];
   filename: TransformOptions["filename"] | ConvertToTSXOptions["filename"];
   normalizedFilename:
-    | TransformOptions["normalizedFilename"]
-    | ConvertToTSXOptions["normalizedFilename"];
+  | TransformOptions["normalizedFilename"]
+  | ConvertToTSXOptions["normalizedFilename"];
   transformSourcemap: TransformOptions["sourcemap"];
   transformAstroGlobalArgs: TransformOptions["astroGlobalArgs"];
   transformCompact: TransformOptions["compact"];
   transformResultScopedSlot: TransformOptions["resultScopedSlot"];
-  transformExperimentalRenderScript: TransformOptions["renderScript"];
+  transformRenderScript: TransformOptions["renderScript"];
+  transformAnnotateSourceFile: TransformOptions["annotateSourceFile"];
 };
 export type StoredSearchParams = EditorValues & CompilerValues;
 export type StoredSignals = {
