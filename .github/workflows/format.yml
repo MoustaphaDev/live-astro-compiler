@@ -18,19 +18,19 @@ jobs:
         env:
             NODE_OPTIONS: '--max_old_space_size=4096'
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   ref: ${{ github.head_ref }}
                   # Needs access to push to main
                   token: ${{ secrets.GH_WORKFLOW_TOKEN }}
 
             - name: Setup PNPM
-              uses: pnpm/action-setup@v2
+              uses: pnpm/action-setup@v4
 
             - name: Setup Node
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
-                  node-version: 18
+                  node-version: 23.3.0
                   cache: 'pnpm'
 
             - name: Install dependencies
@@ -40,7 +40,7 @@ jobs:
               run: pnpm run format
 
             - name: Commit changes
-              uses: stefanzweifel/git-auto-commit-action@v4
+              uses: stefanzweifel/git-auto-commit-action@v5
               with:
                   commit_message: '[ci] format'
                   branch: ${{ github.head_ref }}
