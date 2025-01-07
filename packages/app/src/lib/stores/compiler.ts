@@ -354,6 +354,7 @@ function createTransformTabToResultMap(
     scope,
     scripts,
     styleError,
+    serverComponents,
   } = transformResult;
   return {
     css: { css, styleError },
@@ -370,6 +371,7 @@ function createTransformTabToResultMap(
       map,
       propagation,
       scope,
+      serverComponents,
     },
   } as const;
 }
