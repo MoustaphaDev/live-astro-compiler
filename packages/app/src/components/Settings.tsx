@@ -3,24 +3,26 @@ import { VsChromeClose } from "solid-icons/vs";
 import { Dialog } from "@kobalte/core";
 import { Separator, TextField, ToggleButton, ToggleField } from "./ui-kit";
 import {
-  parsePosition,
-  setParsePosition,
-  transformInternalURL,
-  setTransformInternalURL,
   filename,
-  setFilename,
   normalizedFilename,
+  parsePosition,
+  setFilename,
   setNormalizedFilename,
-  transformAstroGlobalArgs,
-  setTransformAstroGlobalArgs,
-  transformCompact,
+  setParsePosition,
   setTranformCompact,
-  transformResultScopedSlot,
+  setTransformAnnotateSourceFile,
+  setTransformAstroGlobalArgs,
+  setTransformInternalURL,
+  setTransformRenderScript,
   setTransformResultScopedSlot,
-  viewDetailedResults,
   setViewDetailedResults,
-  transformExperimentalRenderScript,
-  setTransformExperimentalRenderScript,
+  transformAnnotateSourceFile,
+  transformAstroGlobalArgs,
+  transformCompact,
+  transformInternalURL,
+  transformRenderScript,
+  transformResultScopedSlot,
+  viewDetailedResults,
 } from "~/lib/stores";
 import { CompilerVersionSwitcher } from "./CompilerVersionsSwitcher";
 
@@ -135,10 +137,18 @@ export default function SettingsSection(props: SettingsSectionProps) {
                     aria-label="Toggle positoin"
                   />
                 </ToggleField>
-                <ToggleField label="experimental.renderScript">
+                <ToggleField label="annotateSourceFile">
                   <ToggleButton
-                    pressed={transformExperimentalRenderScript()}
-                    onChange={setTransformExperimentalRenderScript}
+                    pressed={transformAnnotateSourceFile()}
+                    onChange={setTransformAnnotateSourceFile}
+                    title="Toggle annotateSourceFile"
+                    aria-label="Toggle annotateSourceFile"
+                  />
+                </ToggleField>
+                <ToggleField label="renderScript">
+                  <ToggleButton
+                    pressed={transformRenderScript()}
+                    onChange={setTransformRenderScript}
                     title="Toggle renderScript option"
                     aria-label="Toggle renderScript option"
                   />

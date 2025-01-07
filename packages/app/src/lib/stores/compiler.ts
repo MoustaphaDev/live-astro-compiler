@@ -11,34 +11,36 @@ import type {
   ConsumedParseOptions,
   ConsumedTransformOptions,
   FunctionGeneric,
-  TSXTabToResultMap,
   TransformTabToResultMap,
+  TSXTabToResultMap,
 } from "../types";
 import {
   code,
-  mode,
   currentCompilerVersion,
-  setHasCompilerVersionChangeBeenHandled,
   filename,
+  hasCompilerVersionChangeBeenHandled,
+  mode,
   normalizedFilename,
   parsePosition,
+  selectedTransformTab,
+  selectedTSXTab,
+  setHasCompilerVersionChangeBeenHandled,
+  transformAnnotateSourceFile,
   transformAstroGlobalArgs,
   transformCompact,
   transformInternalURL,
+  transformRenderScript,
   transformResultScopedSlot,
   transformSourcemap,
-  hasCompilerVersionChangeBeenHandled,
   viewDetailedResults,
-  selectedTSXTab,
-  selectedTransformTab,
-  transformExperimentalRenderScript,
 } from ".";
 import { remoteCompilerModule } from "../compiler";
-import type { TSXResult, TransformResult } from "@astrojs/compiler";
 import { returnFunctionReferenceFromHash } from "./utils";
-import type { CompilerModule } from "../compiler/fetch";
 import { setCompilerWithFallbackHandling } from "../compiler/module";
 import { debugLog, isNullish, isObject } from "../utils";
+
+import type { TransformResult, TSXResult } from "@astrojs/compiler/types";
+import type { CompilerModule } from "../compiler/fetch";
 
 async function transformWrapper(
   options: ConsumedTransformOptions,
@@ -189,7 +191,8 @@ export function createCompilerOutputGetter() {
         astroGlobalArgs: transformAstroGlobalArgs(),
         compact: transformCompact(),
         resultScopedSlot: transformResultScopedSlot(),
-        renderScript: transformExperimentalRenderScript(),
+        renderScript: transformRenderScript(),
+        annotateSourceFile: transformAnnotateSourceFile(),
       },
     } satisfies ConsumedTransformOptions;
   };
@@ -244,8 +247,9 @@ export function createCompilerOutputGetter() {
           return _transformResult?.code;
         }
         if (!_transformResult) return;
-        const transformTabToResultMap =
-          createTransformTabToResultMap(_transformResult);
+        const transformTabToResultMap = createTransformTabToResultMap(
+          _transformResult,
+        );
         const transformTab = selectedTransformTab();
         const content = isCode(transformTab)
           ? _transformResult?.code
@@ -350,6 +354,7 @@ function createTransformTabToResultMap(
     scope,
     scripts,
     styleError,
+    serverComponents,
   } = transformResult;
   return {
     css: { css, styleError },
@@ -358,7 +363,7 @@ function createTransformTabToResultMap(
       hydratedComponents,
     },
     scripts: {
-      scripts: scripts,
+      scripts,
     },
     misc: {
       containsHead,
@@ -366,6 +371,7 @@ function createTransformTabToResultMap(
       map,
       propagation,
       scope,
+      serverComponents,
     },
   } as const;
 }

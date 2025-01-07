@@ -1,6 +1,6 @@
 import { createBreakpoints } from "@solid-primitives/media";
 import { SearchParamsHelpers, usePersistentSignal } from "./utils";
-import { INITIAL_CODE, breakpoints } from "../consts";
+import { breakpoints, INITIAL_CODE } from "../consts";
 import { createSignal } from "solid-js";
 import type { StoredSearchParams } from "~/lib/types";
 import { getFallbackCompilerVersion } from "../compiler/module";
@@ -147,6 +147,15 @@ export const [transformCompact, setTranformCompact] = usePersistentSignal<
     urlSearchParams.transformCompact ?? persisted ?? false,
 });
 
+export const [transformAnnotateSourceFile, setTransformAnnotateSourceFile] =
+  usePersistentSignal<
+    StoredSearchParams["transformAnnotateSourceFile"]
+  >({
+    key: "transform-annotate-source",
+    initialValueSetter: (persisted) =>
+      urlSearchParams.transformAnnotateSourceFile ?? persisted ?? false,
+  });
+
 export const [transformResultScopedSlot, setTransformResultScopedSlot] =
   usePersistentSignal<StoredSearchParams["transformResultScopedSlot"]>({
     key: "transform-resultScopedSlot",
@@ -155,14 +164,14 @@ export const [transformResultScopedSlot, setTransformResultScopedSlot] =
   });
 
 export const [
-  transformExperimentalRenderScript,
-  setTransformExperimentalRenderScript,
+  transformRenderScript,
+  setTransformRenderScript,
 ] = usePersistentSignal<
-  StoredSearchParams["transformExperimentalRenderScript"]
+  StoredSearchParams["transformRenderScript"]
 >({
   key: "render-script",
   initialValueSetter: (persisted) =>
-    urlSearchParams.transformExperimentalRenderScript ?? persisted ?? false,
+    urlSearchParams.transformRenderScript ?? persisted ?? true,
 });
 
 // Common options (convertToTSX, transform)
@@ -199,7 +208,8 @@ SearchParamsHelpers.trackStateSignals({
   normalizedFilename,
   transformSourcemap,
   transformAstroGlobalArgs,
+  transformAnnotateSourceFile,
   transformCompact,
   transformResultScopedSlot,
-  transformExperimentalRenderScript,
+  transformRenderScript,
 });

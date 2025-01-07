@@ -1,10 +1,10 @@
 import {
   createComputed,
+  createEffect,
   createMemo,
   createResource,
   createSignal,
   on,
-  createEffect,
   onMount,
   untrack,
 } from "solid-js";
@@ -25,7 +25,7 @@ import {
   scrollToSelectedVersion,
   scrollToTop,
 } from "./utils";
-import { VersionSwitcherProps, VersionsListProps } from ".";
+import type { VersionsListProps, VersionSwitcherProps } from ".";
 
 // TODO: refactor this later, code looks sooooo ugly
 // and all over the place xD
@@ -47,7 +47,7 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
   const [categorizedCompilerVersions, setCategorizedCompilerVersions] =
     createSignal<ReturnType<typeof getCompilerVersionsByType>>();
 
-  const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
+  const [listRefetcher, setListRefetcher] = createSignal(() => () => { });
   const [isLoadingCompilerVersions, setIsLoadingCompilerVersions] =
     createSignal(false);
 
@@ -66,8 +66,9 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
     if (
       typeof categorizedCompilerVersions() === "undefined" ||
       typeof untrackedCurrentCompilerVersion === "undefined"
-    )
+    ) {
       return;
+    }
     const isPreviewModeSelected = untrackedVersionsType === "Preview";
 
     const isPreviewCompilerSelected = isPreviewVersion(
@@ -94,8 +95,9 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
     if (
       indexOfCurrentCompilerVersion === -1 ||
       indexOfCurrentCompilerVersion <= numberOfVersionsOfUsedType
-    )
+    ) {
       return;
+    }
 
     // increase the number of versions to display by STEP
     // up until the point we reach or exceed the index of
@@ -124,14 +126,14 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
         Math.min(
           prev + STEP,
           categorizedCompilerVersions()!.previewVersions?.length,
-        ),
+        )
       );
     } else {
       setNumberOfProductionVersionsToDisplay((prev) =>
         Math.min(
           prev + STEP,
           categorizedCompilerVersions()!.productionVersions.length,
-        ),
+        )
       );
     }
     scrollToBottom();
