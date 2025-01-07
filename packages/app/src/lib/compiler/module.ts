@@ -153,7 +153,6 @@ export async function getFallbackCompilerVersion(): Promise<{
 }
 
 /**
- *
  * @param version the version of the compiler to check the marking state for
  * —
  * The marking state is used to determine if we should run the compatibility tests or not.
@@ -174,9 +173,11 @@ function getCompilerMarkingState(version: string): { isMarked: boolean } {
   // TODO: later manage this like in our design
   // right now, the results of the tests aren't
   // surfaced in the UI
-  for (const [functionality, compatibilityStatus] of Object.entries(
-    maybeStoredCompilerDetails.compatibilityMap,
-  )) {
+  for (
+    const [functionality, compatibilityStatus] of Object.entries(
+      maybeStoredCompilerDetails.compatibilityMap,
+    )
+  ) {
     if (compatibilityStatus === "incompatible") {
       // if any is incompatible, load the latest production version
       console.warn(`Compiler version ${version} is incompatible`);
@@ -206,9 +207,11 @@ async function checkCompatibitly(version: string) {
     return false;
   }
   // TODO: later manage this like in our design
-  for (const [functionality, compatibilityStatus] of Object.entries(
-    maybeStoredCompilerDetails.compatibilityMap,
-  )) {
+  for (
+    const [functionality, compatibilityStatus] of Object.entries(
+      maybeStoredCompilerDetails.compatibilityMap,
+    )
+  ) {
     if (compatibilityStatus === "incompatible") {
       // if any is incompatible, load the latest production version
       console.warn(`Compiler version ${version} is incompatible`);
