@@ -6,11 +6,7 @@ settings:
 
 importers:
 
-  .:
-    devDependencies:
-      '@types/node':
-        specifier: ^18.19.18
-        version: 18.19.18
+  .: {}
 
   packages/app:
     dependencies:
@@ -40,7 +36,7 @@ importers:
         version: 1.1.0
       emmet-monaco-es:
         specifier: ^5.3.2
-        version: 5.3.2(monaco-editor@0.52.2)
+        version: 5.3.2(monaco-editor@0.44.0)
       esno:
         specifier: ^4.8.0
         version: 4.8.0
@@ -48,11 +44,11 @@ importers:
         specifier: ^0.8.2
         version: 0.8.2
       monaco-editor:
-        specifier: ^0.52.2
-        version: 0.52.2
+        specifier: ^0.44.0
+        version: 0.44.0
       monaco-editor-textmate:
         specifier: ^4.0.0
-        version: 4.0.0(monaco-editor@0.52.2)(monaco-textmate@3.0.1(onigasm@2.2.5))
+        version: 4.0.0(monaco-editor@0.44.0)(monaco-textmate@3.0.1(onigasm@2.2.5))
       monaco-textmate:
         specifier: ^3.0.1
         version: 3.0.1(onigasm@2.2.5)
@@ -107,7 +103,7 @@ importers:
         version: 6.0.7(@types/node@22.10.5)(jiti@1.21.7)(tsx@4.19.2)
       vite-plugin-monaco-editor:
         specifier: ^1.1.0
-        version: 1.1.0(monaco-editor@0.52.2)
+        version: 1.1.0(monaco-editor@0.44.0)
       vite-plugin-solid:
         specifier: ^2.11.0
         version: 2.11.0(solid-js@1.9.3)(vite@6.0.7(@types/node@22.10.5)(jiti@1.21.7)(tsx@4.19.2))
@@ -809,9 +805,6 @@ packages:
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
-  '@types/node@18.19.18':
-    resolution: {integrity: sha512-80CP7B8y4PzZF0GWx15/gVWRrB5y/bIjNI84NK3cmQJu0WZwvmj2WMA5LcofQFVfLqqCSp545+U2LsrVzX36Zg==}
-
   '@types/node@22.10.5':
     resolution: {integrity: sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==}
 
@@ -1239,8 +1232,8 @@ packages:
       monaco-editor: 0.x.x
       monaco-textmate: ^3.0.0
 
-  monaco-editor@0.52.2:
-    resolution: {integrity: sha512-GEQWEZmfkOGLdd3XK8ryrfWz3AIP8YymVXiPHEdewrUq7mh0qrKrfHLNCXcbB6sTnMLnOZ3ztSiKcciFUkIJwQ==}
+  monaco-editor@0.44.0:
+    resolution: {integrity: sha512-5SmjNStN6bSuSE5WPT2ZV+iYn1/yI9sd4Igtk23ChvqB7kDk9lZbB9F5frsuvpB+2njdIeGGFf2G4gbE6rCC9Q==}
 
   monaco-textmate@3.0.1:
     resolution: {integrity: sha512-ZxxY3OsqUczYP1sGqo97tu+CJmMBwuSW+dL0WEBdDhOZ5G1zntw72hvBc68ZQAirosWvbDKgN1dL5k173QtFww==}
@@ -1591,9 +1584,6 @@ packages:
     resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
     engines: {node: '>=14.17'}
     hasBin: true
-
-  undici-types@5.26.5:
-    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
@@ -2278,10 +2268,6 @@ snapshots:
 
   '@types/estree@1.0.6': {}
 
-  '@types/node@18.19.18':
-    dependencies:
-      undici-types: 5.26.5
-
   '@types/node@22.10.5':
     dependencies:
       undici-types: 6.20.0
@@ -2431,10 +2417,10 @@ snapshots:
 
   electron-to-chromium@1.5.78: {}
 
-  emmet-monaco-es@5.3.2(monaco-editor@0.52.2):
+  emmet-monaco-es@5.3.2(monaco-editor@0.44.0):
     dependencies:
       emmet: 2.4.6
-      monaco-editor: 0.52.2
+      monaco-editor: 0.44.0
 
   emmet@2.4.6:
     dependencies:
@@ -2664,12 +2650,12 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  monaco-editor-textmate@4.0.0(monaco-editor@0.52.2)(monaco-textmate@3.0.1(onigasm@2.2.5)):
+  monaco-editor-textmate@4.0.0(monaco-editor@0.44.0)(monaco-textmate@3.0.1(onigasm@2.2.5)):
     dependencies:
-      monaco-editor: 0.52.2
+      monaco-editor: 0.44.0
       monaco-textmate: 3.0.1(onigasm@2.2.5)
 
-  monaco-editor@0.52.2: {}
+  monaco-editor@0.44.0: {}
 
   monaco-textmate@3.0.1(onigasm@2.2.5):
     dependencies:
@@ -2971,8 +2957,6 @@ snapshots:
 
   typescript@5.7.2: {}
 
-  undici-types@5.26.5: {}
-
   undici-types@6.20.0: {}
 
   update-browserslist-db@1.0.13(browserslist@4.23.0):
@@ -2991,9 +2975,9 @@ snapshots:
 
   validate-html-nesting@1.2.2: {}
 
-  vite-plugin-monaco-editor@1.1.0(monaco-editor@0.52.2):
+  vite-plugin-monaco-editor@1.1.0(monaco-editor@0.44.0):
     dependencies:
-      monaco-editor: 0.52.2
+      monaco-editor: 0.44.0
 
   vite-plugin-solid@2.11.0(solid-js@1.9.3)(vite@6.0.7(@types/node@22.10.5)(jiti@1.21.7)(tsx@4.19.2)):
     dependencies:
