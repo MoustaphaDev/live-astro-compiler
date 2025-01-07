@@ -12,13 +12,11 @@ import {
   getStoredCompilerDetails,
   storeCompilerDetails,
 } from "./storage";
-import { createPromiseAndActions } from "./utils";
 import { debugLog } from "../utils";
 
 export let remoteCompilerModule: CompilerModule | null = null;
 
 /**
- *
  * @param version the version of the compiler to load
  * @returns The status of the operation
  */
@@ -92,16 +90,10 @@ export async function setCompilerWithFallbackHandling(
   version: string,
   action?: Action,
 ) {
-  const {
-    promise: loadingCompilerPromise,
-    resolver: triggerSuccess,
-    rejecter: triggerFailure,
-  } = createPromiseAndActions();
-  const compilerLoadingToast = toast.promise(loadingCompilerPromise, {
-    loading: `Loading compiler v${version}`,
-    success: `Compiler v${version} loaded`,
-    error: `Failed to load compiler v${version}`,
-  });
+  const compilerLoadingToast = toast.loading(
+    `Loading compiler v${version}`,
+    { id: "compiler-loading-toast" },
+  );
   try {
     const { status } = await setCompiler(version);
     if (status === "failure") {
@@ -112,13 +104,15 @@ export async function setCompilerWithFallbackHandling(
       if (fallbackStatus === "failure") {
         toast.error(
           "An error occured while loading the compiler, please reload the page",
+          { id: "compiler-loading-toast" },
         );
         return;
       }
-      fallbackCompilerVersion =
-        getLastUsedCompilerVersion() ?? fallbackCompilerVersion;
+      fallbackCompilerVersion = getLastUsedCompilerVersion() ??
+        fallbackCompilerVersion;
       toast.error(
         `An error occured while loading the compiler, falling back to v${fallbackCompilerVersion}`,
+        { id: "compiler-loading-toast" },
       );
       // TODO: handle failure here too
       version = fallbackCompilerVersion;
@@ -130,10 +124,14 @@ export async function setCompilerWithFallbackHandling(
       return;
     }
     await action?.onSuccess?.();
-    triggerSuccess();
+    toast.success(`Compiler v${version} loaded`, {
+      id: "compiler-loading-toast",
+    });
   } catch {
     await action?.onFailure?.();
-    triggerFailure();
+    toast.error(`Failed to load compiler v${version}`, {
+      id: "compiler-loading-toast",
+    });
   }
 }
 
