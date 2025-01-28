@@ -28,8 +28,8 @@ export type CompilerValues = {
   transformInternalURL: TransformOptions["internalURL"];
   filename: TransformOptions["filename"] | ConvertToTSXOptions["filename"];
   normalizedFilename:
-  | TransformOptions["normalizedFilename"]
-  | ConvertToTSXOptions["normalizedFilename"];
+    | TransformOptions["normalizedFilename"]
+    | ConvertToTSXOptions["normalizedFilename"];
   transformSourcemap: TransformOptions["sourcemap"];
   transformAstroGlobalArgs: TransformOptions["astroGlobalArgs"];
   transformCompact: TransformOptions["compact"];

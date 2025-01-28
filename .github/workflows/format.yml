@@ -2,48 +2,48 @@
 
 name: Format
 on:
-    workflow_dispatch:
-    push:
-        branches:
-            - main
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-    format:
-        if: github.repository_owner == 'MoustaphaDev'
-        runs-on: ubuntu-latest
-        permissions:
-            # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
-            contents: write
+  format:
+    if: github.repository_owner == 'MoustaphaDev'
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the changed files back to the repository.
+      contents: write
 
-        env:
-            NODE_OPTIONS: '--max_old_space_size=4096'
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  ref: ${{ github.head_ref }}
-                  # Needs access to push to main
-                  token: ${{ secrets.GH_WORKFLOW_TOKEN }}
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          # Needs access to push to main
+          token: ${{ secrets.GH_WORKFLOW_TOKEN }}
 
-            - name: Setup PNPM
-              uses: pnpm/action-setup@v4
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
 
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 23.3.0
-                  cache: 'pnpm'
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.3.0
+          cache: "pnpm"
 
-            - name: Install dependencies
-              run: pnpm install
+      - name: Install dependencies
+        run: pnpm install
 
-            - name: Format code
-              run: pnpm run format
+      - name: Format code
+        run: pnpm run format
 
-            - name: Commit changes
-              uses: stefanzweifel/git-auto-commit-action@v5
-              with:
-                  commit_message: '[ci] format'
-                  branch: ${{ github.head_ref }}
-                  commit_user_name: ${{ github.actor }}
-                  commit_user_email: ${{ github.actor }}@users.noreply.github.com
-                  commit_author: ${{ github.event.commits[0].author.name }} <${{ github.actor }}@users.noreply.github.com>
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "[ci] format"
+          branch: ${{ github.head_ref }}
+          commit_user_name: ${{ github.actor }}
+          commit_user_email: ${{ github.actor }}@users.noreply.github.com
+          commit_author: ${{ github.event.commits[0].author.name }} <${{ github.actor }}@users.noreply.github.com>

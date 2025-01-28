@@ -247,9 +247,8 @@ export function createCompilerOutputGetter() {
           return _transformResult?.code;
         }
         if (!_transformResult) return;
-        const transformTabToResultMap = createTransformTabToResultMap(
-          _transformResult,
-        );
+        const transformTabToResultMap =
+          createTransformTabToResultMap(_transformResult);
         const transformTab = selectedTransformTab();
         const content = isCode(transformTab)
           ? _transformResult?.code

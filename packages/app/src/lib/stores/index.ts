@@ -148,9 +148,7 @@ export const [transformCompact, setTranformCompact] = usePersistentSignal<
 });
 
 export const [transformAnnotateSourceFile, setTransformAnnotateSourceFile] =
-  usePersistentSignal<
-    StoredSearchParams["transformAnnotateSourceFile"]
-  >({
+  usePersistentSignal<StoredSearchParams["transformAnnotateSourceFile"]>({
     key: "transform-annotate-source",
     initialValueSetter: (persisted) =>
       urlSearchParams.transformAnnotateSourceFile ?? persisted ?? false,
@@ -163,16 +161,12 @@ export const [transformResultScopedSlot, setTransformResultScopedSlot] =
       urlSearchParams.transformResultScopedSlot ?? persisted ?? false,
   });
 
-export const [
-  transformRenderScript,
-  setTransformRenderScript,
-] = usePersistentSignal<
-  StoredSearchParams["transformRenderScript"]
->({
-  key: "render-script",
-  initialValueSetter: (persisted) =>
-    urlSearchParams.transformRenderScript ?? persisted ?? true,
-});
+export const [transformRenderScript, setTransformRenderScript] =
+  usePersistentSignal<StoredSearchParams["transformRenderScript"]>({
+    key: "render-script",
+    initialValueSetter: (persisted) =>
+      urlSearchParams.transformRenderScript ?? persisted ?? true,
+  });
 
 // Common options (convertToTSX, transform)
 export const [filename, setFilename] = usePersistentSignal<

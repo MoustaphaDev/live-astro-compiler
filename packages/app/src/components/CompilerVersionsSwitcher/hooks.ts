@@ -47,7 +47,7 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
   const [categorizedCompilerVersions, setCategorizedCompilerVersions] =
     createSignal<ReturnType<typeof getCompilerVersionsByType>>();
 
-  const [listRefetcher, setListRefetcher] = createSignal(() => () => { });
+  const [listRefetcher, setListRefetcher] = createSignal(() => () => {});
   const [isLoadingCompilerVersions, setIsLoadingCompilerVersions] =
     createSignal(false);
 
@@ -126,14 +126,14 @@ export function useVersionsSwitcher(props: VersionSwitcherProps) {
         Math.min(
           prev + STEP,
           categorizedCompilerVersions()!.previewVersions?.length,
-        )
+        ),
       );
     } else {
       setNumberOfProductionVersionsToDisplay((prev) =>
         Math.min(
           prev + STEP,
           categorizedCompilerVersions()!.productionVersions.length,
-        )
+        ),
       );
     }
     scrollToBottom();

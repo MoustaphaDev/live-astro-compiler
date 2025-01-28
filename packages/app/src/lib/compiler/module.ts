@@ -90,10 +90,9 @@ export async function setCompilerWithFallbackHandling(
   version: string,
   action?: Action,
 ) {
-  const compilerLoadingToast = toast.loading(
-    `Loading compiler v${version}`,
-    { id: "compiler-loading-toast" },
-  );
+  const compilerLoadingToast = toast.loading(`Loading compiler v${version}`, {
+    id: "compiler-loading-toast",
+  });
   try {
     const { status } = await setCompiler(version);
     if (status === "failure") {
@@ -108,8 +107,8 @@ export async function setCompilerWithFallbackHandling(
         );
         return;
       }
-      fallbackCompilerVersion = getLastUsedCompilerVersion() ??
-        fallbackCompilerVersion;
+      fallbackCompilerVersion =
+        getLastUsedCompilerVersion() ?? fallbackCompilerVersion;
       toast.error(
         `An error occured while loading the compiler, falling back to v${fallbackCompilerVersion}`,
         { id: "compiler-loading-toast" },
@@ -171,11 +170,9 @@ function getCompilerMarkingState(version: string): { isMarked: boolean } {
   // TODO: later manage this like in our design
   // right now, the results of the tests aren't
   // surfaced in the UI
-  for (
-    const [functionality, compatibilityStatus] of Object.entries(
-      maybeStoredCompilerDetails.compatibilityMap,
-    )
-  ) {
+  for (const [functionality, compatibilityStatus] of Object.entries(
+    maybeStoredCompilerDetails.compatibilityMap,
+  )) {
     if (compatibilityStatus === "incompatible") {
       // if any is incompatible, load the latest production version
       console.warn(`Compiler version ${version} is incompatible`);
@@ -205,11 +202,9 @@ async function checkCompatibitly(version: string) {
     return false;
   }
   // TODO: later manage this like in our design
-  for (
-    const [functionality, compatibilityStatus] of Object.entries(
-      maybeStoredCompilerDetails.compatibilityMap,
-    )
-  ) {
+  for (const [functionality, compatibilityStatus] of Object.entries(
+    maybeStoredCompilerDetails.compatibilityMap,
+  )) {
     if (compatibilityStatus === "incompatible") {
       // if any is incompatible, load the latest production version
       console.warn(`Compiler version ${version} is incompatible`);

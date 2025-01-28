@@ -81,7 +81,7 @@ function SettingsDialog() {
     <Dialog.Root modal open={isOpen()} onOpenChange={setIsOpen}>
       <Dialog.Trigger
         onClick={noopAfterFirstCall}
-        class="inline-flex h-8 w-8 appearance-none items-center justify-center rounded-md border border-solid border-secondary bg-secondary text-base capitalize leading-none text-white outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary hover:ring-offset-0 focus:ring-2 focus:ring-accent-2  focus-visible:outline-offset-2 focus-visible:outline-accent-2 active:bg-accent-2 lg:h-10 lg:w-10 [&_*]:select-none"
+        class="inline-flex h-8 w-8 appearance-none items-center justify-center rounded-md border border-solid border-secondary bg-secondary text-base capitalize leading-none text-white outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary hover:ring-offset-0 focus:ring-2 focus:ring-accent-2 focus-visible:outline-offset-2 focus-visible:outline-accent-2 active:bg-accent-2 lg:h-10 lg:w-10 [&_*]:select-none"
       >
         <IoSettingsOutline class="h-5 w-5" />
       </Dialog.Trigger>
@@ -178,7 +178,7 @@ function ShareButton() {
     <Button.Root
       class={`relative h-8 w-20 items-center justify-center rounded-md border border-solid border-secondary py-0 text-sm capitalize leading-none outline-none ring-offset-2 ring-offset-primary transition-all duration-[250ms,color] focus:ring-2 lg:h-10 lg:w-28 lg:px-4 lg:text-base ${
         showCopied()
-          ? "bg-green-500 text-primary  hover:border-green-500/50 hover:bg-green-500 focus:ring-green-500"
+          ? "bg-green-500 text-primary hover:border-green-500/50 hover:bg-green-500 focus:ring-green-500"
           : "bg-secondary text-white hover:border-accent-2/50 hover:bg-accent-2 hover:text-primary focus:ring-accent-2"
       }`}
       onClick={share}
@@ -242,7 +242,7 @@ function DesktopModeSwitcher() {
       }}
     >
       <SelectPrimitive.Trigger
-        class="hidden h-8 w-[100px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-sm capitalize leading-none text-zinc-200 outline-none ring-offset-2 ring-offset-primary transition-shadow duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus:ring-2 focus:ring-accent-2  data-[invalid]:border-[hsl(0_72%_51%)] data-[invalid]:text-[hsl(0_72%_51%)] lg:inline-flex lg:h-10 lg:w-[200px] lg:text-sm"
+        class="hidden h-8 w-[100px] items-center justify-between rounded-md border border-solid border-secondary bg-primary py-0 pl-4 pr-2.5 text-sm capitalize leading-none text-zinc-200 outline-none ring-offset-2 ring-offset-primary transition-shadow duration-[250ms,color] hover:border-accent-2/50 hover:bg-accent-2/10 focus:ring-2 focus:ring-accent-2 data-[invalid]:border-[hsl(0_72%_51%)] data-[invalid]:text-[hsl(0_72%_51%)] lg:inline-flex lg:h-10 lg:w-[200px] lg:text-sm"
         aria-label="Themes"
       >
         <SelectPrimitive.Value<Modes> class="overflow-hidden text-ellipsis whitespace-nowrap data-[placeholder-shown]:text-zinc-500">

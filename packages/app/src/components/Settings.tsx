@@ -199,7 +199,7 @@ export default function SettingsSection(props: SettingsSectionProps) {
               <div class="w-full">
                 <Separator />
                 <div class="my-14">
-                  Made with <span class=" text-red-500">♥</span> by{" "}
+                  Made with <span class="text-red-500">♥</span> by{" "}
                   <a
                     href="https://github.com/MoustaphaDev"
                     class="!select-text italic text-accent-2 hover:underline"
